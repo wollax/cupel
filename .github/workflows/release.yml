@@ -1,0 +1,55 @@
+# Disabled until ready to publish. To enable:
+# 1. Remove the `if: false` from the publish job
+# 2. Add NPM_TOKEN secret to repository settings
+# 3. Update for NuGet publish commands (dotnet nuget push)
+
+name: Publish to NuGet
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    if: false  # Disabled until ready to publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build
+
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build --output ./nupkg
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(dotnet msbuild -getProperty:Version)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Publish to NuGet
+        run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          make_latest: true
