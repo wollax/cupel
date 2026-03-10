@@ -25,6 +25,15 @@
 4. `ContextItem.Tokens` is a required non-nullable `int` — no tokenizer dependency exists in the core package
 5. `dotnet list Wollax.Cupel package` returns zero external dependencies; BenchmarkDotNet project exists with empty-pipeline baseline
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Solution scaffold and build infrastructure
+- [ ] 01-02-PLAN.md — Smart enums (ContextKind, ContextSource) via TDD
+- [ ] 01-03-PLAN.md — ContextItem sealed record via TDD
+- [ ] 01-04-PLAN.md — ContextBudget validated model via TDD
+- [ ] 01-05-PLAN.md — Benchmark baseline and PublicAPI verification
+
 ---
 
 #### Phase 2: Interfaces & Diagnostics Infrastructure
