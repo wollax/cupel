@@ -101,4 +101,49 @@
 
 | Requirement | Phase | Status |
 |---|---|---|
-| *(populated after roadmap creation)* | | |
+| PIPE-01 | Phase 1: Project Scaffold & Core Models | ○ planned |
+| PIPE-02 | Phase 1: Project Scaffold & Core Models | ○ planned |
+| PIPE-03 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| PIPE-04 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| PIPE-05 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| SCORE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| SCORE-02 | Phase 3: Individual Scorers | ○ planned |
+| SCORE-03 | Phase 3: Individual Scorers | ○ planned |
+| SCORE-04 | Phase 3: Individual Scorers | ○ planned |
+| SCORE-05 | Phase 3: Individual Scorers | ○ planned |
+| SCORE-06 | Phase 3: Individual Scorers | ○ planned |
+| SCORE-07 | Phase 3: Individual Scorers | ○ planned |
+| SCORE-08 | Phase 4: Composite Scoring | ○ planned |
+| SCORE-09 | Phase 4: Composite Scoring | ○ planned |
+| SLICE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| SLICE-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| SLICE-03 | Phase 6: Advanced Slicers & Quota System | ○ planned |
+| SLICE-04 | Phase 6: Advanced Slicers & Quota System | ○ planned |
+| SLICE-05 | Phase 6: Advanced Slicers & Quota System | ○ planned |
+| SLICE-06 | Phase 6: Advanced Slicers & Quota System | ○ planned |
+| PLACE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| PLACE-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| PLACE-03 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| TRACE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| TRACE-02 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| TRACE-03 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| TRACE-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| TRACE-05 | Phase 7: Explainability & Overflow Handling | ○ planned |
+| TRACE-06 | Phase 7: Explainability & Overflow Handling | ○ planned |
+| API-01 | Phase 8: Policy System & Named Presets | ○ planned |
+| API-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| API-03 | Phase 8: Policy System & Named Presets | ○ planned |
+| API-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| API-05 | Phase 1: Project Scaffold & Core Models | ○ planned |
+| POLICY-01 | Phase 8: Policy System & Named Presets | ○ planned |
+| POLICY-02 | Phase 8: Policy System & Named Presets | ○ planned |
+| POLICY-03 | Phase 8: Policy System & Named Presets | ○ planned |
+| JSON-01 | Phase 1: Project Scaffold & Core Models | ○ planned |
+| JSON-02 | Phase 9: Serialization & JSON Package | ○ planned |
+| JSON-03 | Phase 9: Serialization & JSON Package | ○ planned |
+| JSON-04 | Phase 9: Serialization & JSON Package | ○ planned |
+| PKG-01 | Phase 1: Project Scaffold & Core Models | ○ planned |
+| PKG-02 | Phase 10: Companion Packages & Release | ○ planned |
+| PKG-03 | Phase 10: Companion Packages & Release | ○ planned |
+| PKG-04 | Phase 9: Serialization & JSON Package | ○ planned |
+| PKG-05 | Phase 10: Companion Packages & Release | ○ planned |

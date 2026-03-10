@@ -2,10 +2,28 @@
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-10 — Milestone v1.0 started
+Phase: 1 of 10 — Project Scaffold & Core Models
+Milestone: v1.0 Core Library
+Status: Not started
+Next phase: Phase 1
+Last activity: 2026-03-10 — Roadmap created (10 phases, 46 requirements mapped)
+
+## Phase Overview
+
+NEXT_PHASE=1
+
+| Phase | Status |
+|-------|--------|
+| 1. Project Scaffold & Core Models | ○ planned |
+| 2. Interfaces & Diagnostics Infrastructure | ○ planned |
+| 3. Individual Scorers | ○ planned |
+| 4. Composite Scoring | ○ planned |
+| 5. Pipeline Assembly & Basic Execution | ○ planned |
+| 6. Advanced Slicers & Quota System | ○ planned |
+| 7. Explainability & Overflow Handling | ○ planned |
+| 8. Policy System & Named Presets | ○ planned |
+| 9. Serialization & JSON Package | ○ planned |
+| 10. Companion Packages & Release | ○ planned |
 
 ## Accumulated Context
 
@@ -15,6 +33,9 @@ Last activity: 2026-03-10 — Milestone v1.0 started
 - CompositeScorer over scorer DAG (nested composites, ~30 lines vs hundreds)
 - Fixed pipeline over middleware (no call-next, no silent-drop)
 - IPlacer interface (pluggable, U-shaped as default not mandate)
+- GreedySlice is the default slicer; KnapsackSlice is opt-in for provably optimal selection
+- Named policies are [Experimental] at launch — opinionated defaults that will evolve
+- Phase 1 includes BenchmarkDotNet and PublicApiAnalyzers as non-negotiable infrastructure
 
 ### Blockers
 (None)
