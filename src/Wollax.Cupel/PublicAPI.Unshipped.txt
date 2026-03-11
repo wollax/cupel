@@ -126,3 +126,6 @@ Wollax.Cupel.Scoring.RecencyScorer.Score(Wollax.Cupel.ContextItem! item, System.
 Wollax.Cupel.Scoring.PriorityScorer
 Wollax.Cupel.Scoring.PriorityScorer.PriorityScorer() -> void
 Wollax.Cupel.Scoring.PriorityScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.ReflexiveScorer
+Wollax.Cupel.Scoring.ReflexiveScorer.ReflexiveScorer() -> void
+Wollax.Cupel.Scoring.ReflexiveScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
