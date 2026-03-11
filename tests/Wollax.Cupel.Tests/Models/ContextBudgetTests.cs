@@ -35,7 +35,7 @@ public class ContextBudgetTests
         await Assert.That(budget.MaxTokens).IsEqualTo(128_000);
         await Assert.That(budget.TargetTokens).IsEqualTo(100_000);
         await Assert.That(budget.OutputReserve).IsEqualTo(4_096);
-        await Assert.That(budget.ReservedSlots).HasCount().EqualTo(2);
+        await Assert.That(budget.ReservedSlots.Count).IsEqualTo(2);
         await Assert.That(budget.ReservedSlots[ContextKind.SystemPrompt]).IsEqualTo(2_000);
         await Assert.That(budget.ReservedSlots[ContextKind.Memory]).IsEqualTo(5_000);
         await Assert.That(budget.EstimationSafetyMarginPercent).IsEqualTo(10.5);
@@ -69,48 +69,42 @@ public class ContextBudgetTests
     public async Task Validation_NegativeMaxTokens_Throws()
     {
         await Assert.That(() => new ContextBudget(maxTokens: -1, targetTokens: 0))
-            .ThrowsException()
-            .OfType<ArgumentOutOfRangeException>();
+            .ThrowsExactly<ArgumentOutOfRangeException>();
     }
 
     [Test]
     public async Task Validation_NegativeTargetTokens_Throws()
     {
         await Assert.That(() => new ContextBudget(maxTokens: 100_000, targetTokens: -1))
-            .ThrowsException()
-            .OfType<ArgumentOutOfRangeException>();
+            .ThrowsExactly<ArgumentOutOfRangeException>();
     }
 
     [Test]
     public async Task Validation_NegativeOutputReserve_Throws()
     {
         await Assert.That(() => new ContextBudget(maxTokens: 100_000, targetTokens: 80_000, outputReserve: -1))
-            .ThrowsException()
-            .OfType<ArgumentOutOfRangeException>();
+            .ThrowsExactly<ArgumentOutOfRangeException>();
     }
 
     [Test]
     public async Task Validation_NegativeEstimationSafetyMargin_Throws()
     {
         await Assert.That(() => new ContextBudget(maxTokens: 100_000, targetTokens: 80_000, estimationSafetyMarginPercent: -0.01))
-            .ThrowsException()
-            .OfType<ArgumentOutOfRangeException>();
+            .ThrowsExactly<ArgumentOutOfRangeException>();
     }
 
     [Test]
     public async Task Validation_EstimationSafetyMarginOver100_Throws()
     {
         await Assert.That(() => new ContextBudget(maxTokens: 100_000, targetTokens: 80_000, estimationSafetyMarginPercent: 100.01))
-            .ThrowsException()
-            .OfType<ArgumentOutOfRangeException>();
+            .ThrowsExactly<ArgumentOutOfRangeException>();
     }
 
     [Test]
     public async Task Validation_TargetTokensExceedsMaxTokens_Throws()
     {
         await Assert.That(() => new ContextBudget(maxTokens: 100_000, targetTokens: 100_001))
-            .ThrowsException()
-            .OfType<ArgumentException>();
+            .Throws<ArgumentException>();
     }
 
     [Test]
@@ -177,7 +171,7 @@ public class ContextBudgetTests
         await Assert.That(deserialized.TargetTokens).IsEqualTo(original.TargetTokens);
         await Assert.That(deserialized.OutputReserve).IsEqualTo(original.OutputReserve);
         await Assert.That(deserialized.EstimationSafetyMarginPercent).IsEqualTo(original.EstimationSafetyMarginPercent);
-        await Assert.That(deserialized.ReservedSlots).HasCount().EqualTo(2);
+        await Assert.That(deserialized.ReservedSlots.Count).IsEqualTo(2);
         await Assert.That(deserialized.ReservedSlots[ContextKind.SystemPrompt]).IsEqualTo(2_000);
         await Assert.That(deserialized.ReservedSlots[ContextKind.Memory]).IsEqualTo(5_000);
     }
