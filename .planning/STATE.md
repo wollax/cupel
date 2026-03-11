@@ -4,17 +4,17 @@
 
 Phase: 1 of 10 — Project Scaffold & Core Models
 Milestone: v1.0 Core Library
-Plan: 4 of 5 (ContextBudget validated model)
-Status: In progress
-Last activity: 2026-03-11 — Completed 01-04-PLAN.md (ContextBudget validated model)
+Plan: 5 of 5 (benchmark baseline and PublicAPI verification)
+Status: Phase complete
+Last activity: 2026-03-11 — Completed 01-05-PLAN.md (benchmark baseline and PublicAPI verification)
 
 ## Phase Overview
 
-NEXT_PHASE=1
+NEXT_PHASE=2
 
 | Phase | Status |
 |-------|--------|
-| 1. Project Scaffold & Core Models | ◐ in progress (plan 4/5 complete) |
+| 1. Project Scaffold & Core Models | ● complete (5/5 plans) |
 | 2. Interfaces & Diagnostics Infrastructure | ○ planned |
 | 3. Individual Scorers | ○ planned |
 | 4. Composite Scoring | ○ planned |
