@@ -1,9 +1,9 @@
 namespace Wollax.Cupel.Scoring;
 
 /// <summary>
-/// Scores items by relative timestamp ranking.
-/// Most recent item gets 1.0, oldest gets 0.0, linearly interpolated by rank.
-/// Items with null timestamps score 0.0.
+/// Scores items by relative timestamp ranking among items with a valid timestamp.
+/// Rank is the count of items with a strictly older timestamp.
+/// Items with null timestamps score 0.0. Tied timestamps produce equal scores.
 /// </summary>
 public sealed class RecencyScorer : IScorer
 {

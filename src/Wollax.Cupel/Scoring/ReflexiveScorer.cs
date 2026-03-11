@@ -11,6 +11,10 @@ public sealed class ReflexiveScorer : IScorer
         if (!item.FutureRelevanceHint.HasValue)
             return 0.0;
 
-        return Math.Clamp(item.FutureRelevanceHint.Value, 0.0, 1.0);
+        var value = item.FutureRelevanceHint.Value;
+        if (!double.IsFinite(value))
+            return 0.0;
+
+        return Math.Clamp(value, 0.0, 1.0);
     }
 }

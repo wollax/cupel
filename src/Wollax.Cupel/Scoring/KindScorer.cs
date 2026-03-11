@@ -18,7 +18,7 @@ public sealed class KindScorer : IScorer
             [ContextKind.Message] = 0.2
         }.ToFrozenDictionary();
 
-    private readonly IReadOnlyDictionary<ContextKind, double> _weights;
+    private readonly FrozenDictionary<ContextKind, double> _weights;
 
     /// <summary>
     /// Creates a <see cref="KindScorer"/> with default weight mappings.
@@ -28,11 +28,23 @@ public sealed class KindScorer : IScorer
     /// <summary>
     /// Creates a <see cref="KindScorer"/> with custom weight mappings.
     /// </summary>
-    /// <param name="weights">Weight dictionary keyed by <see cref="ContextKind"/>.</param>
+    /// <param name="weights">
+    /// Weight dictionary keyed by <see cref="ContextKind"/>.
+    /// All weights must be finite and non-negative.
+    /// </param>
     public KindScorer(IReadOnlyDictionary<ContextKind, double> weights)
     {
         ArgumentNullException.ThrowIfNull(weights);
-        _weights = weights;
+
+        foreach (var kvp in weights)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(kvp.Value, $"weights[{kvp.Key}]");
+            if (!double.IsFinite(kvp.Value))
+                throw new ArgumentOutOfRangeException($"weights[{kvp.Key}]", kvp.Value, "Weight must be finite.");
+        }
+
+        _weights = weights as FrozenDictionary<ContextKind, double>
+            ?? weights.ToFrozenDictionary();
     }
 
     /// <inheritdoc />

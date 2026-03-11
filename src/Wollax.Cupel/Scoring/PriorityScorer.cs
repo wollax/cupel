@@ -1,9 +1,9 @@
 namespace Wollax.Cupel.Scoring;
 
 /// <summary>
-/// Scores items by relative priority ranking.
-/// Highest priority gets 1.0, lowest gets 0.0, linearly interpolated by rank.
-/// Items with null priorities score 0.0.
+/// Scores items by relative priority ranking among items with a valid priority.
+/// Rank is the count of items with a strictly lower priority value.
+/// Items with null priorities score 0.0. Tied priorities produce equal scores.
 /// </summary>
 public sealed class PriorityScorer : IScorer
 {

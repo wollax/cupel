@@ -28,6 +28,8 @@ public sealed class TagScorer : IScorer
         foreach (var kvp in tagWeights)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(kvp.Value, $"tagWeights[{kvp.Key}]");
+            if (!double.IsFinite(kvp.Value))
+                throw new ArgumentOutOfRangeException($"tagWeights[{kvp.Key}]", kvp.Value, "Weight must be finite.");
             total += kvp.Value;
         }
         _tagWeights = tagWeights.ToFrozenDictionary(tagWeights is Dictionary<string, double> d
@@ -52,6 +54,6 @@ public sealed class TagScorer : IScorer
             }
         }
 
-        return matchedSum / _totalWeight;
+        return Math.Min(matchedSum / _totalWeight, 1.0);
     }
 }
