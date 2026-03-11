@@ -2,8 +2,8 @@
 
 ## Pipeline Engine
 
-- [ ] **PIPE-01**: ContextItem model with Content (non-nullable string), Kind, Tokens, Timestamp, Source, Tags, Priority, Pinned, OriginalTokens, FutureRelevanceHint, and extensible Metadata
-- [ ] **PIPE-02**: ContextBudget model with MaxTokens, TargetTokens, ReservedSlots, OutputReserve, EstimationSafetyMarginPercent
+- [x] **PIPE-01**: ContextItem model with Content (non-nullable string), Kind, Tokens, Timestamp, Source, Tags, Priority, Pinned, OriginalTokens, FutureRelevanceHint, and extensible Metadata
+- [x] **PIPE-02**: ContextBudget model with MaxTokens, TargetTokens, ReservedSlots, OutputReserve, EstimationSafetyMarginPercent
 - [ ] **PIPE-03**: Fixed pipeline executing Classify → Score → Deduplicate → Slice → Place stages in order
 - [ ] **PIPE-04**: Ordinal-only scoring invariant enforced: scorers rank, slicers drop, placers position — no component crosses this boundary
 - [ ] **PIPE-05**: Pinned items bypass scoring and enter pipeline at Placer stage
@@ -50,7 +50,7 @@
 - [ ] **API-02**: Fluent builder via CupelPipeline.CreateBuilder() over fixed pipeline (no call-next middleware)
 - [ ] **API-03**: Both explicit policy and intent-based lookup via CupelOptions.AddPolicy("intent", policy)
 - [ ] **API-04**: IContextSource interface (IAsyncEnumerable<ContextItem>) in core
-- [ ] **API-05**: Token counting is caller's responsibility — ContextItem.Tokens is required non-nullable int
+- [x] **API-05**: Token counting is caller's responsibility — ContextItem.Tokens is required non-nullable int
 
 ## Named Policies
 
@@ -60,14 +60,14 @@
 
 ## Serialization
 
-- [ ] **JSON-01**: [JsonPropertyName] on all public types from day 1
+- [x] **JSON-01**: [JsonPropertyName] on all public types from day 1
 - [ ] **JSON-02**: Incremental serialization: ContextBudget + SlicerConfig first, scorer config after CompositeScorer stabilizes
 - [ ] **JSON-03**: RegisterScorer(string name, Func<IScorer> factory) hook for future serialization extensibility
 - [ ] **JSON-04**: JSON only (no YAML — minimal dependencies)
 
 ## Packaging
 
-- [ ] **PKG-01**: Wollax.Cupel — core library with zero external dependencies beyond BCL
+- [x] **PKG-01**: Wollax.Cupel — core library with zero external dependencies beyond BCL
 - [ ] **PKG-02**: Wollax.Cupel.Extensions.DependencyInjection — Microsoft.Extensions.DI integration (separate package)
 - [ ] **PKG-03**: Wollax.Cupel.Tiktoken — optional token counting companion using Microsoft.ML.Tokenizers
 - [ ] **PKG-04**: Wollax.Cupel.Json — JSON policy serialization companion with source-generated JsonSerializerContext
@@ -101,8 +101,8 @@
 
 | Requirement | Phase | Status |
 |---|---|---|
-| PIPE-01 | Phase 1: Project Scaffold & Core Models | ○ planned |
-| PIPE-02 | Phase 1: Project Scaffold & Core Models | ○ planned |
+| PIPE-01 | Phase 1: Project Scaffold & Core Models | ● complete |
+| PIPE-02 | Phase 1: Project Scaffold & Core Models | ● complete |
 | PIPE-03 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | PIPE-04 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | PIPE-05 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
@@ -134,15 +134,15 @@
 | API-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | API-03 | Phase 8: Policy System & Named Presets | ○ planned |
 | API-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
-| API-05 | Phase 1: Project Scaffold & Core Models | ○ planned |
+| API-05 | Phase 1: Project Scaffold & Core Models | ● complete |
 | POLICY-01 | Phase 8: Policy System & Named Presets | ○ planned |
 | POLICY-02 | Phase 8: Policy System & Named Presets | ○ planned |
 | POLICY-03 | Phase 8: Policy System & Named Presets | ○ planned |
-| JSON-01 | Phase 1: Project Scaffold & Core Models | ○ planned |
+| JSON-01 | Phase 1: Project Scaffold & Core Models | ● complete |
 | JSON-02 | Phase 9: Serialization & JSON Package | ○ planned |
 | JSON-03 | Phase 9: Serialization & JSON Package | ○ planned |
 | JSON-04 | Phase 9: Serialization & JSON Package | ○ planned |
-| PKG-01 | Phase 1: Project Scaffold & Core Models | ○ planned |
+| PKG-01 | Phase 1: Project Scaffold & Core Models | ● complete |
 | PKG-02 | Phase 10: Companion Packages & Release | ○ planned |
 | PKG-03 | Phase 10: Companion Packages & Release | ○ planned |
 | PKG-04 | Phase 9: Serialization & JSON Package | ○ planned |

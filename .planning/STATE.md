@@ -4,9 +4,9 @@
 
 Phase: 1 of 10 — Project Scaffold & Core Models
 Milestone: v1.0 Core Library
-Plan: 5 of 5 (benchmark baseline and PublicAPI verification)
-Status: Phase complete
-Last activity: 2026-03-11 — Completed 01-05-PLAN.md (benchmark baseline and PublicAPI verification)
+Status: Phase 1 complete — verified
+Next phase: Phase 2
+Last activity: 2026-03-11 — Phase 1 verified and completed (5/5 plans, 91 tests, all success criteria met)
 
 ## Phase Overview
 
@@ -41,6 +41,8 @@ NEXT_PHASE=2
 - STJ returns null (not JsonException) for JSON literal `null` on reference types — converter not invoked
 - Record value equality uses reference equality for collection properties (IReadOnlyList, IReadOnlyDictionary) — not structural
 - TUnit exception assertions: use Throws<T>() / ThrowsExactly<T>(), not ThrowsException().OfType<T>()
+- ContextBudget is a sealed class (not record) to prevent with-expressions bypassing constructor validation
+- Custom ContextKindDictionaryConverter handles Dictionary<ContextKind, int> serialization for ReservedSlots
 
 ### Blockers
 (None)

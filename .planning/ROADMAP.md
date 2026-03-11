@@ -28,11 +28,11 @@
 **Plans:** 5 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Solution scaffold and build infrastructure
-- [ ] 01-02-PLAN.md — Smart enums (ContextKind, ContextSource) via TDD
-- [ ] 01-03-PLAN.md — ContextItem sealed record via TDD
-- [ ] 01-04-PLAN.md — ContextBudget validated model via TDD
-- [ ] 01-05-PLAN.md — Benchmark baseline and PublicAPI verification
+- [x] 01-01-PLAN.md — Solution scaffold and build infrastructure
+- [x] 01-02-PLAN.md — Smart enums (ContextKind, ContextSource) via TDD
+- [x] 01-03-PLAN.md — ContextItem sealed record via TDD
+- [x] 01-04-PLAN.md — ContextBudget validated model via TDD
+- [x] 01-05-PLAN.md — Benchmark baseline and PublicAPI verification
 
 ---
 
@@ -187,7 +187,7 @@ Plans:
 
 | Phase | Name | Requirements | Status |
 |-------|------|-------------|--------|
-| 1 | Project Scaffold & Core Models | PIPE-01, PIPE-02, API-05, JSON-01, PKG-01 | ○ planned |
+| 1 | Project Scaffold & Core Models | PIPE-01, PIPE-02, API-05, JSON-01, PKG-01 | ● complete |
 | 2 | Interfaces & Diagnostics Infrastructure | SCORE-01, SLICE-01, PLACE-01, API-04, TRACE-01, TRACE-02, TRACE-03, TRACE-04 | ○ planned |
 | 3 | Individual Scorers | SCORE-02, SCORE-03, SCORE-04, SCORE-05, SCORE-06, SCORE-07 | ○ planned |
 | 4 | Composite Scoring | SCORE-08, SCORE-09 | ○ planned |
