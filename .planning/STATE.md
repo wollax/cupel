@@ -4,9 +4,9 @@
 
 Phase: 1 of 10 — Project Scaffold & Core Models
 Milestone: v1.0 Core Library
-Status: Not started
-Next phase: Phase 1
-Last activity: 2026-03-10 — Roadmap created (10 phases, 46 requirements mapped)
+Plan: 1 of 5 (Solution Scaffold)
+Status: In progress
+Last activity: 2026-03-11 — Completed 01-01-PLAN.md (solution scaffold & build configuration)
 
 ## Phase Overview
 
@@ -14,7 +14,7 @@ NEXT_PHASE=1
 
 | Phase | Status |
 |-------|--------|
-| 1. Project Scaffold & Core Models | ○ planned |
+| 1. Project Scaffold & Core Models | ◐ in progress (plan 1/5 complete) |
 | 2. Interfaces & Diagnostics Infrastructure | ○ planned |
 | 3. Individual Scorers | ○ planned |
 | 4. Composite Scoring | ○ planned |
@@ -36,6 +36,8 @@ NEXT_PHASE=1
 - GreedySlice is the default slicer; KnapsackSlice is opt-in for provably optimal selection
 - Named policies are [Experimental] at launch — opinionated defaults that will evolve
 - Phase 1 includes BenchmarkDotNet and PublicApiAnalyzers as non-negotiable infrastructure
+- .NET 10 SDK generates .slnx (XML solution format) by default — used Cupel.slnx instead of Cupel.sln
+- .NET 10 SDK requires Microsoft.Testing.Platform runner mode via global.json for dotnet test with TUnit
 
 ### Blockers
 (None)
