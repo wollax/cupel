@@ -2,22 +2,22 @@
 
 ## Current Position
 
-Phase: 2 of 10 — Interfaces & Diagnostics Infrastructure
+Phase: 3 of 10 — Individual Scorers
 Milestone: v1.0 Core Library
-Plan: 2 of 2
-Status: Phase 2 complete — verified
-Next phase: Phase 3
-Last activity: 2026-03-11 — Phase 2 verified and completed (2/2 plans, 153 tests, all success criteria met)
+Plan: 3 of 3
+Status: Phase 3 complete — verified
+Next phase: Phase 4
+Last activity: 2026-03-11 — Phase 3 verified and completed (3/3 plans, 202 tests, all success criteria met)
 
 ## Phase Overview
 
-NEXT_PHASE=3
+NEXT_PHASE=4
 
 | Phase | Status |
 |-------|--------|
 | 1. Project Scaffold & Core Models | ● complete (5/5 plans) |
 | 2. Interfaces & Diagnostics Infrastructure | ● complete (2/2 plans) |
-| 3. Individual Scorers | ○ planned |
+| 3. Individual Scorers | ● complete (3/3 plans) |
 | 4. Composite Scoring | ○ planned |
 | 5. Pipeline Assembly & Basic Execution | ○ planned |
 | 6. Advanced Slicers & Quota System | ○ planned |
@@ -51,6 +51,9 @@ NEXT_PHASE=3
 - ContextResult.TotalTokens uses manual for-loop (no LINQ) to avoid delegate allocations
 - Sealed records with required properties in .NET 10 do not generate public copy constructors
 - No AsyncLocal in codebase — explicit ITraceCollector parameter propagation confirmed
+- Scorer zero-allocation discipline: for loops with indexer access only, no LINQ/foreach/closures in Score() methods
+- Rank-based scoring pattern: count items with lesser value, interpolate rank/(countWithValues-1), null → 0.0, single → 1.0
+- TUnit treenode-filter does not support `--filter` flag — use `--treenode-filter` with path syntax instead
 
 ### Blockers
 (None)
