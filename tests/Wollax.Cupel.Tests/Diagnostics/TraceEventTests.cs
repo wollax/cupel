@@ -23,7 +23,10 @@ public class TraceEventTests
     [Test]
     public async Task TraceDetailLevel_StageIsLessThanItem()
     {
-        await Assert.That((int)TraceDetailLevel.Stage).IsLessThan((int)TraceDetailLevel.Item);
+        var stageValue = (int)TraceDetailLevel.Stage;
+        var itemValue = (int)TraceDetailLevel.Item;
+
+        await Assert.That(stageValue).IsLessThan(itemValue);
     }
 
     [Test]

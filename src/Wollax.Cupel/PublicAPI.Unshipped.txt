@@ -58,3 +58,32 @@ Wollax.Cupel.ContextBudget.TargetTokens.get -> int
 Wollax.Cupel.ContextBudget.OutputReserve.get -> int
 Wollax.Cupel.ContextBudget.ReservedSlots.get -> System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>!
 Wollax.Cupel.ContextBudget.EstimationSafetyMarginPercent.get -> double
+Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Classify = 0 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Score = 1 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Deduplicate = 2 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Slice = 3 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Place = 4 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.TraceDetailLevel
+Wollax.Cupel.Diagnostics.TraceDetailLevel.Stage = 0 -> Wollax.Cupel.Diagnostics.TraceDetailLevel
+Wollax.Cupel.Diagnostics.TraceDetailLevel.Item = 1 -> Wollax.Cupel.Diagnostics.TraceDetailLevel
+Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.LowScore = 0 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.BudgetExceeded = 1 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.Duplicate = 2 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.QuotaExceeded = 3 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.TraceEvent
+Wollax.Cupel.Diagnostics.TraceEvent.TraceEvent() -> void
+Wollax.Cupel.Diagnostics.TraceEvent.Stage.get -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.TraceEvent.Stage.init -> void
+Wollax.Cupel.Diagnostics.TraceEvent.Duration.get -> System.TimeSpan
+Wollax.Cupel.Diagnostics.TraceEvent.Duration.init -> void
+Wollax.Cupel.Diagnostics.TraceEvent.ItemCount.get -> int
+Wollax.Cupel.Diagnostics.TraceEvent.ItemCount.init -> void
+Wollax.Cupel.ScoredItem
+Wollax.Cupel.ScoredItem.ScoredItem() -> void
+Wollax.Cupel.ScoredItem.ScoredItem(Wollax.Cupel.ContextItem! Item, double Score) -> void
+Wollax.Cupel.ScoredItem.Item.get -> Wollax.Cupel.ContextItem!
+Wollax.Cupel.ScoredItem.Item.init -> void
+Wollax.Cupel.ScoredItem.Score.get -> double
+Wollax.Cupel.ScoredItem.Score.init -> void
