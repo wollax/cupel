@@ -35,7 +35,8 @@ public class NullTraceCollectorTests
 
         NullTraceCollector.Instance.RecordStageEvent(traceEvent);
 
-        await Assert.That(true).IsTrue();
+        // If we reach here, no exception was thrown
+        await Assert.That(NullTraceCollector.Instance.IsEnabled).IsFalse();
     }
 
     [Test]
@@ -50,7 +51,8 @@ public class NullTraceCollectorTests
 
         NullTraceCollector.Instance.RecordItemEvent(traceEvent);
 
-        await Assert.That(true).IsTrue();
+        // If we reach here, no exception was thrown
+        await Assert.That(NullTraceCollector.Instance.IsEnabled).IsFalse();
     }
 
     [Test]

@@ -42,7 +42,7 @@ public class DiagnosticTraceCollectorTests
 
         collector.RecordStageEvent(traceEvent);
 
-        await Assert.That(collector.Events).HasCount().EqualTo(1);
+        await Assert.That(collector.Events).Count().IsEqualTo(1);
         await Assert.That(collector.Events[0]).IsEqualTo(traceEvent);
     }
 
@@ -79,7 +79,7 @@ public class DiagnosticTraceCollectorTests
 
         collector.RecordItemEvent(traceEvent);
 
-        await Assert.That(collector.Events).HasCount().EqualTo(1);
+        await Assert.That(collector.Events).Count().IsEqualTo(1);
         await Assert.That(collector.Events[0]).IsEqualTo(traceEvent);
     }
 
@@ -124,7 +124,7 @@ public class DiagnosticTraceCollectorTests
         collector.RecordStageEvent(event2);
         collector.RecordStageEvent(event3);
 
-        await Assert.That(collector.Events).HasCount().EqualTo(3);
+        await Assert.That(collector.Events).Count().IsEqualTo(3);
         await Assert.That(collector.Events[0].Stage).IsEqualTo(PipelineStage.Score);
         await Assert.That(collector.Events[1].Stage).IsEqualTo(PipelineStage.Slice);
         await Assert.That(collector.Events[2].Stage).IsEqualTo(PipelineStage.Place);

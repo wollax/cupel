@@ -87,3 +87,18 @@ Wollax.Cupel.ScoredItem.Item.get -> Wollax.Cupel.ContextItem!
 Wollax.Cupel.ScoredItem.Item.init -> void
 Wollax.Cupel.ScoredItem.Score.get -> double
 Wollax.Cupel.ScoredItem.Score.init -> void
+Wollax.Cupel.Diagnostics.ITraceCollector
+Wollax.Cupel.Diagnostics.ITraceCollector.IsEnabled.get -> bool
+Wollax.Cupel.Diagnostics.ITraceCollector.RecordStageEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.Diagnostics.ITraceCollector.RecordItemEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.Diagnostics.NullTraceCollector
+Wollax.Cupel.Diagnostics.NullTraceCollector.IsEnabled.get -> bool
+Wollax.Cupel.Diagnostics.NullTraceCollector.RecordStageEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.Diagnostics.NullTraceCollector.RecordItemEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+static readonly Wollax.Cupel.Diagnostics.NullTraceCollector.Instance -> Wollax.Cupel.Diagnostics.NullTraceCollector!
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.DiagnosticTraceCollector(Wollax.Cupel.Diagnostics.TraceDetailLevel detailLevel = Wollax.Cupel.Diagnostics.TraceDetailLevel.Stage, System.Action<Wollax.Cupel.Diagnostics.TraceEvent>? callback = null) -> void
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.IsEnabled.get -> bool
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.Events.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.TraceEvent>!
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.RecordStageEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.RecordItemEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
