@@ -1,1 +1,15 @@
 #nullable enable
+Wollax.Cupel.ContextKind
+Wollax.Cupel.ContextKind.ContextKind(string! value) -> void
+Wollax.Cupel.ContextKind.Equals(Wollax.Cupel.ContextKind? other) -> bool
+Wollax.Cupel.ContextKind.Value.get -> string!
+override Wollax.Cupel.ContextKind.Equals(object? obj) -> bool
+override Wollax.Cupel.ContextKind.GetHashCode() -> int
+override Wollax.Cupel.ContextKind.ToString() -> string!
+static Wollax.Cupel.ContextKind.operator !=(Wollax.Cupel.ContextKind? left, Wollax.Cupel.ContextKind? right) -> bool
+static Wollax.Cupel.ContextKind.operator ==(Wollax.Cupel.ContextKind? left, Wollax.Cupel.ContextKind? right) -> bool
+static readonly Wollax.Cupel.ContextKind.Document -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.Memory -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.Message -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.SystemPrompt -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.ToolOutput -> Wollax.Cupel.ContextKind!

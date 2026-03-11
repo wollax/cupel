@@ -119,22 +119,22 @@ public class ContextKindTests
     [Test]
     public async Task Constructor_NullValue_ThrowsArgumentException()
     {
-        await Assert.That(() => new ContextKind(null!)).ThrowsException()
-            .OfType<ArgumentException>();
+        await Assert.That(() => new ContextKind(null!))
+            .Throws<ArgumentException>();
     }
 
     [Test]
     public async Task Constructor_EmptyValue_ThrowsArgumentException()
     {
-        await Assert.That(() => new ContextKind("")).ThrowsException()
-            .OfType<ArgumentException>();
+        await Assert.That(() => new ContextKind(""))
+            .Throws<ArgumentException>();
     }
 
     [Test]
     public async Task Constructor_WhitespaceValue_ThrowsArgumentException()
     {
-        await Assert.That(() => new ContextKind("   ")).ThrowsException()
-            .OfType<ArgumentException>();
+        await Assert.That(() => new ContextKind("   "))
+            .Throws<ArgumentException>();
     }
 
     [Test]
@@ -199,9 +199,9 @@ public class ContextKindTests
     }
 
     [Test]
-    public async Task JsonDeserialize_NullValue_ThrowsJsonException()
+    public async Task JsonDeserialize_NullJsonLiteral_ReturnsNull()
     {
-        await Assert.That(() => JsonSerializer.Deserialize<ContextKind>("null"))
-            .ThrowsException();
+        var result = JsonSerializer.Deserialize<ContextKind>("null");
+        await Assert.That(result).IsNull();
     }
 }
