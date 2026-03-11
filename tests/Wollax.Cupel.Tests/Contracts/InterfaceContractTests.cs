@@ -65,7 +65,7 @@ public class InterfaceContractTests
 
         IReadOnlyList<ContextItem> result = slicer.Slice(scoredItems, budget, trace);
 
-        await Assert.That(result).HasCount().EqualTo(1);
+        await Assert.That(result).Count().IsEqualTo(1);
         await Assert.That(result[0]).IsEqualTo(item);
     }
 
@@ -92,7 +92,7 @@ public class InterfaceContractTests
 
         IReadOnlyList<ContextItem> result = placer.Place(scoredItems, trace);
 
-        await Assert.That(result).HasCount().EqualTo(1);
+        await Assert.That(result).Count().IsEqualTo(1);
         await Assert.That(result[0]).IsEqualTo(item);
     }
 
@@ -117,7 +117,7 @@ public class InterfaceContractTests
         Task<IReadOnlyList<ContextItem>> task = source.GetItemsAsync();
         IReadOnlyList<ContextItem> result = await task;
 
-        await Assert.That(result).HasCount().EqualTo(1);
+        await Assert.That(result).Count().IsEqualTo(1);
     }
 
     [Test]
@@ -128,7 +128,7 @@ public class InterfaceContractTests
 
         IReadOnlyList<ContextItem> result = await source.GetItemsAsync(cts.Token);
 
-        await Assert.That(result).HasCount().EqualTo(1);
+        await Assert.That(result).Count().IsEqualTo(1);
     }
 
     [Test]
@@ -142,7 +142,7 @@ public class InterfaceContractTests
             items.Add(item);
         }
 
-        await Assert.That(items).HasCount().EqualTo(1);
+        await Assert.That(items).Count().IsEqualTo(1);
     }
 
     [Test]
@@ -157,7 +157,7 @@ public class InterfaceContractTests
             items.Add(item);
         }
 
-        await Assert.That(items).HasCount().EqualTo(1);
+        await Assert.That(items).Count().IsEqualTo(1);
     }
 
     #endregion
