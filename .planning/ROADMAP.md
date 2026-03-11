@@ -51,6 +51,12 @@ Plans:
 4. Trace event construction is provably gated — a benchmark with `NullTraceCollector` shows zero allocations from trace paths
 5. Trace propagation is explicit (parameter passing) — no `AsyncLocal` or ambient state anywhere in the codebase
 
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [x] 02-01-PLAN.md — Tracing infrastructure and supporting types (TDD): enums, TraceEvent, ScoredItem, ITraceCollector, NullTraceCollector, DiagnosticTraceCollector
+- [x] 02-02-PLAN.md — Pipeline interfaces, ContextResult, and zero-allocation benchmark (TDD): IScorer, ISlicer, IPlacer, IContextSource, ContextResult, SelectionReport, PublicAPI, benchmark
+
 ---
 
 #### Phase 3: Individual Scorers
@@ -188,7 +194,7 @@ Plans:
 | Phase | Name | Requirements | Status |
 |-------|------|-------------|--------|
 | 1 | Project Scaffold & Core Models | PIPE-01, PIPE-02, API-05, JSON-01, PKG-01 | ● complete |
-| 2 | Interfaces & Diagnostics Infrastructure | SCORE-01, SLICE-01, PLACE-01, API-04, TRACE-01, TRACE-02, TRACE-03, TRACE-04 | ○ planned |
+| 2 | Interfaces & Diagnostics Infrastructure | SCORE-01, SLICE-01, PLACE-01, API-04, TRACE-01, TRACE-02, TRACE-03, TRACE-04 | ● complete |
 | 3 | Individual Scorers | SCORE-02, SCORE-03, SCORE-04, SCORE-05, SCORE-06, SCORE-07 | ○ planned |
 | 4 | Composite Scoring | SCORE-08, SCORE-09 | ○ planned |
 | 5 | Pipeline Assembly & Basic Execution | PIPE-03, PIPE-04, PIPE-05, SLICE-02, PLACE-02, PLACE-03, API-02 | ○ planned |

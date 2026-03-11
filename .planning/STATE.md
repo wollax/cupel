@@ -2,20 +2,21 @@
 
 ## Current Position
 
-Phase: 1 of 10 — Project Scaffold & Core Models
+Phase: 2 of 10 — Interfaces & Diagnostics Infrastructure
 Milestone: v1.0 Core Library
-Status: Phase 1 complete — verified
-Next phase: Phase 2
-Last activity: 2026-03-11 — Phase 1 verified and completed (5/5 plans, 91 tests, all success criteria met)
+Plan: 2 of 2
+Status: Phase 2 complete — verified
+Next phase: Phase 3
+Last activity: 2026-03-11 — Phase 2 verified and completed (2/2 plans, 153 tests, all success criteria met)
 
 ## Phase Overview
 
-NEXT_PHASE=2
+NEXT_PHASE=3
 
 | Phase | Status |
 |-------|--------|
 | 1. Project Scaffold & Core Models | ● complete (5/5 plans) |
-| 2. Interfaces & Diagnostics Infrastructure | ○ planned |
+| 2. Interfaces & Diagnostics Infrastructure | ● complete (2/2 plans) |
 | 3. Individual Scorers | ○ planned |
 | 4. Composite Scoring | ○ planned |
 | 5. Pipeline Assembly & Basic Execution | ○ planned |
@@ -43,6 +44,13 @@ NEXT_PHASE=2
 - TUnit exception assertions: use Throws<T>() / ThrowsExactly<T>(), not ThrowsException().OfType<T>()
 - ContextBudget is a sealed class (not record) to prevent with-expressions bypassing constructor validation
 - Custom ContextKindDictionaryConverter handles Dictionary<ContextKind, int> serialization for ReservedSlots
+- ScoredItem lives in root namespace (Wollax.Cupel) — appears in pipeline interface signatures
+- TraceEvent uses required init properties (not positional constructor) for clarity
+- TUnit HasCount() obsolete in current version — use Count().IsEqualTo(n)
+- TUnit Assert.That(constant) triggers analyzer error — use non-constant expressions
+- ContextResult.TotalTokens uses manual for-loop (no LINQ) to avoid delegate allocations
+- Sealed records with required properties in .NET 10 do not generate public copy constructors
+- No AsyncLocal in codebase — explicit ITraceCollector parameter propagation confirmed
 
 ### Blockers
 (None)

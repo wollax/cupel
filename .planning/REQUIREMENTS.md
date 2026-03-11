@@ -10,7 +10,7 @@
 
 ## Scorers
 
-- [ ] **SCORE-01**: IScorer interface with output conventionally 0.0–1.0 (documented, not enforced by type)
+- [x] **SCORE-01**: IScorer interface with output conventionally 0.0–1.0 (documented, not enforced by type)
 - [ ] **SCORE-02**: RecencyScorer — scores items by temporal proximity
 - [ ] **SCORE-03**: PriorityScorer — scores items by explicit priority value
 - [ ] **SCORE-04**: KindScorer — scores items by content kind (message, document, tool output, etc.)
@@ -22,7 +22,7 @@
 
 ## Slicers
 
-- [ ] **SLICE-01**: ISlicer interface for budget-constrained item selection
+- [x] **SLICE-01**: ISlicer interface for budget-constrained item selection
 - [ ] **SLICE-02**: GreedySlice — O(N log N) greedy fill by score/token ratio
 - [ ] **SLICE-03**: KnapsackSlice — 0-1 DP knapsack with token discretization for optimal budget utilization
 - [ ] **SLICE-04**: QuotaSlice — percentage-based semantic quotas with Require(Kind, minPercent) / Cap(Kind, maxPercent)
@@ -31,16 +31,16 @@
 
 ## Placement
 
-- [ ] **PLACE-01**: IPlacer interface (pluggable, not hardcoded)
+- [x] **PLACE-01**: IPlacer interface (pluggable, not hardcoded)
 - [ ] **PLACE-02**: UShapedPlacer as default implementation (primacy + recency attention curve)
 - [ ] **PLACE-03**: ChronologicalPlacer as alternative implementation (timestamp ordering)
 
 ## Explainability
 
-- [ ] **TRACE-01**: ContextResult return type from day 1 containing Items and optional ContextTrace
-- [ ] **TRACE-02**: ITraceCollector with NullTraceCollector (no-op default) and DiagnosticTraceCollector
-- [ ] **TRACE-03**: Trace event construction gated (IsEnabled check before allocation)
-- [ ] **TRACE-04**: Explicit trace propagation (no AsyncLocal)
+- [x] **TRACE-01**: ContextResult return type from day 1 containing Items and optional ContextTrace
+- [x] **TRACE-02**: ITraceCollector with NullTraceCollector (no-op default) and DiagnosticTraceCollector
+- [x] **TRACE-03**: Trace event construction gated (IsEnabled check before allocation)
+- [x] **TRACE-04**: Explicit trace propagation (no AsyncLocal)
 - [ ] **TRACE-05**: SelectionReport / DryRun() returning included items with scores, excluded items with ExclusionReason enum
 - [ ] **TRACE-06**: OverflowStrategy enum (Throw | Truncate | Proceed) with optional observer callback
 
@@ -49,7 +49,7 @@
 - [ ] **API-01**: CupelPolicy as declarative, serializable config tying pipeline together
 - [ ] **API-02**: Fluent builder via CupelPipeline.CreateBuilder() over fixed pipeline (no call-next middleware)
 - [ ] **API-03**: Both explicit policy and intent-based lookup via CupelOptions.AddPolicy("intent", policy)
-- [ ] **API-04**: IContextSource interface (IAsyncEnumerable<ContextItem>) in core
+- [x] **API-04**: IContextSource interface (IAsyncEnumerable<ContextItem>) in core
 - [x] **API-05**: Token counting is caller's responsibility — ContextItem.Tokens is required non-nullable int
 
 ## Named Policies
@@ -106,7 +106,7 @@
 | PIPE-03 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | PIPE-04 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | PIPE-05 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
-| SCORE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| SCORE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | SCORE-02 | Phase 3: Individual Scorers | ○ planned |
 | SCORE-03 | Phase 3: Individual Scorers | ○ planned |
 | SCORE-04 | Phase 3: Individual Scorers | ○ planned |
@@ -115,25 +115,25 @@
 | SCORE-07 | Phase 3: Individual Scorers | ○ planned |
 | SCORE-08 | Phase 4: Composite Scoring | ○ planned |
 | SCORE-09 | Phase 4: Composite Scoring | ○ planned |
-| SLICE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| SLICE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | SLICE-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | SLICE-03 | Phase 6: Advanced Slicers & Quota System | ○ planned |
 | SLICE-04 | Phase 6: Advanced Slicers & Quota System | ○ planned |
 | SLICE-05 | Phase 6: Advanced Slicers & Quota System | ○ planned |
 | SLICE-06 | Phase 6: Advanced Slicers & Quota System | ○ planned |
-| PLACE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| PLACE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | PLACE-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | PLACE-03 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
-| TRACE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
-| TRACE-02 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
-| TRACE-03 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
-| TRACE-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| TRACE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
+| TRACE-02 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
+| TRACE-03 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
+| TRACE-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | TRACE-05 | Phase 7: Explainability & Overflow Handling | ○ planned |
 | TRACE-06 | Phase 7: Explainability & Overflow Handling | ○ planned |
 | API-01 | Phase 8: Policy System & Named Presets | ○ planned |
 | API-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | API-03 | Phase 8: Policy System & Named Presets | ○ planned |
-| API-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ○ planned |
+| API-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | API-05 | Phase 1: Project Scaffold & Core Models | ● complete |
 | POLICY-01 | Phase 8: Policy System & Named Presets | ○ planned |
 | POLICY-02 | Phase 8: Policy System & Named Presets | ○ planned |
