@@ -111,3 +111,12 @@ Wollax.Cupel.IPlacer.Place(System.Collections.Generic.IReadOnlyList<Wollax.Cupel
 Wollax.Cupel.IContextSource
 Wollax.Cupel.IContextSource.GetItemsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!>!
 Wollax.Cupel.IContextSource.GetItemsStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.ContextResult
+Wollax.Cupel.ContextResult.Items.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.ContextResult.Items.init -> void
+Wollax.Cupel.ContextResult.TotalTokens.get -> int
+Wollax.Cupel.ContextResult.Report.get -> Wollax.Cupel.Diagnostics.SelectionReport?
+Wollax.Cupel.ContextResult.Report.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport
+Wollax.Cupel.Diagnostics.SelectionReport.Events.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.TraceEvent>!
+Wollax.Cupel.Diagnostics.SelectionReport.Events.init -> void
