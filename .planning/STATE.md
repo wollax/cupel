@@ -4,9 +4,9 @@
 
 Phase: 3 of 10 — Individual Scorers
 Milestone: v1.0 Core Library
-Plan: 2 of 3
-Status: In progress
-Last activity: 2026-03-11 — Completed 03-02-PLAN.md (KindScorer, TagScorer, FrequencyScorer)
+Plan: 3 of 3
+Status: Complete
+Last activity: 2026-03-11 — Completed 03-03-PLAN.md (Scorer zero-allocation benchmark)
 
 ## Phase Overview
 
@@ -16,7 +16,7 @@ NEXT_PHASE=3
 |-------|--------|
 | 1. Project Scaffold & Core Models | ● complete (5/5 plans) |
 | 2. Interfaces & Diagnostics Infrastructure | ● complete (2/2 plans) |
-| 3. Individual Scorers | ◐ in progress (1/3 plans) |
+| 3. Individual Scorers | ● complete (3/3 plans) |
 | 4. Composite Scoring | ○ planned |
 | 5. Pipeline Assembly & Basic Execution | ○ planned |
 | 6. Advanced Slicers & Quota System | ○ planned |
