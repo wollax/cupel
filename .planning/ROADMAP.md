@@ -51,6 +51,12 @@ Plans:
 4. Trace event construction is provably gated — a benchmark with `NullTraceCollector` shows zero allocations from trace paths
 5. Trace propagation is explicit (parameter passing) — no `AsyncLocal` or ambient state anywhere in the codebase
 
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 02-01-PLAN.md — Tracing infrastructure and supporting types (TDD): enums, TraceEvent, ScoredItem, ITraceCollector, NullTraceCollector, DiagnosticTraceCollector
+- [ ] 02-02-PLAN.md — Pipeline interfaces, ContextResult, and zero-allocation benchmark (TDD): IScorer, ISlicer, IPlacer, IContextSource, ContextResult, SelectionReport, PublicAPI, benchmark
+
 ---
 
 #### Phase 3: Individual Scorers
