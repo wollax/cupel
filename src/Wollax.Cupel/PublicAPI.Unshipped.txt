@@ -13,3 +13,15 @@ static readonly Wollax.Cupel.ContextKind.Memory -> Wollax.Cupel.ContextKind!
 static readonly Wollax.Cupel.ContextKind.Message -> Wollax.Cupel.ContextKind!
 static readonly Wollax.Cupel.ContextKind.SystemPrompt -> Wollax.Cupel.ContextKind!
 static readonly Wollax.Cupel.ContextKind.ToolOutput -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.ContextSource
+Wollax.Cupel.ContextSource.ContextSource(string! value) -> void
+Wollax.Cupel.ContextSource.Equals(Wollax.Cupel.ContextSource? other) -> bool
+Wollax.Cupel.ContextSource.Value.get -> string!
+override Wollax.Cupel.ContextSource.Equals(object? obj) -> bool
+override Wollax.Cupel.ContextSource.GetHashCode() -> int
+override Wollax.Cupel.ContextSource.ToString() -> string!
+static Wollax.Cupel.ContextSource.operator !=(Wollax.Cupel.ContextSource? left, Wollax.Cupel.ContextSource? right) -> bool
+static Wollax.Cupel.ContextSource.operator ==(Wollax.Cupel.ContextSource? left, Wollax.Cupel.ContextSource? right) -> bool
+static readonly Wollax.Cupel.ContextSource.Chat -> Wollax.Cupel.ContextSource!
+static readonly Wollax.Cupel.ContextSource.Rag -> Wollax.Cupel.ContextSource!
+static readonly Wollax.Cupel.ContextSource.Tool -> Wollax.Cupel.ContextSource!
