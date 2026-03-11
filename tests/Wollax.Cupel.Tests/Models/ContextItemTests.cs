@@ -103,11 +103,23 @@ public class ContextItemTests
     [Test]
     public async Task ValueEquality_IdenticalItems_AreEqual()
     {
-        var a = new ContextItem { Content = "hello", Tokens = 5 };
-        var b = new ContextItem { Content = "hello", Tokens = 5 };
+        var tags = (IReadOnlyList<string>)["a"];
+        var metadata = (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?> { ["k"] = "v" };
+        var a = new ContextItem { Content = "hello", Tokens = 5, Tags = tags, Metadata = metadata };
+        var b = new ContextItem { Content = "hello", Tokens = 5, Tags = tags, Metadata = metadata };
 
         await Assert.That(a).IsEqualTo(b);
         await Assert.That(a == b).IsTrue();
+    }
+
+    [Test]
+    public async Task ValueEquality_WithExpression_PreservesEquality()
+    {
+        var original = new ContextItem { Content = "hello", Tokens = 5 };
+        var copy = original with { };
+
+        await Assert.That(copy).IsEqualTo(original);
+        await Assert.That(copy == original).IsTrue();
     }
 
     [Test]

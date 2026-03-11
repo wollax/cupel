@@ -25,3 +25,26 @@ static Wollax.Cupel.ContextSource.operator ==(Wollax.Cupel.ContextSource? left, 
 static readonly Wollax.Cupel.ContextSource.Chat -> Wollax.Cupel.ContextSource!
 static readonly Wollax.Cupel.ContextSource.Rag -> Wollax.Cupel.ContextSource!
 static readonly Wollax.Cupel.ContextSource.Tool -> Wollax.Cupel.ContextSource!
+Wollax.Cupel.ContextItem
+Wollax.Cupel.ContextItem.Content.get -> string!
+Wollax.Cupel.ContextItem.Content.init -> void
+Wollax.Cupel.ContextItem.Tokens.get -> int
+Wollax.Cupel.ContextItem.Tokens.init -> void
+Wollax.Cupel.ContextItem.Kind.get -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.ContextItem.Kind.init -> void
+Wollax.Cupel.ContextItem.Source.get -> Wollax.Cupel.ContextSource!
+Wollax.Cupel.ContextItem.Source.init -> void
+Wollax.Cupel.ContextItem.Priority.get -> int?
+Wollax.Cupel.ContextItem.Priority.init -> void
+Wollax.Cupel.ContextItem.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Wollax.Cupel.ContextItem.Tags.init -> void
+Wollax.Cupel.ContextItem.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Wollax.Cupel.ContextItem.Metadata.init -> void
+Wollax.Cupel.ContextItem.Timestamp.get -> System.DateTimeOffset?
+Wollax.Cupel.ContextItem.Timestamp.init -> void
+Wollax.Cupel.ContextItem.FutureRelevanceHint.get -> double?
+Wollax.Cupel.ContextItem.FutureRelevanceHint.init -> void
+Wollax.Cupel.ContextItem.Pinned.get -> bool
+Wollax.Cupel.ContextItem.Pinned.init -> void
+Wollax.Cupel.ContextItem.OriginalTokens.get -> int?
+Wollax.Cupel.ContextItem.OriginalTokens.init -> void
