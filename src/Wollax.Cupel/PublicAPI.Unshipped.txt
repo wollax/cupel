@@ -120,3 +120,9 @@ Wollax.Cupel.ContextResult.Report.init -> void
 Wollax.Cupel.Diagnostics.SelectionReport
 Wollax.Cupel.Diagnostics.SelectionReport.Events.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.TraceEvent>!
 Wollax.Cupel.Diagnostics.SelectionReport.Events.init -> void
+Wollax.Cupel.Scoring.RecencyScorer
+Wollax.Cupel.Scoring.RecencyScorer.RecencyScorer() -> void
+Wollax.Cupel.Scoring.RecencyScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.PriorityScorer
+Wollax.Cupel.Scoring.PriorityScorer.PriorityScorer() -> void
+Wollax.Cupel.Scoring.PriorityScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
