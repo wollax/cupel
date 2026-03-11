@@ -7,7 +7,7 @@ namespace Wollax.Cupel;
 /// Budget constraint model that controls how much context the pipeline can select.
 /// Validates all inputs at construction time — no invalid budget can exist at runtime.
 /// </summary>
-public sealed class ContextBudget
+public sealed class ContextBudget : IEquatable<ContextBudget>
 {
     /// <summary>Hard limit — the model's context window ceiling.</summary>
     [JsonPropertyName("maxTokens")]
@@ -51,11 +51,63 @@ public sealed class ContextBudget
                 nameof(targetTokens));
         }
 
+        if (outputReserve > maxTokens)
+        {
+            throw new ArgumentException(
+                $"OutputReserve ({outputReserve}) cannot exceed MaxTokens ({maxTokens}).",
+                nameof(outputReserve));
+        }
+
+        if (reservedSlots is not null)
+        {
+            foreach (var kvp in reservedSlots)
+            {
+                ArgumentOutOfRangeException.ThrowIfNegative(kvp.Value, $"reservedSlots[{kvp.Key}]");
+            }
+        }
+
         MaxTokens = maxTokens;
         TargetTokens = targetTokens;
         OutputReserve = outputReserve;
         ReservedSlots = reservedSlots ?? new Dictionary<ContextKind, int>();
         EstimationSafetyMarginPercent = estimationSafetyMarginPercent;
+    }
+
+    public bool Equals(ContextBudget? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+
+        return MaxTokens == other.MaxTokens
+            && TargetTokens == other.TargetTokens
+            && OutputReserve == other.OutputReserve
+            && EstimationSafetyMarginPercent.Equals(other.EstimationSafetyMarginPercent)
+            && ReservedSlotsEqual(ReservedSlots, other.ReservedSlots);
+    }
+
+    public override bool Equals(object? obj) => Equals(obj as ContextBudget);
+
+    public override int GetHashCode()
+    {
+        var hash = HashCode.Combine(MaxTokens, TargetTokens, OutputReserve, EstimationSafetyMarginPercent);
+        foreach (var kvp in ReservedSlots.OrderBy(k => k.Key.Value, StringComparer.OrdinalIgnoreCase))
+        {
+            hash = HashCode.Combine(hash, kvp.Key, kvp.Value);
+        }
+        return hash;
+    }
+
+    private static bool ReservedSlotsEqual(
+        IReadOnlyDictionary<ContextKind, int> left,
+        IReadOnlyDictionary<ContextKind, int> right)
+    {
+        if (left.Count != right.Count) return false;
+        foreach (var kvp in left)
+        {
+            if (!right.TryGetValue(kvp.Key, out var value) || value != kvp.Value)
+                return false;
+        }
+        return true;
     }
 }
 

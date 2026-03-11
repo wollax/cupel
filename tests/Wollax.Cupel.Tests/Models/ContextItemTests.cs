@@ -133,6 +133,78 @@ public class ContextItemTests
     }
 
     [Test]
+    public async Task ValueEquality_DifferentTokens_AreNotEqual()
+    {
+        var a = new ContextItem { Content = "hello", Tokens = 5 };
+        var b = new ContextItem { Content = "hello", Tokens = 10 };
+
+        await Assert.That(a).IsNotEqualTo(b);
+    }
+
+    [Test]
+    public async Task ValueEquality_DifferentKind_AreNotEqual()
+    {
+        var a = new ContextItem { Content = "hello", Tokens = 5, Kind = ContextKind.Message };
+        var b = new ContextItem { Content = "hello", Tokens = 5, Kind = ContextKind.Document };
+
+        await Assert.That(a).IsNotEqualTo(b);
+    }
+
+    [Test]
+    public async Task ValueEquality_DifferentSource_AreNotEqual()
+    {
+        var a = new ContextItem { Content = "hello", Tokens = 5, Source = ContextSource.Chat };
+        var b = new ContextItem { Content = "hello", Tokens = 5, Source = ContextSource.Tool };
+
+        await Assert.That(a).IsNotEqualTo(b);
+    }
+
+    [Test]
+    public async Task ValueEquality_DifferentPriority_AreNotEqual()
+    {
+        var a = new ContextItem { Content = "hello", Tokens = 5, Priority = 1 };
+        var b = new ContextItem { Content = "hello", Tokens = 5, Priority = 2 };
+
+        await Assert.That(a).IsNotEqualTo(b);
+    }
+
+    [Test]
+    public async Task ValueEquality_DifferentPinned_AreNotEqual()
+    {
+        var a = new ContextItem { Content = "hello", Tokens = 5, Pinned = false };
+        var b = new ContextItem { Content = "hello", Tokens = 5, Pinned = true };
+
+        await Assert.That(a).IsNotEqualTo(b);
+    }
+
+    [Test]
+    public async Task ValueEquality_DifferentTimestamp_AreNotEqual()
+    {
+        var a = new ContextItem { Content = "hello", Tokens = 5, Timestamp = DateTimeOffset.UnixEpoch };
+        var b = new ContextItem { Content = "hello", Tokens = 5, Timestamp = DateTimeOffset.UtcNow };
+
+        await Assert.That(a).IsNotEqualTo(b);
+    }
+
+    [Test]
+    public async Task ValueEquality_DifferentFutureRelevanceHint_AreNotEqual()
+    {
+        var a = new ContextItem { Content = "hello", Tokens = 5, FutureRelevanceHint = 0.5 };
+        var b = new ContextItem { Content = "hello", Tokens = 5, FutureRelevanceHint = 0.9 };
+
+        await Assert.That(a).IsNotEqualTo(b);
+    }
+
+    [Test]
+    public async Task ValueEquality_DifferentOriginalTokens_AreNotEqual()
+    {
+        var a = new ContextItem { Content = "hello", Tokens = 5, OriginalTokens = 10 };
+        var b = new ContextItem { Content = "hello", Tokens = 5, OriginalTokens = 20 };
+
+        await Assert.That(a).IsNotEqualTo(b);
+    }
+
+    [Test]
     public async Task JsonSerialization_UsesCamelCasePropertyNames()
     {
         var item = new ContextItem { Content = "hello", Tokens = 5 };

@@ -108,6 +108,76 @@ public class ContextBudgetTests
     }
 
     [Test]
+    public async Task Validation_OutputReserveExceedsMaxTokens_Throws()
+    {
+        await Assert.That(() => new ContextBudget(maxTokens: 100, targetTokens: 50, outputReserve: 101))
+            .Throws<ArgumentException>();
+    }
+
+    [Test]
+    public async Task Validation_NegativeReservedSlotValue_Throws()
+    {
+        var slots = new Dictionary<ContextKind, int>
+        {
+            [ContextKind.SystemPrompt] = -1,
+        };
+
+        await Assert.That(() => new ContextBudget(maxTokens: 100_000, targetTokens: 80_000, reservedSlots: slots))
+            .ThrowsExactly<ArgumentOutOfRangeException>();
+    }
+
+    [Test]
+    public async Task Validation_OutputReserveEqualsMaxTokens_IsValid()
+    {
+        var budget = new ContextBudget(maxTokens: 100, targetTokens: 50, outputReserve: 100);
+
+        await Assert.That(budget.OutputReserve).IsEqualTo(100);
+    }
+
+    [Test]
+    public async Task Equality_IdenticalBudgets_AreEqual()
+    {
+        var slots = new Dictionary<ContextKind, int> { [ContextKind.SystemPrompt] = 2_000 };
+
+        var a = new ContextBudget(maxTokens: 128_000, targetTokens: 100_000, outputReserve: 4_096,
+            reservedSlots: slots, estimationSafetyMarginPercent: 10.5);
+        var b = new ContextBudget(maxTokens: 128_000, targetTokens: 100_000, outputReserve: 4_096,
+            reservedSlots: new Dictionary<ContextKind, int> { [ContextKind.SystemPrompt] = 2_000 },
+            estimationSafetyMarginPercent: 10.5);
+
+        await Assert.That(a.Equals(b)).IsTrue();
+        await Assert.That(a.GetHashCode()).IsEqualTo(b.GetHashCode());
+    }
+
+    [Test]
+    public async Task Equality_DifferentMaxTokens_AreNotEqual()
+    {
+        var a = new ContextBudget(maxTokens: 100_000, targetTokens: 80_000);
+        var b = new ContextBudget(maxTokens: 200_000, targetTokens: 80_000);
+
+        await Assert.That(a.Equals(b)).IsFalse();
+    }
+
+    [Test]
+    public async Task Equality_DifferentReservedSlots_AreNotEqual()
+    {
+        var a = new ContextBudget(maxTokens: 100_000, targetTokens: 80_000,
+            reservedSlots: new Dictionary<ContextKind, int> { [ContextKind.SystemPrompt] = 2_000 });
+        var b = new ContextBudget(maxTokens: 100_000, targetTokens: 80_000,
+            reservedSlots: new Dictionary<ContextKind, int> { [ContextKind.SystemPrompt] = 3_000 });
+
+        await Assert.That(a.Equals(b)).IsFalse();
+    }
+
+    [Test]
+    public async Task Equality_NullOther_ReturnsFalse()
+    {
+        var budget = new ContextBudget(maxTokens: 100_000, targetTokens: 80_000);
+
+        await Assert.That(budget.Equals((ContextBudget?)null)).IsFalse();
+    }
+
+    [Test]
     public async Task EdgeCase_ZeroMaxTokensAndZeroTargetTokens_IsValid()
     {
         var budget = new ContextBudget(maxTokens: 0, targetTokens: 0);

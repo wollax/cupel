@@ -50,6 +50,9 @@ Wollax.Cupel.ContextItem.OriginalTokens.get -> int?
 Wollax.Cupel.ContextItem.OriginalTokens.init -> void
 Wollax.Cupel.ContextBudget
 Wollax.Cupel.ContextBudget.ContextBudget(int maxTokens, int targetTokens, int outputReserve = 0, System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>? reservedSlots = null, double estimationSafetyMarginPercent = 0) -> void
+Wollax.Cupel.ContextBudget.Equals(Wollax.Cupel.ContextBudget? other) -> bool
+override Wollax.Cupel.ContextBudget.Equals(object? obj) -> bool
+override Wollax.Cupel.ContextBudget.GetHashCode() -> int
 Wollax.Cupel.ContextBudget.MaxTokens.get -> int
 Wollax.Cupel.ContextBudget.TargetTokens.get -> int
 Wollax.Cupel.ContextBudget.OutputReserve.get -> int
