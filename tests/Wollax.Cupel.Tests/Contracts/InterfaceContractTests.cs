@@ -160,6 +160,32 @@ public class InterfaceContractTests
         await Assert.That(items).Count().IsEqualTo(1);
     }
 
+    [Test]
+    public async Task IContextSource_BatchOnlySource_StreamBridgesAutomatically()
+    {
+        IContextSource source = new BatchOnlyContextSource();
+        var items = new List<ContextItem>();
+
+        await foreach (var item in source.GetItemsStreamAsync())
+        {
+            items.Add(item);
+        }
+
+        await Assert.That(items).Count().IsEqualTo(1);
+        await Assert.That(items[0].Content).IsEqualTo("batch-only");
+    }
+
+    [Test]
+    public async Task IContextSource_StreamOnlySource_BatchBridgesAutomatically()
+    {
+        IContextSource source = new StreamOnlyContextSource();
+
+        IReadOnlyList<ContextItem> result = await source.GetItemsAsync();
+
+        await Assert.That(result).Count().IsEqualTo(1);
+        await Assert.That(result[0].Content).IsEqualTo("stream-only");
+    }
+
     #endregion
 
     #region Stub Implementations
@@ -192,6 +218,28 @@ public class InterfaceContractTests
 
         public Task<IReadOnlyList<ContextItem>> GetItemsAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<ContextItem>>(new[] { TestItem });
+
+        public async IAsyncEnumerable<ContextItem> GetItemsStreamAsync(
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.CompletedTask;
+            yield return TestItem;
+        }
+    }
+
+    /// <summary>Only overrides batch — stream is provided by the DIM.</summary>
+    private sealed class BatchOnlyContextSource : IContextSource
+    {
+        private static readonly ContextItem TestItem = new() { Content = "batch-only", Tokens = 5 };
+
+        public Task<IReadOnlyList<ContextItem>> GetItemsAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<ContextItem>>(new[] { TestItem });
+    }
+
+    /// <summary>Only overrides stream — batch is provided by the DIM.</summary>
+    private sealed class StreamOnlyContextSource : IContextSource
+    {
+        private static readonly ContextItem TestItem = new() { Content = "stream-only", Tokens = 5 };
 
         public async IAsyncEnumerable<ContextItem> GetItemsStreamAsync(
             [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)

@@ -5,6 +5,11 @@ namespace Wollax.Cupel;
 /// Output is conventionally 0.0–1.0 (documented, not enforced by type).
 /// Scorers rank items — they do not eliminate or select.
 /// </summary>
+/// <remarks>
+/// Implementations must not return <see cref="double.NaN"/>,
+/// <see cref="double.PositiveInfinity"/>, or <see cref="double.NegativeInfinity"/>.
+/// Non-finite values corrupt the sort ordering used by downstream slicers.
+/// </remarks>
 public interface IScorer
 {
     /// <summary>

@@ -6,6 +6,10 @@ namespace Wollax.Cupel;
 /// Selects items from scored candidates within a token budget.
 /// Slicers decide which items to keep — they do not re-score or reorder.
 /// </summary>
+/// <remarks>
+/// The pipeline sorts scored items by score descending before calling
+/// <see cref="Slice"/>. Implementations may rely on this ordering.
+/// </remarks>
 public interface ISlicer
 {
     /// <summary>

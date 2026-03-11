@@ -137,4 +137,29 @@ public class DiagnosticTraceCollectorTests
 
         await Assert.That(collector.Events).IsEmpty();
     }
+
+    [Test]
+    public async Task RecordStageEvent_ThrowingCallback_DoesNotPropagate()
+    {
+        var collector = new DiagnosticTraceCollector(
+            callback: _ => throw new InvalidOperationException("boom"));
+        var traceEvent = CreateStageEvent();
+
+        collector.RecordStageEvent(traceEvent);
+
+        await Assert.That(collector.Events).Count().IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task RecordItemEvent_ThrowingCallback_DoesNotPropagate()
+    {
+        var collector = new DiagnosticTraceCollector(
+            TraceDetailLevel.Item,
+            _ => throw new InvalidOperationException("boom"));
+        var traceEvent = CreateStageEvent();
+
+        collector.RecordItemEvent(traceEvent);
+
+        await Assert.That(collector.Events).Count().IsEqualTo(1);
+    }
 }

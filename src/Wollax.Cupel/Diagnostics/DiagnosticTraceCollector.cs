@@ -5,6 +5,10 @@ namespace Wollax.Cupel.Diagnostics;
 /// and optionally invokes a callback on each recorded event.
 /// Item-level events are filtered by <see cref="TraceDetailLevel"/>.
 /// </summary>
+/// <remarks>
+/// This type is not thread-safe. Do not share a single instance across
+/// concurrent pipeline executions; create one collector per execution.
+/// </remarks>
 public sealed class DiagnosticTraceCollector : ITraceCollector
 {
     private readonly List<TraceEvent> _events = [];
@@ -37,7 +41,7 @@ public sealed class DiagnosticTraceCollector : ITraceCollector
     public void RecordStageEvent(TraceEvent traceEvent)
     {
         _events.Add(traceEvent);
-        _callback?.Invoke(traceEvent);
+        InvokeCallback(traceEvent);
     }
 
     /// <inheritdoc />
@@ -47,6 +51,18 @@ public sealed class DiagnosticTraceCollector : ITraceCollector
             return;
 
         _events.Add(traceEvent);
-        _callback?.Invoke(traceEvent);
+        InvokeCallback(traceEvent);
+    }
+
+    private void InvokeCallback(TraceEvent traceEvent)
+    {
+        try
+        {
+            _callback?.Invoke(traceEvent);
+        }
+        catch
+        {
+            // Tracing is observational — a throwing callback must never abort the pipeline.
+        }
     }
 }

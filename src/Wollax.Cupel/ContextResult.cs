@@ -15,6 +15,10 @@ public sealed record ContextResult
     /// Total token count across all selected items.
     /// Computed without LINQ to avoid delegate allocations.
     /// </summary>
+    /// <remarks>
+    /// This property recomputes the sum on every access (O(n) per call).
+    /// Cache the value locally if you need it more than once.
+    /// </remarks>
     public int TotalTokens
     {
         get
@@ -28,7 +32,7 @@ public sealed record ContextResult
 
     /// <summary>
     /// Diagnostic report of the selection process.
-    /// Null when tracing is disabled (i.e., <see cref="NullTraceCollector"/> was used).
+    /// Null when tracing was not requested for this pipeline execution.
     /// </summary>
     public SelectionReport? Report { get; init; }
 }

@@ -10,6 +10,10 @@ public readonly record struct TraceEvent
     public required PipelineStage Stage { get; init; }
 
     /// <summary>Wall-clock duration of the stage.</summary>
+    /// <remarks>
+    /// For item-level events this value is <see cref="TimeSpan.Zero"/> because
+    /// individual item processing is not independently timed.
+    /// </remarks>
     public required TimeSpan Duration { get; init; }
 
     /// <summary>Number of items processed in this stage.</summary>
