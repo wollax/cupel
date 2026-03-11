@@ -2,11 +2,11 @@
 
 ## Current Position
 
-Phase: 1 of 10 — Project Scaffold & Core Models
+Phase: 2 of 10 — Interfaces & Diagnostics Infrastructure
 Milestone: v1.0 Core Library
-Status: Phase 1 complete — verified
-Next phase: Phase 2
-Last activity: 2026-03-11 — Phase 1 verified and completed (5/5 plans, 91 tests, all success criteria met)
+Plan: 1 of 2
+Status: In progress
+Last activity: 2026-03-11 — Completed 02-01-PLAN.md (tracing infrastructure & value types, 43 new tests, 134 total)
 
 ## Phase Overview
 
@@ -15,7 +15,7 @@ NEXT_PHASE=2
 | Phase | Status |
 |-------|--------|
 | 1. Project Scaffold & Core Models | ● complete (5/5 plans) |
-| 2. Interfaces & Diagnostics Infrastructure | ○ planned |
+| 2. Interfaces & Diagnostics Infrastructure | ◐ in progress (1/2 plans) |
 | 3. Individual Scorers | ○ planned |
 | 4. Composite Scoring | ○ planned |
 | 5. Pipeline Assembly & Basic Execution | ○ planned |
@@ -43,6 +43,10 @@ NEXT_PHASE=2
 - TUnit exception assertions: use Throws<T>() / ThrowsExactly<T>(), not ThrowsException().OfType<T>()
 - ContextBudget is a sealed class (not record) to prevent with-expressions bypassing constructor validation
 - Custom ContextKindDictionaryConverter handles Dictionary<ContextKind, int> serialization for ReservedSlots
+- ScoredItem lives in root namespace (Wollax.Cupel) — appears in pipeline interface signatures
+- TraceEvent uses required init properties (not positional constructor) for clarity
+- TUnit HasCount() obsolete in current version — use Count().IsEqualTo(n)
+- TUnit Assert.That(constant) triggers analyzer error — use non-constant expressions
 
 ### Blockers
 (None)
