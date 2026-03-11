@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+
 namespace Wollax.Cupel.Scoring;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace Wollax.Cupel.Scoring;
 /// </summary>
 public sealed class TagScorer : IScorer
 {
-    private readonly IReadOnlyDictionary<string, double> _tagWeights;
+    private readonly FrozenDictionary<string, double> _tagWeights;
     private readonly double _totalWeight;
 
     /// <summary>
@@ -15,19 +17,22 @@ public sealed class TagScorer : IScorer
     /// <param name="tagWeights">
     /// Tag weight dictionary. Use <see cref="StringComparer.OrdinalIgnoreCase"/>
     /// when constructing the dictionary for case-insensitive matching.
+    /// All weights must be non-negative.
     /// </param>
     public TagScorer(IReadOnlyDictionary<string, double> tagWeights)
     {
-        _tagWeights = tagWeights;
+        ArgumentNullException.ThrowIfNull(tagWeights);
 
         var total = 0.0;
-        // Pre-compute total weight using for-loop (no LINQ)
-        // IReadOnlyDictionary doesn't support indexed access,
-        // so we use foreach here (constructor only, not Score path)
+        // Pre-compute total weight and validate (constructor only, not Score path)
         foreach (var kvp in tagWeights)
         {
+            ArgumentOutOfRangeException.ThrowIfNegative(kvp.Value, $"tagWeights[{kvp.Key}]");
             total += kvp.Value;
         }
+        _tagWeights = tagWeights.ToFrozenDictionary(tagWeights is Dictionary<string, double> d
+            ? d.Comparer
+            : StringComparer.Ordinal);
         _totalWeight = total;
     }
 

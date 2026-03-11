@@ -4,6 +4,12 @@ namespace Wollax.Cupel.Scoring;
 /// Scores items by the proportion of other items in the candidate set that share at least one tag.
 /// Uses case-insensitive tag comparison and <see cref="object.ReferenceEquals"/> for self-exclusion.
 /// </summary>
+/// <remarks>
+/// Self-exclusion uses reference identity, not value equality.
+/// If the scored item was copied (e.g., via <c>with { }</c> or deserialization),
+/// the copy will not be excluded and may count as a peer match.
+/// Callers must ensure the exact same object reference appears in <c>allItems</c>.
+/// </remarks>
 public sealed class FrequencyScorer : IScorer
 {
     /// <inheritdoc />

@@ -75,8 +75,7 @@ public class RecencyScorerTests
 
         await Assert.That(oldestScore).IsEqualTo(0.0);
         await Assert.That(newestScore).IsEqualTo(1.0);
-        await Assert.That(middleScore).IsGreaterThan(oldestScore);
-        await Assert.That(middleScore).IsLessThan(newestScore);
+        await Assert.That(middleScore).IsEqualTo(0.5);
     }
 
     [Test]

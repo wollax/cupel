@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+
 namespace Wollax.Cupel.Scoring;
 
 /// <summary>
@@ -6,14 +8,15 @@ namespace Wollax.Cupel.Scoring;
 /// </summary>
 public sealed class KindScorer : IScorer
 {
-    private static readonly Dictionary<ContextKind, double> DefaultWeights = new()
-    {
-        [ContextKind.SystemPrompt] = 1.0,
-        [ContextKind.Memory] = 0.8,
-        [ContextKind.ToolOutput] = 0.6,
-        [ContextKind.Document] = 0.4,
-        [ContextKind.Message] = 0.2
-    };
+    private static readonly FrozenDictionary<ContextKind, double> DefaultWeights =
+        new Dictionary<ContextKind, double>
+        {
+            [ContextKind.SystemPrompt] = 1.0,
+            [ContextKind.Memory] = 0.8,
+            [ContextKind.ToolOutput] = 0.6,
+            [ContextKind.Document] = 0.4,
+            [ContextKind.Message] = 0.2
+        }.ToFrozenDictionary();
 
     private readonly IReadOnlyDictionary<ContextKind, double> _weights;
 
@@ -28,6 +31,7 @@ public sealed class KindScorer : IScorer
     /// <param name="weights">Weight dictionary keyed by <see cref="ContextKind"/>.</param>
     public KindScorer(IReadOnlyDictionary<ContextKind, double> weights)
     {
+        ArgumentNullException.ThrowIfNull(weights);
         _weights = weights;
     }
 

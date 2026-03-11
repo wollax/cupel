@@ -73,8 +73,7 @@ public class PriorityScorerTests
 
         await Assert.That(lowestScore).IsEqualTo(0.0);
         await Assert.That(highestScore).IsEqualTo(1.0);
-        await Assert.That(middleScore).IsGreaterThan(lowestScore);
-        await Assert.That(middleScore).IsLessThan(highestScore);
+        await Assert.That(middleScore).IsEqualTo(0.5);
     }
 
     [Test]
