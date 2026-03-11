@@ -6,6 +6,22 @@ Cupel is a .NET context management library for coding agents. Given a set of con
 
 Part of the Wollax agentic development stack: **Assay** (spec-driven development) → **Smelt** (orchestration) → **Cupel** (context management).
 
+## Current Milestone: v1.0 Core Library
+
+**Goal:** Ship the complete Cupel context management library — pipeline engine, scoring, slicing, placement, explainability, fluent API, named policies, serialization support, and all NuGet packages.
+
+**Target features:**
+
+- Pipeline engine with fixed Classify → Score → Deduplicate → Slice → Place stages
+- Full scorer suite (Recency, Priority, Kind, Tag, Frequency, Reflexive) with CompositeScorer
+- All slicers (Greedy, Knapsack, Quota, Stream) with semantic quotas
+- Pluggable placement (IPlacer) with U-shaped default
+- Explainability from day 1 (ContextResult, ContextTrace, SelectionReport, DryRun)
+- Fluent builder API with declarative CupelPolicy
+- 7+ named policy presets (chat, code-review, rag, document-qa, tool-use, long-running, debugging)
+- JSON serialization with [JsonPropertyName] on all public types
+- 4 NuGet packages: Core, DI Extensions, Tiktoken, Json
+
 ## Core Value
 
 Given candidates and a budget, return the optimal context selection with full explainability — every inclusion and exclusion has a traceable reason.
@@ -128,4 +144,4 @@ Given candidates and a budget, return the optimal context selection with full ex
 | No IContextSink | Cupel selects; consumers convert. Output adapters are scope creep. | — Pending |
 
 ---
-*Last updated: 2026-03-10 after initialization*
+*Last updated: 2026-03-10 — milestone v1.0 started*

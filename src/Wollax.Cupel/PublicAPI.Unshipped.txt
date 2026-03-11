@@ -1,0 +1,60 @@
+#nullable enable
+Wollax.Cupel.ContextKind
+Wollax.Cupel.ContextKind.ContextKind(string! value) -> void
+Wollax.Cupel.ContextKind.Equals(Wollax.Cupel.ContextKind? other) -> bool
+Wollax.Cupel.ContextKind.Value.get -> string!
+override Wollax.Cupel.ContextKind.Equals(object? obj) -> bool
+override Wollax.Cupel.ContextKind.GetHashCode() -> int
+override Wollax.Cupel.ContextKind.ToString() -> string!
+static Wollax.Cupel.ContextKind.operator !=(Wollax.Cupel.ContextKind? left, Wollax.Cupel.ContextKind? right) -> bool
+static Wollax.Cupel.ContextKind.operator ==(Wollax.Cupel.ContextKind? left, Wollax.Cupel.ContextKind? right) -> bool
+static readonly Wollax.Cupel.ContextKind.Document -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.Memory -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.Message -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.SystemPrompt -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.ToolOutput -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.ContextSource
+Wollax.Cupel.ContextSource.ContextSource(string! value) -> void
+Wollax.Cupel.ContextSource.Equals(Wollax.Cupel.ContextSource? other) -> bool
+Wollax.Cupel.ContextSource.Value.get -> string!
+override Wollax.Cupel.ContextSource.Equals(object? obj) -> bool
+override Wollax.Cupel.ContextSource.GetHashCode() -> int
+override Wollax.Cupel.ContextSource.ToString() -> string!
+static Wollax.Cupel.ContextSource.operator !=(Wollax.Cupel.ContextSource? left, Wollax.Cupel.ContextSource? right) -> bool
+static Wollax.Cupel.ContextSource.operator ==(Wollax.Cupel.ContextSource? left, Wollax.Cupel.ContextSource? right) -> bool
+static readonly Wollax.Cupel.ContextSource.Chat -> Wollax.Cupel.ContextSource!
+static readonly Wollax.Cupel.ContextSource.Rag -> Wollax.Cupel.ContextSource!
+static readonly Wollax.Cupel.ContextSource.Tool -> Wollax.Cupel.ContextSource!
+Wollax.Cupel.ContextItem
+Wollax.Cupel.ContextItem.Content.get -> string!
+Wollax.Cupel.ContextItem.Content.init -> void
+Wollax.Cupel.ContextItem.Tokens.get -> int
+Wollax.Cupel.ContextItem.Tokens.init -> void
+Wollax.Cupel.ContextItem.Kind.get -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.ContextItem.Kind.init -> void
+Wollax.Cupel.ContextItem.Source.get -> Wollax.Cupel.ContextSource!
+Wollax.Cupel.ContextItem.Source.init -> void
+Wollax.Cupel.ContextItem.Priority.get -> int?
+Wollax.Cupel.ContextItem.Priority.init -> void
+Wollax.Cupel.ContextItem.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Wollax.Cupel.ContextItem.Tags.init -> void
+Wollax.Cupel.ContextItem.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Wollax.Cupel.ContextItem.Metadata.init -> void
+Wollax.Cupel.ContextItem.Timestamp.get -> System.DateTimeOffset?
+Wollax.Cupel.ContextItem.Timestamp.init -> void
+Wollax.Cupel.ContextItem.FutureRelevanceHint.get -> double?
+Wollax.Cupel.ContextItem.FutureRelevanceHint.init -> void
+Wollax.Cupel.ContextItem.Pinned.get -> bool
+Wollax.Cupel.ContextItem.Pinned.init -> void
+Wollax.Cupel.ContextItem.OriginalTokens.get -> int?
+Wollax.Cupel.ContextItem.OriginalTokens.init -> void
+Wollax.Cupel.ContextBudget
+Wollax.Cupel.ContextBudget.ContextBudget(int maxTokens, int targetTokens, int outputReserve = 0, System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>? reservedSlots = null, double estimationSafetyMarginPercent = 0) -> void
+Wollax.Cupel.ContextBudget.Equals(Wollax.Cupel.ContextBudget? other) -> bool
+override Wollax.Cupel.ContextBudget.Equals(object? obj) -> bool
+override Wollax.Cupel.ContextBudget.GetHashCode() -> int
+Wollax.Cupel.ContextBudget.MaxTokens.get -> int
+Wollax.Cupel.ContextBudget.TargetTokens.get -> int
+Wollax.Cupel.ContextBudget.OutputReserve.get -> int
+Wollax.Cupel.ContextBudget.ReservedSlots.get -> System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>!
+Wollax.Cupel.ContextBudget.EstimationSafetyMarginPercent.get -> double
