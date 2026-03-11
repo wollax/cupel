@@ -11,12 +11,12 @@
 ## Scorers
 
 - [x] **SCORE-01**: IScorer interface with output conventionally 0.0–1.0 (documented, not enforced by type)
-- [ ] **SCORE-02**: RecencyScorer — scores items by temporal proximity
-- [ ] **SCORE-03**: PriorityScorer — scores items by explicit priority value
-- [ ] **SCORE-04**: KindScorer — scores items by content kind (message, document, tool output, etc.)
-- [ ] **SCORE-05**: TagScorer — scores items by tag-based categorical boosting
-- [ ] **SCORE-06**: FrequencyScorer — scores items by reference frequency as relevance signal
-- [ ] **SCORE-07**: ReflexiveScorer — scores items using caller-supplied FutureRelevanceHint
+- [x] **SCORE-02**: RecencyScorer — scores items by temporal proximity
+- [x] **SCORE-03**: PriorityScorer — scores items by explicit priority value
+- [x] **SCORE-04**: KindScorer — scores items by content kind (message, document, tool output, etc.)
+- [x] **SCORE-05**: TagScorer — scores items by tag-based categorical boosting
+- [x] **SCORE-06**: FrequencyScorer — scores items by reference frequency as relevance signal
+- [x] **SCORE-07**: ReflexiveScorer — scores items using caller-supplied FutureRelevanceHint
 - [ ] **SCORE-08**: CompositeScorer with configurable aggregation (WeightedAverage, nested composites)
 - [ ] **SCORE-09**: ScaledScorer wrapper that normalizes arbitrary scorer output to 0–1 range
 
@@ -107,12 +107,12 @@
 | PIPE-04 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | PIPE-05 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | SCORE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
-| SCORE-02 | Phase 3: Individual Scorers | ○ planned |
-| SCORE-03 | Phase 3: Individual Scorers | ○ planned |
-| SCORE-04 | Phase 3: Individual Scorers | ○ planned |
-| SCORE-05 | Phase 3: Individual Scorers | ○ planned |
-| SCORE-06 | Phase 3: Individual Scorers | ○ planned |
-| SCORE-07 | Phase 3: Individual Scorers | ○ planned |
+| SCORE-02 | Phase 3: Individual Scorers | ● complete |
+| SCORE-03 | Phase 3: Individual Scorers | ● complete |
+| SCORE-04 | Phase 3: Individual Scorers | ● complete |
+| SCORE-05 | Phase 3: Individual Scorers | ● complete |
+| SCORE-06 | Phase 3: Individual Scorers | ● complete |
+| SCORE-07 | Phase 3: Individual Scorers | ● complete |
 | SCORE-08 | Phase 4: Composite Scoring | ○ planned |
 | SCORE-09 | Phase 4: Composite Scoring | ○ planned |
 | SLICE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |

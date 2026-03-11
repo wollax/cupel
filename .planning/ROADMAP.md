@@ -73,6 +73,13 @@ Plans:
 3. Each scorer has tests asserting ordinal relationships ("A scores higher than B"), not exact floating-point values
 4. No LINQ, closure captures, or boxing in any scorer's `Score()` method — verified by benchmark with `[MemoryDiagnoser]` showing zero Gen0 collections
 
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [x] 03-01-PLAN.md — Rank-based and passthrough scorers (RecencyScorer, PriorityScorer, ReflexiveScorer)
+- [x] 03-02-PLAN.md — Lookup-based and frequency scorers (KindScorer, TagScorer, FrequencyScorer)
+- [x] 03-03-PLAN.md — Scorer zero-allocation benchmark
+
 ---
 
 #### Phase 4: Composite Scoring
@@ -195,7 +202,7 @@ Plans:
 |-------|------|-------------|--------|
 | 1 | Project Scaffold & Core Models | PIPE-01, PIPE-02, API-05, JSON-01, PKG-01 | ● complete |
 | 2 | Interfaces & Diagnostics Infrastructure | SCORE-01, SLICE-01, PLACE-01, API-04, TRACE-01, TRACE-02, TRACE-03, TRACE-04 | ● complete |
-| 3 | Individual Scorers | SCORE-02, SCORE-03, SCORE-04, SCORE-05, SCORE-06, SCORE-07 | ○ planned |
+| 3 | Individual Scorers | SCORE-02, SCORE-03, SCORE-04, SCORE-05, SCORE-06, SCORE-07 | ● complete |
 | 4 | Composite Scoring | SCORE-08, SCORE-09 | ○ planned |
 | 5 | Pipeline Assembly & Basic Execution | PIPE-03, PIPE-04, PIPE-05, SLICE-02, PLACE-02, PLACE-03, API-02 | ○ planned |
 | 6 | Advanced Slicers & Quota System | SLICE-03, SLICE-04, SLICE-05, SLICE-06 | ○ planned |
