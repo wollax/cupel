@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/Wollax.Cupel.Benchmarks/Wollax.Cupel.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Wollax.Cupel/Wollax.Cupel.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Wollax.Cupel.Tests/Wollax.Cupel.Tests.csproj" />
+  </Folder>
+</Solution>
