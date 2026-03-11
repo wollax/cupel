@@ -4,9 +4,9 @@
 
 Phase: 1 of 10 — Project Scaffold & Core Models
 Milestone: v1.0 Core Library
-Plan: 2 of 5 (Smart Enums)
+Plan: 3 of 5 (ContextItem sealed record)
 Status: In progress
-Last activity: 2026-03-11 — Completed 01-02-PLAN.md (ContextKind & ContextSource smart enums)
+Last activity: 2026-03-11 — Completed 01-03-PLAN.md (ContextItem sealed record)
 
 ## Phase Overview
 
@@ -14,7 +14,7 @@ NEXT_PHASE=1
 
 | Phase | Status |
 |-------|--------|
-| 1. Project Scaffold & Core Models | ◐ in progress (plan 2/5 complete) |
+| 1. Project Scaffold & Core Models | ◐ in progress (plan 3/5 complete) |
 | 2. Interfaces & Diagnostics Infrastructure | ○ planned |
 | 3. Individual Scorers | ○ planned |
 | 4. Composite Scoring | ○ planned |
@@ -39,6 +39,7 @@ NEXT_PHASE=1
 - .NET 10 SDK generates .slnx (XML solution format) by default — used Cupel.slnx instead of Cupel.sln
 - .NET 10 SDK requires Microsoft.Testing.Platform runner mode via global.json for dotnet test with TUnit
 - STJ returns null (not JsonException) for JSON literal `null` on reference types — converter not invoked
+- Record value equality uses reference equality for collection properties (IReadOnlyList, IReadOnlyDictionary) — not structural
 
 ### Blockers
 (None)
