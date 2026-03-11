@@ -4,9 +4,9 @@
 
 Phase: 3 of 10 — Individual Scorers
 Milestone: v1.0 Core Library
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In progress
-Last activity: 2026-03-11 — Completed 03-01-PLAN.md (RecencyScorer, PriorityScorer, ReflexiveScorer)
+Last activity: 2026-03-11 — Completed 03-02-PLAN.md (KindScorer, TagScorer, FrequencyScorer)
 
 ## Phase Overview
 
