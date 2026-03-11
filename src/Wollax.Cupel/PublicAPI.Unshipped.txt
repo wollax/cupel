@@ -129,3 +129,10 @@ Wollax.Cupel.Scoring.PriorityScorer.Score(Wollax.Cupel.ContextItem! item, System
 Wollax.Cupel.Scoring.ReflexiveScorer
 Wollax.Cupel.Scoring.ReflexiveScorer.ReflexiveScorer() -> void
 Wollax.Cupel.Scoring.ReflexiveScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.KindScorer
+Wollax.Cupel.Scoring.KindScorer.KindScorer() -> void
+Wollax.Cupel.Scoring.KindScorer.KindScorer(System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, double>! weights) -> void
+Wollax.Cupel.Scoring.KindScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.TagScorer
+Wollax.Cupel.Scoring.TagScorer.TagScorer(System.Collections.Generic.IReadOnlyDictionary<string!, double>! tagWeights) -> void
+Wollax.Cupel.Scoring.TagScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
