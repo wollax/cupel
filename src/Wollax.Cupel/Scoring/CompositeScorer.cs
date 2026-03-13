@@ -85,26 +85,29 @@ public sealed class CompositeScorer : IScorer
         HashSet<IScorer> visited,
         HashSet<IScorer> inPath)
     {
+        // Two-set DFS: 'visited' tracks fully-explored nodes to avoid re-traversal;
+        // 'inPath' tracks the current recursion stack to detect back-edges (cycles).
         if (!visited.Add(node))
         {
             if (inPath.Contains(node))
                 throw new ArgumentException(
-                    $"Cycle detected: scorer {node.GetType().Name} appears in its own dependency graph.",
+                    $"Cycle detected: scorer '{node.GetType().Name}' appears in its own dependency graph.",
                     "entries");
             return;
         }
 
         inPath.Add(node);
 
-        if (node is CompositeScorer composite)
+        switch (node)
         {
-            for (var i = 0; i < composite._scorers.Length; i++)
-                DetectCyclesCore(composite._scorers[i], visited, inPath);
+            case CompositeScorer composite:
+                for (var i = 0; i < composite._scorers.Length; i++)
+                    DetectCyclesCore(composite._scorers[i], visited, inPath);
+                break;
+            case ScaledScorer scaled:
+                DetectCyclesCore(scaled.Inner, visited, inPath);
+                break;
         }
-
-        // Traverse into ScaledScorer wrappers for cycle detection
-        if (node is ScaledScorer scaled)
-            DetectCyclesCore(scaled.Inner, visited, inPath);
 
         inPath.Remove(node);
     }

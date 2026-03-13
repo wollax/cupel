@@ -214,17 +214,17 @@ public class CompositeScorerTests
         ]);
 
         var now = DateTimeOffset.UtcNow;
-        var item = CreateItem(futureRelevanceHint: 0.5, priority: 5, timestamp: now);
-        var allItems = new List<ContextItem>
-        {
-            item,
-            CreateItem(content: "other", futureRelevanceHint: 0.3, priority: 3, timestamp: now.AddHours(-1))
-        };
+        var bestItem = CreateItem(content: "best", futureRelevanceHint: 0.9, priority: 10, timestamp: now);
+        var worstItem = CreateItem(content: "worst", futureRelevanceHint: 0.1, priority: 1, timestamp: now.AddHours(-1));
+        var allItems = new List<ContextItem> { bestItem, worstItem };
 
-        var score = outer.Score(item, allItems);
+        var bestScore = outer.Score(bestItem, allItems);
+        var worstScore = outer.Score(worstItem, allItems);
 
-        await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
-        await Assert.That(score).IsLessThanOrEqualTo(1.0);
+        // Best item wins on all dimensions — should score higher
+        await Assert.That(bestScore).IsGreaterThan(worstScore);
+        await Assert.That(bestScore).IsGreaterThanOrEqualTo(0.0);
+        await Assert.That(bestScore).IsLessThanOrEqualTo(1.0);
     }
 
     [Test]
@@ -412,6 +412,8 @@ public class CompositeScorerTests
         ]);
         var scaled = new ScaledScorer(inner);
 
+        // Item a: newest + medium priority → highest composite score
+        // Item c: oldest + lowest priority → lowest composite score
         var items = new List<ContextItem>
         {
             CreateItem(content: "a", priority: 5, timestamp: now),
@@ -419,12 +421,13 @@ public class CompositeScorerTests
             CreateItem(content: "c", priority: 1, timestamp: now.AddHours(-2))
         };
 
+        var scores = new double[items.Count];
         for (var i = 0; i < items.Count; i++)
-        {
-            var score = scaled.Score(items[i], items);
-            await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
-            await Assert.That(score).IsLessThanOrEqualTo(1.0);
-        }
+            scores[i] = scaled.Score(items[i], items);
+
+        // Highest composite scorer → scaled to 1.0, lowest → scaled to 0.0
+        await Assert.That(scores.AsEnumerable().Max()).IsEqualTo(1.0);
+        await Assert.That(scores.AsEnumerable().Min()).IsEqualTo(0.0);
     }
 
     [Test]

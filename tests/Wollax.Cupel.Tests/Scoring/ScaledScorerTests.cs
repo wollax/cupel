@@ -67,8 +67,8 @@ public class ScaledScorerTests
 
         var score = scorer.Score(mid, allItems);
 
-        await Assert.That(score).IsGreaterThan(0.0);
-        await Assert.That(score).IsLessThan(1.0);
+        // (0.5 - 0.1) / (0.9 - 0.1) = 0.4 / 0.8 = 0.5
+        await Assert.That(score).IsEqualTo(0.5);
     }
 
     [Test]
@@ -186,6 +186,7 @@ public class ScaledScorerTests
         ]);
         var scaled = new ScaledScorer(composite);
 
+        // Item a wins on all dimensions, item b loses on all
         var items = new List<ContextItem>
         {
             CreateItem(content: "a", futureRelevanceHint: 0.9, priority: 10, timestamp: now),
@@ -193,11 +194,14 @@ public class ScaledScorerTests
             CreateItem(content: "c", futureRelevanceHint: 0.5, priority: 5, timestamp: now.AddHours(-1))
         };
 
+        var scores = new double[items.Count];
         for (var i = 0; i < items.Count; i++)
-        {
-            var score = scaled.Score(items[i], items);
-            await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
-            await Assert.That(score).IsLessThanOrEqualTo(1.0);
-        }
+            scores[i] = scaled.Score(items[i], items);
+
+        // Best composite score → 1.0, worst → 0.0
+        await Assert.That(scores[0]).IsEqualTo(1.0);
+        await Assert.That(scores[1]).IsEqualTo(0.0);
+        await Assert.That(scores[2]).IsGreaterThan(0.0);
+        await Assert.That(scores[2]).IsLessThan(1.0);
     }
 }

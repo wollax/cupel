@@ -7,13 +7,14 @@ namespace Wollax.Cupel.Scoring;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The <see cref="Score"/> method performs a two-pass computation: first it scans all
-/// items to find the min and max raw scores from the inner scorer, then it normalizes
-/// the current item's raw score using <c>(raw - min) / (max - min)</c>.
+/// The <see cref="Score"/> method scans all items to find the min and max raw scores
+/// from the inner scorer, capturing the target item's raw score during the same pass,
+/// then normalizes using <c>(raw - min) / (max - min)</c>.
 /// </para>
 /// <para>
-/// Performance: O(N) per call (one inner scorer invocation per item). When the pipeline
-/// scores all N items, total cost is O(N^2) inner scorer invocations.
+/// Performance: O(N) per call (one inner scorer invocation per item in <paramref name="allItems"/>).
+/// When the pipeline scores all N items, total cost is O(N²) inner scorer invocations.
+/// The target item must be present in <paramref name="allItems"/>.
 /// </para>
 /// </remarks>
 public sealed class ScaledScorer : IScorer
@@ -31,24 +32,26 @@ public sealed class ScaledScorer : IScorer
         _inner = inner;
     }
 
-    /// <summary>
-    /// Gets the inner scorer, for use by cycle detection in <c>CompositeScorer</c>.
-    /// </summary>
+    // Exposed for CompositeScorer cycle detection traversal.
     internal IScorer Inner => _inner;
 
     /// <inheritdoc />
     public double Score(ContextItem item, IReadOnlyList<ContextItem> allItems)
     {
-        var rawScore = _inner.Score(item, allItems);
+        if (allItems.Count == 0)
+            return 0.5;
 
-        var min = double.MaxValue;
-        var max = double.MinValue;
+        var rawScore = double.NaN;
+        var min = double.PositiveInfinity;
+        var max = double.NegativeInfinity;
 
         for (var i = 0; i < allItems.Count; i++)
         {
             var s = _inner.Score(allItems[i], allItems);
             if (s < min) min = s;
             if (s > max) max = s;
+            if (ReferenceEquals(allItems[i], item))
+                rawScore = s;
         }
 
         if (max == min)
