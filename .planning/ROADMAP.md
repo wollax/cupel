@@ -146,11 +146,11 @@ Plans:
 **Plans:** 5 plans in 3 waves
 
 Plans:
-- [ ] 06-01-PLAN.md — KnapsackSlice with 0/1 DP and bucket discretization (wave 1)
-- [ ] 06-02-PLAN.md — QuotaSlice decorator with Require/Cap constraints and QuotaBuilder (wave 1)
-- [ ] 06-03-PLAN.md — IAsyncSlicer interface and StreamSlice implementation (wave 1)
-- [ ] 06-04-PLAN.md — Builder integration and pipeline dispatch for new slicers (wave 2)
-- [ ] 06-05-PLAN.md — Slicer benchmarks: KnapsackSlice, QuotaSlice, StreamSlice (wave 3)
+- [x] 06-01-PLAN.md — KnapsackSlice with 0/1 DP and bucket discretization (wave 1)
+- [x] 06-02-PLAN.md — QuotaSlice decorator with Require/Cap constraints and QuotaBuilder (wave 1)
+- [x] 06-03-PLAN.md — IAsyncSlicer interface and StreamSlice implementation (wave 1)
+- [x] 06-04-PLAN.md — Builder integration and pipeline dispatch for new slicers (wave 2)
+- [x] 06-05-PLAN.md — Slicer benchmarks: KnapsackSlice, QuotaSlice, StreamSlice (wave 3)
 
 ---
 
@@ -270,7 +270,7 @@ Plans:
 | 3 | Individual Scorers | SCORE-02, SCORE-03, SCORE-04, SCORE-05, SCORE-06, SCORE-07 | ● complete |
 | 4 | Composite Scoring | SCORE-08, SCORE-09 | ● complete |
 | 5 | Pipeline Assembly & Basic Execution | PIPE-03, PIPE-04, PIPE-05, SLICE-02, PLACE-02, PLACE-03, API-02 | ● complete |
-| 6 | Advanced Slicers & Quota System | SLICE-03, SLICE-04, SLICE-05, SLICE-06 | ○ planned |
+| 6 | Advanced Slicers & Quota System | SLICE-03, SLICE-04, SLICE-05, SLICE-06 | ● complete |
 | 7 | Explainability & Overflow Handling | TRACE-05, TRACE-06 | ○ planned |
 | 8 | Policy System & Named Presets | API-01, API-03, POLICY-01, POLICY-02, POLICY-03 | ○ planned |
 | 9 | Serialization & JSON Package | JSON-02, JSON-03, JSON-04, PKG-04 | ○ planned |

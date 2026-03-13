@@ -10,7 +10,7 @@ Last activity: 2026-03-13 — Completed 06-05-PLAN.md (Slicer benchmarks)
 
 ## Phase Overview
 
-NEXT_PHASE=6
+NEXT_PHASE=7
 
 | Phase | Status |
 |-------|--------|
