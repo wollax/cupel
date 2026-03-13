@@ -1,4 +1,5 @@
 using Wollax.Cupel.Scoring;
+using Wollax.Cupel.Slicing;
 
 namespace Wollax.Cupel;
 
@@ -15,6 +16,7 @@ public sealed class PipelineBuilder
     private List<(IScorer Scorer, double Weight)>? _scorerEntries;
     private ISlicer? _slicer;
     private IPlacer? _placer;
+    private IAsyncSlicer? _asyncSlicer;
     private bool _deduplicationEnabled = true;
 
     /// <summary>
@@ -99,6 +101,61 @@ public sealed class PipelineBuilder
     }
 
     /// <summary>
+    /// Sets <see cref="GreedySlice"/> as the pipeline slicer.
+    /// </summary>
+    /// <returns>This builder for chaining.</returns>
+    public PipelineBuilder UseGreedySlice()
+    {
+        _slicer = new GreedySlice();
+        return this;
+    }
+
+    /// <summary>
+    /// Sets <see cref="KnapsackSlice"/> as the pipeline slicer.
+    /// </summary>
+    /// <param name="bucketSize">Discretization bucket size in tokens. Default is 100.</param>
+    /// <returns>This builder for chaining.</returns>
+    public PipelineBuilder UseKnapsackSlice(int bucketSize = 100)
+    {
+        _slicer = new KnapsackSlice(bucketSize);
+        return this;
+    }
+
+    /// <summary>
+    /// Wraps the current slicer (or default <see cref="GreedySlice"/>) in a
+    /// <see cref="QuotaSlice"/> decorator with the specified quota configuration.
+    /// Ordering matters — this wraps whatever slicer is set at call time.
+    /// </summary>
+    /// <param name="configure">Action to configure quotas via <see cref="QuotaBuilder"/>.</param>
+    /// <returns>This builder for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="configure"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Quota configuration is invalid (e.g. sum of requires exceeds 100%).</exception>
+    public PipelineBuilder WithQuotas(Action<QuotaBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var builder = new QuotaBuilder();
+        configure(builder);
+        var quotas = builder.Build();
+        var innerSlicer = _slicer ?? new GreedySlice();
+        _slicer = new QuotaSlice(innerSlicer, quotas);
+        return this;
+    }
+
+    /// <summary>
+    /// Sets an async slicer for streaming pipeline execution via
+    /// <see cref="CupelPipeline.ExecuteStreamAsync"/>.
+    /// </summary>
+    /// <param name="asyncSlicer">The async slicer to use.</param>
+    /// <returns>This builder for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="asyncSlicer"/> is <see langword="null"/>.</exception>
+    public PipelineBuilder WithAsyncSlicer(IAsyncSlicer asyncSlicer)
+    {
+        ArgumentNullException.ThrowIfNull(asyncSlicer);
+        _asyncSlicer = asyncSlicer;
+        return this;
+    }
+
+    /// <summary>
     /// Validates configuration and creates a <see cref="CupelPipeline"/>.
     /// </summary>
     /// <exception cref="InvalidOperationException">
@@ -127,6 +184,7 @@ public sealed class PipelineBuilder
             _slicer ?? new GreedySlice(),
             _placer ?? new ChronologicalPlacer(),
             _budget,
-            _deduplicationEnabled);
+            _deduplicationEnabled,
+            _asyncSlicer);
     }
 }

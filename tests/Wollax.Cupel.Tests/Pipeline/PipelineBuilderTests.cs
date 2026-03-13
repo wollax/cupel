@@ -283,7 +283,7 @@ public class PipelineBuilderTests
     [Test]
     public async Task UseKnapsackSlice_DefaultBucketSize()
     {
-        var item = CreateItem("test", tokens: 10);
+        var item = new ContextItem { Content = "test", Tokens = 100, FutureRelevanceHint = 0.8 };
         var pipeline = CupelPipeline.CreateBuilder()
             .WithBudget(CreateBudget())
             .WithScorer(new ReflexiveScorer())
@@ -298,7 +298,7 @@ public class PipelineBuilderTests
     [Test]
     public async Task UseKnapsackSlice_CustomBucketSize()
     {
-        var item = CreateItem("test", tokens: 10);
+        var item = new ContextItem { Content = "test", Tokens = 100, FutureRelevanceHint = 0.8 };
         var pipeline = CupelPipeline.CreateBuilder()
             .WithBudget(CreateBudget())
             .WithScorer(new ReflexiveScorer())

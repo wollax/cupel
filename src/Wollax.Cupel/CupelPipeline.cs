@@ -18,19 +18,22 @@ public sealed class CupelPipeline
     private readonly IPlacer _placer;
     private readonly ContextBudget _budget;
     private readonly bool _deduplicationEnabled;
+    private readonly IAsyncSlicer? _asyncSlicer;
 
     internal CupelPipeline(
         IScorer scorer,
         ISlicer slicer,
         IPlacer placer,
         ContextBudget budget,
-        bool deduplicationEnabled)
+        bool deduplicationEnabled,
+        IAsyncSlicer? asyncSlicer = null)
     {
         _scorer = scorer;
         _slicer = slicer;
         _placer = placer;
         _budget = budget;
         _deduplicationEnabled = deduplicationEnabled;
+        _asyncSlicer = asyncSlicer;
     }
 
     /// <summary>

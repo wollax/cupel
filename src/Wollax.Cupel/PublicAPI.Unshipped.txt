@@ -168,6 +168,10 @@ Wollax.Cupel.PipelineBuilder.AddScorer(Wollax.Cupel.IScorer! scorer, double weig
 Wollax.Cupel.PipelineBuilder.WithSlicer(Wollax.Cupel.ISlicer! slicer) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.WithPlacer(Wollax.Cupel.IPlacer! placer) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.WithDeduplication(bool enabled) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.UseGreedySlice() -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.UseKnapsackSlice(int bucketSize = 100) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithQuotas(System.Action<Wollax.Cupel.Slicing.QuotaBuilder!>! configure) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithAsyncSlicer(Wollax.Cupel.IAsyncSlicer! asyncSlicer) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.Build() -> Wollax.Cupel.CupelPipeline!
 Wollax.Cupel.IAsyncSlicer
 Wollax.Cupel.IAsyncSlicer.SliceAsync(System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!>!
