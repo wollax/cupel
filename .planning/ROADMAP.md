@@ -4,7 +4,7 @@
 
 | Milestone | Status | Phases |
 |-----------|--------|--------|
-| v1.0 Core Library | 🔄 current | 1–10 |
+| v1.0 Core Library | 🔄 current | 1–12 |
 
 ---
 
@@ -95,6 +95,13 @@ Plans:
 2. Nested `CompositeScorer` instances compose correctly — a composite containing a composite produces valid ordinal rankings
 3. `ScaledScorer` wraps any scorer and normalizes its output to 0–1 range
 4. Stable sort with secondary tiebreaking (timestamp or insertion index) is used — verified by test with items that produce identical composite scores
+
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 04-01-PLAN.md — CompositeScorer with weighted average and cycle detection
+- [ ] 04-02-PLAN.md — ScaledScorer with min-max normalization
+- [ ] 04-03-PLAN.md — Stable sort tiebreaking test and composite scorer benchmark
 
 ---
 
@@ -196,6 +203,48 @@ Plans:
 
 ---
 
+#### Phase 11: Language-Agnostic Specification
+
+**Goal:** Document Cupel's context selection algorithm as a formal, language-agnostic specification that consumers can implement in any language. This becomes the canonical reference for all implementations (C#, Rust, etc.).
+
+**Dependencies:** Phase 5 (pipeline assembly — need working end-to-end pipeline to specify against)
+
+**Requirements:** TBD
+
+**Success Criteria:**
+1. Specification document covers all pipeline stages (Classify → Score → Deduplicate → Slice → Place) with precise algorithmic descriptions
+2. Scorer contracts, slicer strategies, and placer algorithms are defined independently of any language runtime
+3. Test vectors / conformance suite defined so implementations can validate correctness
+4. Specification versioned and published (e.g., as a standalone document or GitHub Pages)
+
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /kata-plan-phase 11 to break down)
+
+---
+
+#### Phase 12: Rust Crate (Assay)
+
+**Goal:** Implement the Cupel specification as a Rust crate (`assay`) for use by [Assay](https://github.com/wollax/assay) and other Rust projects. This is the first non-C# implementation and validates the specification's language-independence.
+
+**Dependencies:** Phase 11 (specification — implement against the spec, not the C# code)
+
+**Requirements:** TBD
+
+**Success Criteria:**
+1. `assay` crate implements the core pipeline stages defined in the specification
+2. Passes the conformance test vectors from the specification
+3. Published to crates.io with documentation
+4. Assay project can consume the crate as a dependency
+
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /kata-plan-phase 12 to break down)
+
+---
+
 ## Progress Summary
 
 | Phase | Name | Requirements | Status |
@@ -210,3 +259,5 @@ Plans:
 | 8 | Policy System & Named Presets | API-01, API-03, POLICY-01, POLICY-02, POLICY-03 | ○ planned |
 | 9 | Serialization & JSON Package | JSON-02, JSON-03, JSON-04, PKG-04 | ○ planned |
 | 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ○ planned |
+| 11 | Language-Agnostic Specification | TBD | ○ planned |
+| 12 | Rust Crate (Assay) | TBD | ○ planned |
