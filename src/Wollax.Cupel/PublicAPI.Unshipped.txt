@@ -169,3 +169,18 @@ Wollax.Cupel.PipelineBuilder.WithSlicer(Wollax.Cupel.ISlicer! slicer) -> Wollax.
 Wollax.Cupel.PipelineBuilder.WithPlacer(Wollax.Cupel.IPlacer! placer) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.WithDeduplication(bool enabled) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.Build() -> Wollax.Cupel.CupelPipeline!
+Wollax.Cupel.IAsyncSlicer
+Wollax.Cupel.IAsyncSlicer.SliceAsync(System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!>!
+Wollax.Cupel.Slicing.StreamSlice
+Wollax.Cupel.Slicing.StreamSlice.StreamSlice(int batchSize = 32) -> void
+Wollax.Cupel.Slicing.StreamSlice.BatchSize.get -> int
+Wollax.Cupel.Slicing.StreamSlice.SliceAsync(System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!>!
+Wollax.Cupel.Slicing.QuotaSet
+Wollax.Cupel.Slicing.QuotaSet.GetRequire(Wollax.Cupel.ContextKind! kind) -> double
+Wollax.Cupel.Slicing.QuotaSet.GetCap(Wollax.Cupel.ContextKind! kind) -> double
+Wollax.Cupel.Slicing.QuotaSet.Kinds.get -> System.Collections.Generic.IReadOnlyCollection<Wollax.Cupel.ContextKind!>!
+Wollax.Cupel.Slicing.QuotaBuilder
+Wollax.Cupel.Slicing.QuotaBuilder.QuotaBuilder() -> void
+Wollax.Cupel.Slicing.QuotaBuilder.Require(Wollax.Cupel.ContextKind! kind, double minPercent) -> Wollax.Cupel.Slicing.QuotaBuilder!
+Wollax.Cupel.Slicing.QuotaBuilder.Cap(Wollax.Cupel.ContextKind! kind, double maxPercent) -> Wollax.Cupel.Slicing.QuotaBuilder!
+Wollax.Cupel.Slicing.QuotaBuilder.Build() -> Wollax.Cupel.Slicing.QuotaSet!
