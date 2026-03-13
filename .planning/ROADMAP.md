@@ -120,6 +120,13 @@ Plans:
 4. `GreedySlice` fills budget by score/token ratio in O(N log N); `UShapedPlacer` places high-scoring items at start and end; `ChronologicalPlacer` orders by timestamp
 5. Full pipeline benchmark with 100/250/500 items completes under 1ms; tracing-disabled path shows zero Gen0 allocations
 
+**Plans:** 3 plans in 3 waves
+
+Plans:
+- [ ] 05-01-PLAN.md — GreedySlice, UShapedPlacer, and ChronologicalPlacer implementations (TDD)
+- [ ] 05-02-PLAN.md — CupelPipeline, PipelineBuilder, and end-to-end pipeline execution (TDD)
+- [ ] 05-03-PLAN.md — Full pipeline benchmark with zero-allocation verification
+
 ---
 
 #### Phase 6: Advanced Slicers & Quota System
