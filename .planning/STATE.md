@@ -4,9 +4,9 @@
 
 Phase: 4 of 10 — Composite Scoring
 Milestone: v1.0 Core Library
-Plan: 2 of 3 (04-01 and 04-02 complete, 04-03 remaining)
-Status: Phase 4 in progress
-Last activity: 2026-03-13 — Plan 04-01 (CompositeScorer) complete (18 new tests, 230 total)
+Plan: 3 of 3 (04-01, 04-02, 04-03 complete)
+Status: Phase 4 complete
+Last activity: 2026-03-13 — Plan 04-03 (stable sort tiebreaking + benchmark) complete (7 new tests, 237 total)
 
 ## Phase Overview
 
@@ -17,7 +17,7 @@ NEXT_PHASE=4
 | 1. Project Scaffold & Core Models | ● complete (5/5 plans) |
 | 2. Interfaces & Diagnostics Infrastructure | ● complete (2/2 plans) |
 | 3. Individual Scorers | ● complete (3/3 plans) |
-| 4. Composite Scoring | ◐ in progress (04-01, 04-02 complete) |
+| 4. Composite Scoring | ● complete (3/3 plans) |
 | 5. Pipeline Assembly & Basic Execution | ○ planned |
 | 6. Advanced Slicers & Quota System | ○ planned |
 | 7. Explainability & Overflow Handling | ○ planned |
@@ -59,6 +59,7 @@ NEXT_PHASE=4
 - ScaledScorer exposes inner scorer via `internal IScorer Inner` property for CompositeScorer cycle detection traversal
 - CompositeScorer uses parallel IScorer[] and double[] arrays with pre-normalized weights for zero-allocation Score()
 - Relative weight equivalence tests need Within(1e-14) tolerance due to floating-point normalization differences
+- Stable sort pattern: (double Score, int Index) tuple array + Array.Sort with static comparison delegate — test-only in Phase 4, Phase 5 pipeline will adopt
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
