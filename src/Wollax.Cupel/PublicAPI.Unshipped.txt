@@ -139,3 +139,9 @@ Wollax.Cupel.Scoring.TagScorer.Score(Wollax.Cupel.ContextItem! item, System.Coll
 Wollax.Cupel.Scoring.FrequencyScorer
 Wollax.Cupel.Scoring.FrequencyScorer.FrequencyScorer() -> void
 Wollax.Cupel.Scoring.FrequencyScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.CompositeScorer
+Wollax.Cupel.Scoring.CompositeScorer.CompositeScorer(System.Collections.Generic.IReadOnlyList<(Wollax.Cupel.IScorer! Scorer, double Weight)>! entries) -> void
+Wollax.Cupel.Scoring.CompositeScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.ScaledScorer
+Wollax.Cupel.Scoring.ScaledScorer.ScaledScorer(Wollax.Cupel.IScorer! inner) -> void
+Wollax.Cupel.Scoring.ScaledScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
