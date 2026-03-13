@@ -145,3 +145,24 @@ Wollax.Cupel.Scoring.CompositeScorer.Score(Wollax.Cupel.ContextItem! item, Syste
 Wollax.Cupel.Scoring.ScaledScorer
 Wollax.Cupel.Scoring.ScaledScorer.ScaledScorer(Wollax.Cupel.IScorer! inner) -> void
 Wollax.Cupel.Scoring.ScaledScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.GreedySlice
+Wollax.Cupel.GreedySlice.GreedySlice() -> void
+Wollax.Cupel.GreedySlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.UShapedPlacer
+Wollax.Cupel.UShapedPlacer.UShapedPlacer() -> void
+Wollax.Cupel.UShapedPlacer.Place(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! items, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.ChronologicalPlacer
+Wollax.Cupel.ChronologicalPlacer.ChronologicalPlacer() -> void
+Wollax.Cupel.ChronologicalPlacer.Place(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! items, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.CupelPipeline
+Wollax.Cupel.CupelPipeline.Execute(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null) -> Wollax.Cupel.ContextResult!
+Wollax.Cupel.CupelPipeline.ExecuteAsync(Wollax.Cupel.IContextSource! source, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wollax.Cupel.ContextResult!>!
+static Wollax.Cupel.CupelPipeline.CreateBuilder() -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder
+Wollax.Cupel.PipelineBuilder.WithBudget(Wollax.Cupel.ContextBudget! budget) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithScorer(Wollax.Cupel.IScorer! scorer) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.AddScorer(Wollax.Cupel.IScorer! scorer, double weight) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithSlicer(Wollax.Cupel.ISlicer! slicer) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithPlacer(Wollax.Cupel.IPlacer! placer) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithDeduplication(bool enabled) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.Build() -> Wollax.Cupel.CupelPipeline!

@@ -120,6 +120,13 @@ Plans:
 4. `GreedySlice` fills budget by score/token ratio in O(N log N); `UShapedPlacer` places high-scoring items at start and end; `ChronologicalPlacer` orders by timestamp
 5. Full pipeline benchmark with 100/250/500 items completes under 1ms; tracing-disabled path shows zero Gen0 allocations
 
+**Plans:** 3 plans in 3 waves
+
+Plans:
+- [x] 05-01-PLAN.md — GreedySlice, UShapedPlacer, and ChronologicalPlacer implementations (TDD)
+- [x] 05-02-PLAN.md — CupelPipeline, PipelineBuilder, and end-to-end pipeline execution (TDD)
+- [x] 05-03-PLAN.md — Full pipeline benchmark with zero-allocation verification
+
 ---
 
 #### Phase 6: Advanced Slicers & Quota System
@@ -253,7 +260,7 @@ Plans:
 | 2 | Interfaces & Diagnostics Infrastructure | SCORE-01, SLICE-01, PLACE-01, API-04, TRACE-01, TRACE-02, TRACE-03, TRACE-04 | ● complete |
 | 3 | Individual Scorers | SCORE-02, SCORE-03, SCORE-04, SCORE-05, SCORE-06, SCORE-07 | ● complete |
 | 4 | Composite Scoring | SCORE-08, SCORE-09 | ● complete |
-| 5 | Pipeline Assembly & Basic Execution | PIPE-03, PIPE-04, PIPE-05, SLICE-02, PLACE-02, PLACE-03, API-02 | ○ planned |
+| 5 | Pipeline Assembly & Basic Execution | PIPE-03, PIPE-04, PIPE-05, SLICE-02, PLACE-02, PLACE-03, API-02 | ● complete |
 | 6 | Advanced Slicers & Quota System | SLICE-03, SLICE-04, SLICE-05, SLICE-06 | ○ planned |
 | 7 | Explainability & Overflow Handling | TRACE-05, TRACE-06 | ○ planned |
 | 8 | Policy System & Named Presets | API-01, API-03, POLICY-01, POLICY-02, POLICY-03 | ○ planned |
