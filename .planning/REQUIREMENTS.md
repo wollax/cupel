@@ -4,9 +4,9 @@
 
 - [x] **PIPE-01**: ContextItem model with Content (non-nullable string), Kind, Tokens, Timestamp, Source, Tags, Priority, Pinned, OriginalTokens, FutureRelevanceHint, and extensible Metadata
 - [x] **PIPE-02**: ContextBudget model with MaxTokens, TargetTokens, ReservedSlots, OutputReserve, EstimationSafetyMarginPercent
-- [ ] **PIPE-03**: Fixed pipeline executing Classify → Score → Deduplicate → Slice → Place stages in order
-- [ ] **PIPE-04**: Ordinal-only scoring invariant enforced: scorers rank, slicers drop, placers position — no component crosses this boundary
-- [ ] **PIPE-05**: Pinned items bypass scoring and enter pipeline at Placer stage
+- [x] **PIPE-03**: Fixed pipeline executing Classify → Score → Deduplicate → Slice → Place stages in order
+- [x] **PIPE-04**: Ordinal-only scoring invariant enforced: scorers rank, slicers drop, placers position — no component crosses this boundary
+- [x] **PIPE-05**: Pinned items bypass scoring and enter pipeline at Placer stage
 
 ## Scorers
 
@@ -23,7 +23,7 @@
 ## Slicers
 
 - [x] **SLICE-01**: ISlicer interface for budget-constrained item selection
-- [ ] **SLICE-02**: GreedySlice — O(N log N) greedy fill by score/token ratio
+- [x] **SLICE-02**: GreedySlice — O(N log N) greedy fill by score/token ratio
 - [ ] **SLICE-03**: KnapsackSlice — 0-1 DP knapsack with token discretization for optimal budget utilization
 - [ ] **SLICE-04**: QuotaSlice — percentage-based semantic quotas with Require(Kind, minPercent) / Cap(Kind, maxPercent)
 - [ ] **SLICE-05**: StreamSlice — online/streaming selection for IAsyncEnumerable sources
@@ -32,8 +32,8 @@
 ## Placement
 
 - [x] **PLACE-01**: IPlacer interface (pluggable, not hardcoded)
-- [ ] **PLACE-02**: UShapedPlacer as default implementation (primacy + recency attention curve)
-- [ ] **PLACE-03**: ChronologicalPlacer as alternative implementation (timestamp ordering)
+- [x] **PLACE-02**: UShapedPlacer as default implementation (primacy + recency attention curve)
+- [x] **PLACE-03**: ChronologicalPlacer as alternative implementation (timestamp ordering)
 
 ## Explainability
 
@@ -47,7 +47,7 @@
 ## API Surface
 
 - [ ] **API-01**: CupelPolicy as declarative, serializable config tying pipeline together
-- [ ] **API-02**: Fluent builder via CupelPipeline.CreateBuilder() over fixed pipeline (no call-next middleware)
+- [x] **API-02**: Fluent builder via CupelPipeline.CreateBuilder() over fixed pipeline (no call-next middleware)
 - [ ] **API-03**: Both explicit policy and intent-based lookup via CupelOptions.AddPolicy("intent", policy)
 - [x] **API-04**: IContextSource interface (IAsyncEnumerable<ContextItem>) in core
 - [x] **API-05**: Token counting is caller's responsibility — ContextItem.Tokens is required non-nullable int
@@ -103,9 +103,9 @@
 |---|---|---|
 | PIPE-01 | Phase 1: Project Scaffold & Core Models | ● complete |
 | PIPE-02 | Phase 1: Project Scaffold & Core Models | ● complete |
-| PIPE-03 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
-| PIPE-04 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
-| PIPE-05 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| PIPE-03 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
+| PIPE-04 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
+| PIPE-05 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
 | SCORE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | SCORE-02 | Phase 3: Individual Scorers | ● complete |
 | SCORE-03 | Phase 3: Individual Scorers | ● complete |
@@ -116,14 +116,14 @@
 | SCORE-08 | Phase 4: Composite Scoring | ● complete |
 | SCORE-09 | Phase 4: Composite Scoring | ● complete |
 | SLICE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
-| SLICE-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| SLICE-02 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
 | SLICE-03 | Phase 6: Advanced Slicers & Quota System | ○ planned |
 | SLICE-04 | Phase 6: Advanced Slicers & Quota System | ○ planned |
 | SLICE-05 | Phase 6: Advanced Slicers & Quota System | ○ planned |
 | SLICE-06 | Phase 6: Advanced Slicers & Quota System | ○ planned |
 | PLACE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
-| PLACE-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
-| PLACE-03 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| PLACE-02 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
+| PLACE-03 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
 | TRACE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | TRACE-02 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | TRACE-03 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
@@ -131,7 +131,7 @@
 | TRACE-05 | Phase 7: Explainability & Overflow Handling | ○ planned |
 | TRACE-06 | Phase 7: Explainability & Overflow Handling | ○ planned |
 | API-01 | Phase 8: Policy System & Named Presets | ○ planned |
-| API-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
+| API-02 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
 | API-03 | Phase 8: Policy System & Named Presets | ○ planned |
 | API-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | API-05 | Phase 1: Project Scaffold & Core Models | ● complete |
