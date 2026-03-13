@@ -561,7 +561,7 @@ public class CupelPipelineTests
         var warningFound = false;
         for (var i = 0; i < trace.Events.Count; i++)
         {
-            if (trace.Events[i].Message is not null && trace.Events[i].Message!.Contains("Message"))
+            if (trace.Events[i].Message is not null && trace.Events[i].Message!.Contains("WARNING"))
             {
                 warningFound = true;
                 break;

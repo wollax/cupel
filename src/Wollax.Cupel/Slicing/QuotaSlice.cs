@@ -50,6 +50,10 @@ public sealed class QuotaSlice : ISlicer
         ContextBudget budget,
         ITraceCollector traceCollector)
     {
+        ArgumentNullException.ThrowIfNull(scoredItems);
+        ArgumentNullException.ThrowIfNull(budget);
+        ArgumentNullException.ThrowIfNull(traceCollector);
+
         if (scoredItems.Count == 0 || budget.TargetTokens <= 0)
         {
             return [];
@@ -69,10 +73,10 @@ public sealed class QuotaSlice : ISlicer
         }
 
         // 2. Calculate candidate token mass per kind
-        var candidateTokenMass = new Dictionary<ContextKind, int>();
+        var candidateTokenMass = new Dictionary<ContextKind, long>();
         foreach (var kvp in partitions)
         {
-            var mass = 0;
+            long mass = 0;
             for (var i = 0; i < kvp.Value.Count; i++)
             {
                 mass += kvp.Value[i].Item.Tokens;
@@ -102,12 +106,12 @@ public sealed class QuotaSlice : ISlicer
             totalRequired += kvp.Value;
         }
 
-        // 3c. Unassigned budget after all requires
-        var unassignedBudget = targetTokens - totalRequired;
+        // 3c. Unassigned budget after all requires (floor at 0)
+        var unassignedBudget = Math.Max(0, targetTokens - totalRequired);
 
         // 3d. Compute total candidate token mass for proportional distribution
         // Include all kinds that can receive more budget (not at cap)
-        var totalMassForDistribution = 0;
+        long totalMassForDistribution = 0;
         foreach (var kvp in partitions)
         {
             var kind = kvp.Key;
@@ -188,7 +192,8 @@ public sealed class QuotaSlice : ISlicer
                         {
                             Stage = PipelineStage.Slice,
                             Duration = TimeSpan.Zero,
-                            ItemCount = selected.Count
+                            ItemCount = selected.Count,
+                            Message = $"WARNING: Kind '{kind}' selected {selectedTokens} tokens, below the required {require} tokens. Insufficient items for quota."
                         });
                     }
                 }

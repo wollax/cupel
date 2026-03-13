@@ -70,6 +70,10 @@ public sealed class PipelineBuilder
     /// </summary>
     /// <param name="slicer">The slicer to use.</param>
     /// <returns>This builder for chaining.</returns>
+    /// <remarks>
+    /// If <see cref="WithQuotas"/> was called before this method, the quota wrapper will be
+    /// replaced. Call <see cref="WithQuotas"/> after setting the base slicer.
+    /// </remarks>
     public PipelineBuilder WithSlicer(ISlicer slicer)
     {
         ArgumentNullException.ThrowIfNull(slicer);

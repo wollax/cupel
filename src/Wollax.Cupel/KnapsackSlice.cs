@@ -50,6 +50,10 @@ public sealed class KnapsackSlice : ISlicer
         ContextBudget budget,
         ITraceCollector traceCollector)
     {
+        ArgumentNullException.ThrowIfNull(scoredItems);
+        ArgumentNullException.ThrowIfNull(budget);
+        ArgumentNullException.ThrowIfNull(traceCollector);
+
         if (scoredItems.Count == 0 || budget.TargetTokens <= 0)
         {
             return [];
@@ -89,7 +93,7 @@ public sealed class KnapsackSlice : ISlicer
             if (tokens > 0)
             {
                 weights[idx] = tokens;
-                values[idx] = (int)(scoredItems[i].Score * 10000);
+                values[idx] = Math.Max(0, (int)(scoredItems[i].Score * 10000));
                 items[idx] = scoredItems[i].Item;
                 idx++;
             }
@@ -113,17 +117,15 @@ public sealed class KnapsackSlice : ISlicer
 
         // Rent DP array from pool
         var dpArray = ArrayPool<int>.Shared.Rent(capacity + 1);
-        // 2D boolean keep table for correct reconstruction from 1D DP array
-        var keep = new bool[candidateCount][];
-        for (var i = 0; i < candidateCount; i++)
-        {
-            keep[i] = new bool[capacity + 1];
-        }
+        // Flat boolean keep table for correct reconstruction from 1D DP array
+        var keepStride = capacity + 1;
+        var keepArray = ArrayPool<bool>.Shared.Rent(candidateCount * keepStride);
 
         try
         {
-            // Zero the rented portion (pool may return dirty arrays)
+            // Zero the rented portions (pool may return dirty arrays)
             Array.Clear(dpArray, 0, capacity + 1);
+            Array.Clear(keepArray, 0, candidateCount * keepStride);
 
             // Fill DP table — 1D, REVERSE iteration (0/1 knapsack, not unbounded)
             for (var i = 0; i < candidateCount; i++)
@@ -136,7 +138,7 @@ public sealed class KnapsackSlice : ISlicer
                     if (withItem > dpArray[w])
                     {
                         dpArray[w] = withItem;
-                        keep[i][w] = true;
+                        keepArray[i * keepStride + w] = true;
                     }
                 }
             }
@@ -147,7 +149,7 @@ public sealed class KnapsackSlice : ISlicer
 
             for (var i = candidateCount - 1; i >= 0; i--)
             {
-                if (keep[i][remainingCapacity])
+                if (keepArray[i * keepStride + remainingCapacity])
                 {
                     selected.Add(items[i]);
                     remainingCapacity -= discretizedWeights[i];
@@ -180,7 +182,8 @@ public sealed class KnapsackSlice : ISlicer
         }
         finally
         {
-            ArrayPool<int>.Shared.Return(dpArray, clearArray: true);
+            ArrayPool<int>.Shared.Return(dpArray, clearArray: false);
+            ArrayPool<bool>.Shared.Return(keepArray, clearArray: false);
         }
     }
 }

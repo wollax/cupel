@@ -239,7 +239,7 @@ public sealed class CupelPipeline
         }
 
         // PINNED+QUOTA CONFLICT DETECTION
-        if (trace.IsEnabled && pinned.Count > 0 && _slicer is QuotaSlice quotaSlicer)
+        if (pinned.Count > 0 && _slicer is QuotaSlice quotaSlicer)
         {
             var pinnedTokensByKind = new Dictionary<ContextKind, int>();
             for (var i = 0; i < pinned.Count; i++)
@@ -313,6 +313,10 @@ public sealed class CupelPipeline
     /// Executes the pipeline on a streaming source using the configured <see cref="IAsyncSlicer"/>.
     /// Items are scored in micro-batches to provide meaningful context for relative scorers.
     /// </summary>
+    /// <remarks>
+    /// Pinned items are not supported in streaming mode — all items are scored and sliced.
+    /// Use the synchronous <see cref="Execute"/> method if pinned item support is required.
+    /// </remarks>
     /// <param name="source">The streaming context items to process.</param>
     /// <param name="traceCollector">Optional trace collector for diagnostics.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -334,6 +338,8 @@ public sealed class CupelPipeline
 
         var trace = traceCollector ?? NullTraceCollector.Instance;
 
+        // Use 32 as default batch size for scoring alignment. StreamSlice exposes
+        // its BatchSize for alignment, but other IAsyncSlicer implementations use default.
         var scoringBatchSize = _asyncSlicer is StreamSlice ss ? ss.BatchSize : 32;
         var scoredStream = ScoreStreamAsync(source, scoringBatchSize, cancellationToken);
 
@@ -347,6 +353,9 @@ public sealed class CupelPipeline
             scoredStream, adjustedBudget, trace, cancellationToken)
             .ConfigureAwait(false);
 
+        // Streaming path: scores are computed during streaming and consumed by the slicer.
+        // After slicing, original scores are not available (items passed through IAsyncSlicer
+        // which returns ContextItem, not ScoredItem). All items receive equal placement score.
         var scoredForPlacer = new ScoredItem[slicedItems.Count];
         for (var i = 0; i < slicedItems.Count; i++)
         {

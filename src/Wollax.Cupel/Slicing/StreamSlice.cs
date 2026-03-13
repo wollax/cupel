@@ -45,6 +45,10 @@ public sealed class StreamSlice : IAsyncSlicer
         ITraceCollector traceCollector,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(scoredItems);
+        ArgumentNullException.ThrowIfNull(budget);
+        ArgumentNullException.ThrowIfNull(traceCollector);
+
         if (budget.TargetTokens <= 0)
         {
             return [];
@@ -75,7 +79,7 @@ public sealed class StreamSlice : IAsyncSlicer
                 }
             }
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (cts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
             // Budget-full cancellation — we initiated this, swallow it
         }

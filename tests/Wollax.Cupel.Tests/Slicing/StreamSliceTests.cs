@@ -282,22 +282,12 @@ public class StreamSliceTests
 
         var budget = new ContextBudget(maxTokens: 100, targetTokens: 50);
 
-        // Should either throw OperationCanceledException or return empty
-        try
-        {
-            var result = await slicer.SliceAsync(
-                ToAsyncEnumerable(items),
-                budget,
-                NullTraceCollector.Instance,
-                cts.Token);
-
-            // If it doesn't throw, result should be empty
-            await Assert.That(result.Count).IsEqualTo(0);
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected — pre-cancelled token
-        }
+        await Assert.That(async () => await slicer.SliceAsync(
+            ToAsyncEnumerable(items),
+            budget,
+            NullTraceCollector.Instance,
+            cts.Token))
+            .Throws<OperationCanceledException>();
     }
 
     [Test]

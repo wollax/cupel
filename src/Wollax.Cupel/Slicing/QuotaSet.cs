@@ -8,6 +8,7 @@ public sealed class QuotaSet
 {
     private readonly IReadOnlyDictionary<ContextKind, double> _requires;
     private readonly IReadOnlyDictionary<ContextKind, double> _caps;
+    private readonly IReadOnlyCollection<ContextKind> _kinds;
 
     internal QuotaSet(
         IReadOnlyDictionary<ContextKind, double> requires,
@@ -15,6 +16,10 @@ public sealed class QuotaSet
     {
         _requires = requires;
         _caps = caps;
+        var kinds = new HashSet<ContextKind>();
+        foreach (var k in requires.Keys) kinds.Add(k);
+        foreach (var k in caps.Keys) kinds.Add(k);
+        _kinds = kinds;
     }
 
     /// <summary>
@@ -34,20 +39,5 @@ public sealed class QuotaSet
     /// <summary>
     /// All distinct <see cref="ContextKind"/> values that have either a Require or Cap configured.
     /// </summary>
-    public IReadOnlyCollection<ContextKind> Kinds
-    {
-        get
-        {
-            var kinds = new HashSet<ContextKind>();
-            foreach (var kvp in _requires)
-            {
-                kinds.Add(kvp.Key);
-            }
-            foreach (var kvp in _caps)
-            {
-                kinds.Add(kvp.Key);
-            }
-            return kinds;
-        }
-    }
+    public IReadOnlyCollection<ContextKind> Kinds => _kinds;
 }
