@@ -4,9 +4,9 @@
 
 Phase: 6 of 12 — Advanced Slicers & Quota System
 Milestone: v1.0 Core Library
-Plan: 1 of 5
+Plan: 3 of 5
 Status: In progress
-Last activity: 2026-03-13 — Completed 06-01-PLAN.md (KnapsackSlice)
+Last activity: 2026-03-13 — Completed 06-03-PLAN.md (IAsyncSlicer & StreamSlice)
 
 ## Phase Overview
 
@@ -19,7 +19,7 @@ NEXT_PHASE=6
 | 3. Individual Scorers | ● complete (3/3 plans) |
 | 4. Composite Scoring | ● complete (3/3 plans) |
 | 5. Pipeline Assembly & Basic Execution | ● complete (3/3 plans) |
-| 6. Advanced Slicers & Quota System | ◐ in progress (1/5 plans) |
+| 6. Advanced Slicers & Quota System | ◐ in progress (3/5 plans) |
 | 7. Explainability & Overflow Handling | ○ planned |
 | 8. Policy System & Named Presets | ○ planned |
 | 9. Serialization & JSON Package | ○ planned |
@@ -63,6 +63,8 @@ NEXT_PHASE=6
 - TUnit treenode-filter: `**` wildcard only valid in final path segment — use full path like `/Wollax.Cupel.Tests/Wollax.Cupel.Tests.Slicing/GreedySliceTests/**`
 - KnapsackSlice uses 2D boolean keep table for 1D DP reconstruction — standard reverse-scan comparison (dp[w] != dp[w-dw]) fails for single-item and same-value cases
 - KnapsackSlice tests use bucketSize=1 for precision-sensitive cases, realistic token values (500+) with default bucketSize=100
+- StreamSlice uses CancelAsync() + linked CTS for budget-full signalling; swallows OperationCanceledException when self-initiated
+- IAsyncSlicer is the async counterpart of ISlicer for streaming IAsyncEnumerable sources
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
