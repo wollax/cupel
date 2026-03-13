@@ -17,8 +17,8 @@
 - [x] **SCORE-05**: TagScorer — scores items by tag-based categorical boosting
 - [x] **SCORE-06**: FrequencyScorer — scores items by reference frequency as relevance signal
 - [x] **SCORE-07**: ReflexiveScorer — scores items using caller-supplied FutureRelevanceHint
-- [ ] **SCORE-08**: CompositeScorer with configurable aggregation (WeightedAverage, nested composites)
-- [ ] **SCORE-09**: ScaledScorer wrapper that normalizes arbitrary scorer output to 0–1 range
+- [x] **SCORE-08**: CompositeScorer with configurable aggregation (WeightedAverage, nested composites)
+- [x] **SCORE-09**: ScaledScorer wrapper that normalizes arbitrary scorer output to 0–1 range
 
 ## Slicers
 
@@ -113,8 +113,8 @@
 | SCORE-05 | Phase 3: Individual Scorers | ● complete |
 | SCORE-06 | Phase 3: Individual Scorers | ● complete |
 | SCORE-07 | Phase 3: Individual Scorers | ● complete |
-| SCORE-08 | Phase 4: Composite Scoring | ○ planned |
-| SCORE-09 | Phase 4: Composite Scoring | ○ planned |
+| SCORE-08 | Phase 4: Composite Scoring | ● complete |
+| SCORE-09 | Phase 4: Composite Scoring | ● complete |
 | SLICE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | SLICE-02 | Phase 5: Pipeline Assembly & Basic Execution | ○ planned |
 | SLICE-03 | Phase 6: Advanced Slicers & Quota System | ○ planned |
