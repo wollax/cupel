@@ -143,6 +143,15 @@ Plans:
 3. `StreamSlice` processes `IAsyncEnumerable` sources without materializing the full collection
 4. Pinned items that conflict with quota constraints produce clear, actionable error messages — not silent failures
 
+**Plans:** 5 plans in 3 waves
+
+Plans:
+- [ ] 06-01-PLAN.md — KnapsackSlice with 0/1 DP and bucket discretization (wave 1)
+- [ ] 06-02-PLAN.md — QuotaSlice decorator with Require/Cap constraints and QuotaBuilder (wave 1)
+- [ ] 06-03-PLAN.md — IAsyncSlicer interface and StreamSlice implementation (wave 1)
+- [ ] 06-04-PLAN.md — Builder integration and pipeline dispatch for new slicers (wave 2)
+- [ ] 06-05-PLAN.md — Slicer benchmarks: KnapsackSlice, QuotaSlice, StreamSlice (wave 3)
+
 ---
 
 #### Phase 7: Explainability & Overflow Handling
