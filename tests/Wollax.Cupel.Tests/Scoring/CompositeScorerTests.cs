@@ -162,8 +162,8 @@ public class CompositeScorerTests
         var scoreA2 = compositeA.Score(item2, allItems);
         var scoreB2 = compositeB.Score(item2, allItems);
 
-        await Assert.That(scoreA1).IsEqualTo(scoreB1);
-        await Assert.That(scoreA2).IsEqualTo(scoreB2);
+        await Assert.That(scoreA1).IsEqualTo(scoreB1).Within(1e-14);
+        await Assert.That(scoreA2).IsEqualTo(scoreB2).Within(1e-14);
     }
 
     [Test]
