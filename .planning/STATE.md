@@ -4,9 +4,9 @@
 
 Phase: 4 of 10 — Composite Scoring
 Milestone: v1.0 Core Library
-Plan: 2 of 3 (04-02 complete, 04-01 and 04-03 in progress by parallel agents)
+Plan: 2 of 3 (04-01 and 04-02 complete, 04-03 remaining)
 Status: Phase 4 in progress
-Last activity: 2026-03-13 — Plan 04-02 (ScaledScorer) complete (10 new tests, 226 total)
+Last activity: 2026-03-13 — Plan 04-01 (CompositeScorer) complete (18 new tests, 230 total)
 
 ## Phase Overview
 
@@ -17,7 +17,7 @@ NEXT_PHASE=4
 | 1. Project Scaffold & Core Models | ● complete (5/5 plans) |
 | 2. Interfaces & Diagnostics Infrastructure | ● complete (2/2 plans) |
 | 3. Individual Scorers | ● complete (3/3 plans) |
-| 4. Composite Scoring | ◐ in progress (04-02 complete) |
+| 4. Composite Scoring | ◐ in progress (04-01, 04-02 complete) |
 | 5. Pipeline Assembly & Basic Execution | ○ planned |
 | 6. Advanced Slicers & Quota System | ○ planned |
 | 7. Explainability & Overflow Handling | ○ planned |
@@ -57,6 +57,8 @@ NEXT_PHASE=4
 - TUnit treenode-filter does not support `--filter` flag — use `--treenode-filter` with path syntax instead
 - ScaledScorer degenerate case: use `max == min` exact equality (not epsilon), return 0.5 (midpoint)
 - ScaledScorer exposes inner scorer via `internal IScorer Inner` property for CompositeScorer cycle detection traversal
+- CompositeScorer uses parallel IScorer[] and double[] arrays with pre-normalized weights for zero-allocation Score()
+- Relative weight equivalence tests need Within(1e-14) tolerance due to floating-point normalization differences
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
