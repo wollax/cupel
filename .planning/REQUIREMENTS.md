@@ -24,10 +24,10 @@
 
 - [x] **SLICE-01**: ISlicer interface for budget-constrained item selection
 - [x] **SLICE-02**: GreedySlice — O(N log N) greedy fill by score/token ratio
-- [ ] **SLICE-03**: KnapsackSlice — 0-1 DP knapsack with token discretization for optimal budget utilization
-- [ ] **SLICE-04**: QuotaSlice — percentage-based semantic quotas with Require(Kind, minPercent) / Cap(Kind, maxPercent)
-- [ ] **SLICE-05**: StreamSlice — online/streaming selection for IAsyncEnumerable sources
-- [ ] **SLICE-06**: Pinned item + quota interaction is specified behavior with clear errors on conflict
+- [x] **SLICE-03**: KnapsackSlice — 0-1 DP knapsack with token discretization for optimal budget utilization
+- [x] **SLICE-04**: QuotaSlice — percentage-based semantic quotas with Require(Kind, minPercent) / Cap(Kind, maxPercent)
+- [x] **SLICE-05**: StreamSlice — online/streaming selection for IAsyncEnumerable sources
+- [x] **SLICE-06**: Pinned item + quota interaction is specified behavior with clear errors on conflict
 
 ## Placement
 
@@ -117,10 +117,10 @@
 | SCORE-09 | Phase 4: Composite Scoring | ● complete |
 | SLICE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | SLICE-02 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
-| SLICE-03 | Phase 6: Advanced Slicers & Quota System | ○ planned |
-| SLICE-04 | Phase 6: Advanced Slicers & Quota System | ○ planned |
-| SLICE-05 | Phase 6: Advanced Slicers & Quota System | ○ planned |
-| SLICE-06 | Phase 6: Advanced Slicers & Quota System | ○ planned |
+| SLICE-03 | Phase 6: Advanced Slicers & Quota System | ● complete |
+| SLICE-04 | Phase 6: Advanced Slicers & Quota System | ● complete |
+| SLICE-05 | Phase 6: Advanced Slicers & Quota System | ● complete |
+| SLICE-06 | Phase 6: Advanced Slicers & Quota System | ● complete |
 | PLACE-01 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | PLACE-02 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
 | PLACE-03 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |

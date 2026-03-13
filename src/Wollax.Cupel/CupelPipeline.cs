@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Wollax.Cupel.Diagnostics;
+using Wollax.Cupel.Slicing;
 
 namespace Wollax.Cupel;
 
@@ -18,19 +20,22 @@ public sealed class CupelPipeline
     private readonly IPlacer _placer;
     private readonly ContextBudget _budget;
     private readonly bool _deduplicationEnabled;
+    private readonly IAsyncSlicer? _asyncSlicer;
 
     internal CupelPipeline(
         IScorer scorer,
         ISlicer slicer,
         IPlacer placer,
         ContextBudget budget,
-        bool deduplicationEnabled)
+        bool deduplicationEnabled,
+        IAsyncSlicer? asyncSlicer = null)
     {
         _scorer = scorer;
         _slicer = slicer;
         _placer = placer;
         _budget = budget;
         _deduplicationEnabled = deduplicationEnabled;
+        _asyncSlicer = asyncSlicer;
     }
 
     /// <summary>
@@ -233,6 +238,37 @@ public sealed class CupelPipeline
             merged[pinned.Count + i] = slicedScored[i];
         }
 
+        // PINNED+QUOTA CONFLICT DETECTION
+        if (pinned.Count > 0 && _slicer is QuotaSlice quotaSlicer)
+        {
+            var pinnedTokensByKind = new Dictionary<ContextKind, int>();
+            for (var i = 0; i < pinned.Count; i++)
+            {
+                var kind = pinned[i].Kind;
+                pinnedTokensByKind.TryGetValue(kind, out var current);
+                pinnedTokensByKind[kind] = current + pinned[i].Tokens;
+            }
+
+            foreach (var kvp in pinnedTokensByKind)
+            {
+                var capPercent = quotaSlicer.Quotas.GetCap(kvp.Key);
+                if (capPercent < 100)
+                {
+                    var capTokens = (int)(capPercent / 100.0 * _budget.TargetTokens);
+                    if (kvp.Value > capTokens)
+                    {
+                        trace.RecordItemEvent(new TraceEvent
+                        {
+                            Stage = PipelineStage.Slice,
+                            Duration = TimeSpan.Zero,
+                            ItemCount = 0,
+                            Message = $"WARNING: Pinned items of Kind '{kvp.Key}' use {kvp.Value} tokens, exceeding the {capPercent}% Cap ({capTokens} tokens). Pinned items override quotas by design."
+                        });
+                    }
+                }
+            }
+        }
+
         // PLACE
         var placed = _placer.Place(merged, trace);
 
@@ -271,5 +307,103 @@ public sealed class CupelPipeline
         ArgumentNullException.ThrowIfNull(source);
         var items = await source.GetItemsAsync(cancellationToken).ConfigureAwait(false);
         return Execute(items, traceCollector);
+    }
+
+    /// <summary>
+    /// Executes the pipeline on a streaming source using the configured <see cref="IAsyncSlicer"/>.
+    /// Items are scored in micro-batches to provide meaningful context for relative scorers.
+    /// </summary>
+    /// <remarks>
+    /// Pinned items are not supported in streaming mode — all items are scored and sliced.
+    /// Use the synchronous <see cref="Execute"/> method if pinned item support is required.
+    /// </remarks>
+    /// <param name="source">The streaming context items to process.</param>
+    /// <param name="traceCollector">Optional trace collector for diagnostics.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The pipeline result containing selected and ordered items.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">No async slicer configured.</exception>
+    public async Task<ContextResult> ExecuteStreamAsync(
+        IAsyncEnumerable<ContextItem> source,
+        ITraceCollector? traceCollector = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (_asyncSlicer is null)
+        {
+            throw new InvalidOperationException(
+                "No async slicer configured. Call WithAsyncSlicer() on the builder.");
+        }
+
+        var trace = traceCollector ?? NullTraceCollector.Instance;
+
+        // Use 32 as default batch size for scoring alignment. StreamSlice exposes
+        // its BatchSize for alignment, but other IAsyncSlicer implementations use default.
+        var scoringBatchSize = _asyncSlicer is StreamSlice ss ? ss.BatchSize : 32;
+        var scoredStream = ScoreStreamAsync(source, scoringBatchSize, cancellationToken);
+
+        var effectiveMax = Math.Max(0, _budget.MaxTokens - _budget.OutputReserve);
+        var effectiveTarget = Math.Min(_budget.TargetTokens, effectiveMax);
+        var adjustedBudget = new ContextBudget(
+            maxTokens: effectiveMax,
+            targetTokens: effectiveTarget);
+
+        var slicedItems = await _asyncSlicer.SliceAsync(
+            scoredStream, adjustedBudget, trace, cancellationToken)
+            .ConfigureAwait(false);
+
+        // Streaming path: scores are computed during streaming and consumed by the slicer.
+        // After slicing, original scores are not available (items passed through IAsyncSlicer
+        // which returns ContextItem, not ScoredItem). All items receive equal placement score.
+        var scoredForPlacer = new ScoredItem[slicedItems.Count];
+        for (var i = 0; i < slicedItems.Count; i++)
+        {
+            scoredForPlacer[i] = new ScoredItem(slicedItems[i], 0.5);
+        }
+        var placed = _placer.Place(scoredForPlacer, trace);
+
+        SelectionReport? report = null;
+        if (traceCollector is DiagnosticTraceCollector diagnosticCollector)
+        {
+            report = new SelectionReport { Events = diagnosticCollector.Events };
+        }
+
+        return new ContextResult { Items = placed, Report = report };
+    }
+
+    /// <summary>
+    /// Scores items from a streaming source in micro-batches, providing
+    /// meaningful allItems context for relative scorers within each batch.
+    /// </summary>
+    private async IAsyncEnumerable<ScoredItem> ScoreStreamAsync(
+        IAsyncEnumerable<ContextItem> source,
+        int batchSize,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var batch = new List<ContextItem>(batchSize);
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            batch.Add(item);
+
+            if (batch.Count >= batchSize)
+            {
+                for (var i = 0; i < batch.Count; i++)
+                {
+                    yield return new ScoredItem(batch[i], _scorer.Score(batch[i], batch));
+                }
+                batch.Clear();
+            }
+        }
+
+        // Process remaining items in final partial batch
+        if (batch.Count > 0)
+        {
+            for (var i = 0; i < batch.Count; i++)
+            {
+                yield return new ScoredItem(batch[i], _scorer.Score(batch[i], batch));
+            }
+        }
     }
 }

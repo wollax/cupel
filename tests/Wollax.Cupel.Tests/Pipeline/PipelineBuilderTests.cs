@@ -3,6 +3,7 @@ using TUnit.Assertions;
 using TUnit.Assertions.Extensions;
 using Wollax.Cupel.Diagnostics;
 using Wollax.Cupel.Scoring;
+using Wollax.Cupel.Slicing;
 
 namespace Wollax.Cupel.Tests.Pipeline;
 
@@ -258,6 +259,187 @@ public class PipelineBuilderTests
         var result = pipeline.Execute([item1, item2]);
 
         await Assert.That(result.Items.Count).IsEqualTo(2);
+    }
+
+    // UseGreedySlice tests
+
+    [Test]
+    public async Task UseGreedySlice_SetsSlicer()
+    {
+        var item = CreateItem("test", tokens: 10);
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
+            .Build();
+
+        var result = pipeline.Execute([item]);
+
+        await Assert.That(result.Items.Count).IsEqualTo(1);
+    }
+
+    // UseKnapsackSlice tests
+
+    [Test]
+    public async Task UseKnapsackSlice_DefaultBucketSize()
+    {
+        var item = new ContextItem { Content = "test", Tokens = 100, FutureRelevanceHint = 0.8 };
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithScorer(new ReflexiveScorer())
+            .UseKnapsackSlice()
+            .Build();
+
+        var result = pipeline.Execute([item]);
+
+        await Assert.That(result.Items.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task UseKnapsackSlice_CustomBucketSize()
+    {
+        var item = new ContextItem { Content = "test", Tokens = 100, FutureRelevanceHint = 0.8 };
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithScorer(new ReflexiveScorer())
+            .UseKnapsackSlice(50)
+            .Build();
+
+        var result = pipeline.Execute([item]);
+
+        await Assert.That(result.Items.Count).IsEqualTo(1);
+    }
+
+    // WithQuotas tests
+
+    [Test]
+    public async Task WithQuotas_WrapsCurrentSlicer()
+    {
+        var messages = new List<ContextItem>();
+        for (var i = 0; i < 5; i++)
+            messages.Add(new ContextItem { Content = $"msg-{i}", Tokens = 50, Kind = ContextKind.Message, FutureRelevanceHint = 0.8 });
+        var docs = new List<ContextItem>();
+        for (var i = 0; i < 5; i++)
+            docs.Add(new ContextItem { Content = $"doc-{i}", Tokens = 50, Kind = ContextKind.Document, FutureRelevanceHint = 0.8 });
+
+        var items = new List<ContextItem>();
+        items.AddRange(messages);
+        items.AddRange(docs);
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
+            .WithQuotas(q => q.Require(ContextKind.Message, 30))
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        // Quotas should ensure at least 30% of 500 = 150 tokens of messages
+        var messageTokens = 0;
+        for (var i = 0; i < result.Items.Count; i++)
+        {
+            if (result.Items[i].Kind == ContextKind.Message)
+                messageTokens += result.Items[i].Tokens;
+        }
+        await Assert.That(messageTokens).IsGreaterThanOrEqualTo(150);
+    }
+
+    [Test]
+    public async Task WithQuotas_DefaultSlicer()
+    {
+        // WithQuotas without explicit slicer should wrap default GreedySlice
+        var item = new ContextItem { Content = "test", Tokens = 10, Kind = ContextKind.Message, FutureRelevanceHint = 0.5 };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithScorer(new ReflexiveScorer())
+            .WithQuotas(q => q.Require(ContextKind.Message, 30))
+            .Build();
+
+        var result = pipeline.Execute([item]);
+
+        await Assert.That(result.Items.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task WithQuotas_KnapsackInside()
+    {
+        var items = new List<ContextItem>();
+        for (var i = 0; i < 3; i++)
+            items.Add(new ContextItem { Content = $"doc-{i}", Tokens = 100, Kind = ContextKind.Document, FutureRelevanceHint = 0.7 });
+        for (var i = 0; i < 3; i++)
+            items.Add(new ContextItem { Content = $"msg-{i}", Tokens = 100, Kind = ContextKind.Message, FutureRelevanceHint = 0.7 });
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithScorer(new ReflexiveScorer())
+            .UseKnapsackSlice()
+            .WithQuotas(q => q.Cap(ContextKind.Document, 50))
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        // Document tokens should be capped at 50% of 500 = 250
+        var docTokens = 0;
+        for (var i = 0; i < result.Items.Count; i++)
+        {
+            if (result.Items[i].Kind == ContextKind.Document)
+                docTokens += result.Items[i].Tokens;
+        }
+        await Assert.That(docTokens).IsLessThanOrEqualTo(250);
+    }
+
+    // WithQuotas validation tests
+
+    [Test]
+    public async Task WithQuotas_InvalidConfig_Throws()
+    {
+        var builder = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithScorer(new ReflexiveScorer());
+
+        // Sum of requires > 100% should throw at config time
+        await Assert.That(() => builder.WithQuotas(q => q
+            .Require(ContextKind.Message, 60)
+            .Require(ContextKind.Document, 50)))
+            .Throws<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WithQuotas_NullAction_Throws()
+    {
+        var builder = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithScorer(new ReflexiveScorer());
+
+        await Assert.That(() => builder.WithQuotas(null!))
+            .Throws<ArgumentNullException>();
+    }
+
+    // WithAsyncSlicer tests
+
+    [Test]
+    public async Task WithAsyncSlicer_SetsAsyncSlicer()
+    {
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithScorer(new ReflexiveScorer())
+            .WithAsyncSlicer(new StreamSlice())
+            .Build();
+
+        await Assert.That(pipeline).IsNotNull();
+    }
+
+    [Test]
+    public async Task WithAsyncSlicer_NullThrows()
+    {
+        var builder = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithScorer(new ReflexiveScorer());
+
+        await Assert.That(() => builder.WithAsyncSlicer(null!))
+            .Throws<ArgumentNullException>();
     }
 
     // Test helpers

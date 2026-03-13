@@ -18,4 +18,9 @@ public readonly record struct TraceEvent
 
     /// <summary>Number of items processed in this stage.</summary>
     public required int ItemCount { get; init; }
+
+    /// <summary>
+    /// Optional diagnostic message (e.g., warning about pinned items exceeding a quota cap).
+    /// </summary>
+    public string? Message { get; init; }
 }

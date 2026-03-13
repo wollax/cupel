@@ -2,15 +2,15 @@
 
 ## Current Position
 
-Phase: 5 of 12 — Pipeline Assembly & Basic Execution
+Phase: 6 of 12 — Advanced Slicers & Quota System
 Milestone: v1.0 Core Library
-Plan: 3 of 3
+Plan: 5 of 5
 Status: Complete
-Last activity: 2026-03-13 — Completed 05-03-PLAN.md (PipelineBenchmark)
+Last activity: 2026-03-13 — Completed 06-05-PLAN.md (Slicer benchmarks)
 
 ## Phase Overview
 
-NEXT_PHASE=6
+NEXT_PHASE=7
 
 | Phase | Status |
 |-------|--------|
@@ -19,7 +19,7 @@ NEXT_PHASE=6
 | 3. Individual Scorers | ● complete (3/3 plans) |
 | 4. Composite Scoring | ● complete (3/3 plans) |
 | 5. Pipeline Assembly & Basic Execution | ● complete (3/3 plans) |
-| 6. Advanced Slicers & Quota System | ○ planned |
+| 6. Advanced Slicers & Quota System | ● complete (5/5 plans) |
 | 7. Explainability & Overflow Handling | ○ planned |
 | 8. Policy System & Named Presets | ○ planned |
 | 9. Serialization & JSON Package | ○ planned |
@@ -61,6 +61,17 @@ NEXT_PHASE=6
 - Relative weight equivalence tests need Within(1e-14) tolerance due to floating-point normalization differences
 - Stable sort pattern: (double Score, int Index) tuple array + Array.Sort with static comparison delegate — adopted in Phase 5 GreedySlice, UShapedPlacer, ChronologicalPlacer
 - TUnit treenode-filter: `**` wildcard only valid in final path segment — use full path like `/Wollax.Cupel.Tests/Wollax.Cupel.Tests.Slicing/GreedySliceTests/**`
+- KnapsackSlice uses 2D boolean keep table for 1D DP reconstruction — standard reverse-scan comparison (dp[w] != dp[w-dw]) fails for single-item and same-value cases
+- KnapsackSlice tests use bucketSize=1 for precision-sensitive cases, realistic token values (500+) with default bucketSize=100
+- StreamSlice uses CancelAsync() + linked CTS for budget-full signalling; swallows OperationCanceledException when self-initiated
+- IAsyncSlicer is the async counterpart of ISlicer for streaming IAsyncEnumerable sources
+- QuotaSet uses internal constructor — only QuotaBuilder.Build() can create instances
+- QuotaSlice proportional distribution uses integer arithmetic with candidate token mass weighting
+- Unconfigured kinds receive proportional share of unassigned budget based on candidate token mass
+- TraceEvent.Message: optional string property for diagnostic warnings (pinned+quota conflict, etc.)
+- WithQuotas wraps whatever slicer is currently set at call time — ordering matters
+- ExecuteStreamAsync checks cancellationToken.ThrowIfCancellationRequested() at entry before async work
+- ScoreStreamAsync uses micro-batch scoring aligned to StreamSlice.BatchSize for meaningful relative scorer context
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
