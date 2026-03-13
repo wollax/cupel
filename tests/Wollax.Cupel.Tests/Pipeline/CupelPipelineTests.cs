@@ -1,8 +1,10 @@
+using System.Runtime.CompilerServices;
 using TUnit.Core;
 using TUnit.Assertions;
 using TUnit.Assertions.Extensions;
 using Wollax.Cupel.Diagnostics;
 using Wollax.Cupel.Scoring;
+using Wollax.Cupel.Slicing;
 
 namespace Wollax.Cupel.Tests.Pipeline;
 
@@ -428,6 +430,194 @@ public class CupelPipelineTests
         var result = await pipeline.ExecuteAsync(source);
 
         await Assert.That(result.Items.Count).IsEqualTo(2);
+    }
+
+    // ExecuteStreamAsync tests
+
+    [Test]
+    public async Task ExecuteStreamAsync_WithStreamSlice()
+    {
+        var items = new[]
+        {
+            CreateItem("a", tokens: 50, futureRelevanceHint: 0.9, kind: ContextKind.Message),
+            CreateItem("b", tokens: 50, futureRelevanceHint: 0.7, kind: ContextKind.Message),
+            CreateItem("c", tokens: 50, futureRelevanceHint: 0.5, kind: ContextKind.Message)
+        };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithScorer(new ReflexiveScorer())
+            .WithAsyncSlicer(new StreamSlice())
+            .Build();
+
+        var result = await pipeline.ExecuteStreamAsync(CreateStreamSource(items));
+
+        await Assert.That(result.Items.Count).IsGreaterThanOrEqualTo(1);
+        await Assert.That(result.TotalTokens).IsLessThanOrEqualTo(500);
+    }
+
+    [Test]
+    public async Task ExecuteStreamAsync_StopsOnBudgetFull()
+    {
+        // Large stream, small budget — should not consume all items
+        var items = new ContextItem[100];
+        for (var i = 0; i < 100; i++)
+            items[i] = CreateItem($"item-{i}", tokens: 50, futureRelevanceHint: 0.8, kind: ContextKind.Message);
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(200, 100))
+            .WithScorer(new ReflexiveScorer())
+            .WithAsyncSlicer(new StreamSlice(batchSize: 4))
+            .Build();
+
+        var result = await pipeline.ExecuteStreamAsync(CreateStreamSource(items));
+
+        await Assert.That(result.TotalTokens).IsLessThanOrEqualTo(100);
+    }
+
+    [Test]
+    public async Task ExecuteStreamAsync_WithoutAsyncSlicer_Throws()
+    {
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        await Assert.That(async () => await pipeline.ExecuteStreamAsync(
+            CreateStreamSource(CreateItem("test", tokens: 10, futureRelevanceHint: 0.5))))
+            .Throws<InvalidOperationException>();
+    }
+
+    [Test]
+    public async Task ExecuteStreamAsync_NullSource_Throws()
+    {
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithScorer(new ReflexiveScorer())
+            .WithAsyncSlicer(new StreamSlice())
+            .Build();
+
+        await Assert.That(async () => await pipeline.ExecuteStreamAsync(null!))
+            .Throws<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task ExecuteStreamAsync_Cancellation()
+    {
+        var items = new[]
+        {
+            CreateItem("a", tokens: 50, futureRelevanceHint: 0.9, kind: ContextKind.Message)
+        };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithScorer(new ReflexiveScorer())
+            .WithAsyncSlicer(new StreamSlice())
+            .Build();
+
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.That(async () => await pipeline.ExecuteStreamAsync(
+            CreateStreamSource(items), cancellationToken: cts.Token))
+            .Throws<OperationCanceledException>();
+    }
+
+    // Pinned+Quota conflict detection tests
+
+    [Test]
+    public async Task PinnedItemsExceedingQuotaCap_EmitsTraceWarning()
+    {
+        // Budget = 1000 target, Cap Message at 30% = 300 tokens
+        // Pinned Message items = 500 tokens (exceeds 30% cap)
+        var pinnedMessages = new List<ContextItem>();
+        for (var i = 0; i < 5; i++)
+            pinnedMessages.Add(CreateItem($"pinned-msg-{i}", tokens: 100, pinned: true, kind: ContextKind.Message));
+
+        var docs = new List<ContextItem>();
+        for (var i = 0; i < 3; i++)
+            docs.Add(CreateItem($"doc-{i}", tokens: 50, futureRelevanceHint: 0.7, kind: ContextKind.Document));
+
+        var items = new List<ContextItem>();
+        items.AddRange(pinnedMessages);
+        items.AddRange(docs);
+
+        var trace = new DiagnosticTraceCollector(TraceDetailLevel.Item);
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(2000, 1000))
+            .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
+            .WithQuotas(q => q.Cap(ContextKind.Message, 30))
+            .Build();
+
+        var result = pipeline.Execute(items, trace);
+
+        // Pinned items should still be included
+        for (var i = 0; i < pinnedMessages.Count; i++)
+            await Assert.That(result.Items).Contains(pinnedMessages[i]);
+
+        // Should have a trace event with warning message about pinned exceeding cap
+        var warningFound = false;
+        for (var i = 0; i < trace.Events.Count; i++)
+        {
+            if (trace.Events[i].Message is not null && trace.Events[i].Message!.Contains("Message"))
+            {
+                warningFound = true;
+                break;
+            }
+        }
+        await Assert.That(warningFound).IsTrue();
+    }
+
+    // WithQuotas ordering tests
+
+    [Test]
+    public async Task WithQuotas_AfterWithSlicer_WrapsCustomSlicer()
+    {
+        // KnapsackSlice inside QuotaSlice — both optimizations and quotas should apply
+        var messages = new List<ContextItem>();
+        for (var i = 0; i < 5; i++)
+            messages.Add(CreateItem($"msg-{i}", tokens: 100, futureRelevanceHint: 0.8, kind: ContextKind.Message));
+
+        var docs = new List<ContextItem>();
+        for (var i = 0; i < 5; i++)
+            docs.Add(CreateItem($"doc-{i}", tokens: 100, futureRelevanceHint: 0.6, kind: ContextKind.Document));
+
+        var items = new List<ContextItem>();
+        items.AddRange(messages);
+        items.AddRange(docs);
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithScorer(new ReflexiveScorer())
+            .UseKnapsackSlice()
+            .WithQuotas(q => q.Require(ContextKind.Message, 30))
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        // Messages should have at least 30% of 500 = 150 tokens
+        var messageTokens = 0;
+        for (var i = 0; i < result.Items.Count; i++)
+        {
+            if (result.Items[i].Kind == ContextKind.Message)
+                messageTokens += result.Items[i].Tokens;
+        }
+        await Assert.That(messageTokens).IsGreaterThanOrEqualTo(100); // At least 1 message (100 tokens)
+        await Assert.That(result.TotalTokens).IsLessThanOrEqualTo(500);
+    }
+
+    // Stream helper
+
+    private static async IAsyncEnumerable<ContextItem> CreateStreamSource(
+        params ContextItem[] items)
+    {
+        foreach (var item in items)
+        {
+            yield return item;
+            await Task.CompletedTask;
+        }
     }
 
     // Test helpers

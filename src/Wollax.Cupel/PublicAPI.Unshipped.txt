@@ -80,6 +80,8 @@ Wollax.Cupel.Diagnostics.TraceEvent.Duration.get -> System.TimeSpan
 Wollax.Cupel.Diagnostics.TraceEvent.Duration.init -> void
 Wollax.Cupel.Diagnostics.TraceEvent.ItemCount.get -> int
 Wollax.Cupel.Diagnostics.TraceEvent.ItemCount.init -> void
+Wollax.Cupel.Diagnostics.TraceEvent.Message.get -> string?
+Wollax.Cupel.Diagnostics.TraceEvent.Message.init -> void
 Wollax.Cupel.ScoredItem
 Wollax.Cupel.ScoredItem.ScoredItem() -> void
 Wollax.Cupel.ScoredItem.ScoredItem(Wollax.Cupel.ContextItem! Item, double Score) -> void
