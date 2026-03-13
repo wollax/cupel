@@ -4,9 +4,9 @@
 
 Phase: 6 of 12 — Advanced Slicers & Quota System
 Milestone: v1.0 Core Library
-Plan: 4 of 5
+Plan: 5 of 5
 Status: In progress
-Last activity: 2026-03-13 — Completed 06-02-PLAN.md (QuotaSlice decorator)
+Last activity: 2026-03-13 — Completed 06-04-PLAN.md (Builder integration and pipeline dispatch)
 
 ## Phase Overview
 
@@ -68,6 +68,10 @@ NEXT_PHASE=6
 - QuotaSet uses internal constructor — only QuotaBuilder.Build() can create instances
 - QuotaSlice proportional distribution uses integer arithmetic with candidate token mass weighting
 - Unconfigured kinds receive proportional share of unassigned budget based on candidate token mass
+- TraceEvent.Message: optional string property for diagnostic warnings (pinned+quota conflict, etc.)
+- WithQuotas wraps whatever slicer is currently set at call time — ordering matters
+- ExecuteStreamAsync checks cancellationToken.ThrowIfCancellationRequested() at entry before async work
+- ScoreStreamAsync uses micro-batch scoring aligned to StreamSlice.BatchSize for meaningful relative scorer context
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
