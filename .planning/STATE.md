@@ -5,8 +5,8 @@
 Phase: 6 of 12 — Advanced Slicers & Quota System
 Milestone: v1.0 Core Library
 Plan: 5 of 5
-Status: In progress
-Last activity: 2026-03-13 — Completed 06-04-PLAN.md (Builder integration and pipeline dispatch)
+Status: Complete
+Last activity: 2026-03-13 — Completed 06-05-PLAN.md (Slicer benchmarks)
 
 ## Phase Overview
 
@@ -19,7 +19,7 @@ NEXT_PHASE=6
 | 3. Individual Scorers | ● complete (3/3 plans) |
 | 4. Composite Scoring | ● complete (3/3 plans) |
 | 5. Pipeline Assembly & Basic Execution | ● complete (3/3 plans) |
-| 6. Advanced Slicers & Quota System | ◐ in progress (4/5 plans) |
+| 6. Advanced Slicers & Quota System | ● complete (5/5 plans) |
 | 7. Explainability & Overflow Handling | ○ planned |
 | 8. Policy System & Named Presets | ○ planned |
 | 9. Serialization & JSON Package | ○ planned |
