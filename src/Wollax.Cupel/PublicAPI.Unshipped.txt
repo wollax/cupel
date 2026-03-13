@@ -162,6 +162,7 @@ Wollax.Cupel.ChronologicalPlacer.Place(System.Collections.Generic.IReadOnlyList<
 Wollax.Cupel.CupelPipeline
 Wollax.Cupel.CupelPipeline.Execute(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null) -> Wollax.Cupel.ContextResult!
 Wollax.Cupel.CupelPipeline.ExecuteAsync(Wollax.Cupel.IContextSource! source, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wollax.Cupel.ContextResult!>!
+Wollax.Cupel.CupelPipeline.ExecuteStreamAsync(System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ContextItem!>! source, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wollax.Cupel.ContextResult!>!
 static Wollax.Cupel.CupelPipeline.CreateBuilder() -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder
 Wollax.Cupel.PipelineBuilder.WithBudget(Wollax.Cupel.ContextBudget! budget) -> Wollax.Cupel.PipelineBuilder!
