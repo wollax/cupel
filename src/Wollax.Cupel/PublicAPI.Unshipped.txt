@@ -145,3 +145,6 @@ Wollax.Cupel.Scoring.CompositeScorer.Score(Wollax.Cupel.ContextItem! item, Syste
 Wollax.Cupel.Scoring.ScaledScorer
 Wollax.Cupel.Scoring.ScaledScorer.ScaledScorer(Wollax.Cupel.IScorer! inner) -> void
 Wollax.Cupel.Scoring.ScaledScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.GreedySlice
+Wollax.Cupel.GreedySlice.GreedySlice() -> void
+Wollax.Cupel.GreedySlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
