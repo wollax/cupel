@@ -2,12 +2,11 @@
 
 ## Current Position
 
-Phase: 4 of 12 — Composite Scoring
+Phase: 5 of 12 — Pipeline Assembly & Basic Execution
 Milestone: v1.0 Core Library
-Plan: 3 of 3
-Status: Phase 4 complete — verified
-Next phase: Phase 5
-Last activity: 2026-03-13 — Phase 4 verified and completed (3/3 plans, 237 tests, all success criteria met)
+Plan: 1 of 3
+Status: In progress
+Last activity: 2026-03-13 — Completed 05-01-PLAN.md (GreedySlice, UShapedPlacer, ChronologicalPlacer)
 
 ## Phase Overview
 
@@ -19,7 +18,7 @@ NEXT_PHASE=5
 | 2. Interfaces & Diagnostics Infrastructure | ● complete (2/2 plans) |
 | 3. Individual Scorers | ● complete (3/3 plans) |
 | 4. Composite Scoring | ● complete (3/3 plans) |
-| 5. Pipeline Assembly & Basic Execution | ○ planned |
+| 5. Pipeline Assembly & Basic Execution | ◐ in progress (1/3 plans) |
 | 6. Advanced Slicers & Quota System | ○ planned |
 | 7. Explainability & Overflow Handling | ○ planned |
 | 8. Policy System & Named Presets | ○ planned |
@@ -60,7 +59,8 @@ NEXT_PHASE=5
 - ScaledScorer exposes inner scorer via `internal IScorer Inner` property for CompositeScorer cycle detection traversal
 - CompositeScorer uses parallel IScorer[] and double[] arrays with pre-normalized weights for zero-allocation Score()
 - Relative weight equivalence tests need Within(1e-14) tolerance due to floating-point normalization differences
-- Stable sort pattern: (double Score, int Index) tuple array + Array.Sort with static comparison delegate — test-only in Phase 4, Phase 5 pipeline will adopt
+- Stable sort pattern: (double Score, int Index) tuple array + Array.Sort with static comparison delegate — adopted in Phase 5 GreedySlice, UShapedPlacer, ChronologicalPlacer
+- TUnit treenode-filter: `**` wildcard only valid in final path segment — use full path like `/Wollax.Cupel.Tests/Wollax.Cupel.Tests.Slicing/GreedySliceTests/**`
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
