@@ -4,9 +4,9 @@
 
 Phase: 5 of 12 — Pipeline Assembly & Basic Execution
 Milestone: v1.0 Core Library
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In progress
-Last activity: 2026-03-13 — Completed 05-01-PLAN.md (GreedySlice, UShapedPlacer, ChronologicalPlacer)
+Last activity: 2026-03-13 — Completed 05-02-PLAN.md (CupelPipeline, PipelineBuilder)
 
 ## Phase Overview
 
