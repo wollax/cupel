@@ -184,3 +184,7 @@ Wollax.Cupel.Slicing.QuotaBuilder.QuotaBuilder() -> void
 Wollax.Cupel.Slicing.QuotaBuilder.Require(Wollax.Cupel.ContextKind! kind, double minPercent) -> Wollax.Cupel.Slicing.QuotaBuilder!
 Wollax.Cupel.Slicing.QuotaBuilder.Cap(Wollax.Cupel.ContextKind! kind, double maxPercent) -> Wollax.Cupel.Slicing.QuotaBuilder!
 Wollax.Cupel.Slicing.QuotaBuilder.Build() -> Wollax.Cupel.Slicing.QuotaSet!
+Wollax.Cupel.Slicing.QuotaSlice
+Wollax.Cupel.Slicing.QuotaSlice.QuotaSlice(Wollax.Cupel.ISlicer! innerSlicer, Wollax.Cupel.Slicing.QuotaSet! quotas) -> void
+Wollax.Cupel.Slicing.QuotaSlice.Quotas.get -> Wollax.Cupel.Slicing.QuotaSet!
+Wollax.Cupel.Slicing.QuotaSlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
