@@ -148,6 +148,9 @@ Wollax.Cupel.Scoring.ScaledScorer.Score(Wollax.Cupel.ContextItem! item, System.C
 Wollax.Cupel.GreedySlice
 Wollax.Cupel.GreedySlice.GreedySlice() -> void
 Wollax.Cupel.GreedySlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.KnapsackSlice
+Wollax.Cupel.KnapsackSlice.KnapsackSlice(int bucketSize = 100) -> void
+Wollax.Cupel.KnapsackSlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
 Wollax.Cupel.UShapedPlacer
 Wollax.Cupel.UShapedPlacer.UShapedPlacer() -> void
 Wollax.Cupel.UShapedPlacer.Place(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! items, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
