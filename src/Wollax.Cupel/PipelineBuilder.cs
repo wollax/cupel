@@ -5,9 +5,11 @@ namespace Wollax.Cupel;
 /// <summary>
 /// Fluent builder for <see cref="CupelPipeline"/>.
 /// Validates all configuration at <see cref="Build"/> time.
+/// Create instances via <see cref="CupelPipeline.CreateBuilder"/>.
 /// </summary>
 public sealed class PipelineBuilder
 {
+    internal PipelineBuilder() { }
     private ContextBudget? _budget;
     private IScorer? _scorer;
     private List<(IScorer Scorer, double Weight)>? _scorerEntries;
@@ -46,11 +48,16 @@ public sealed class PipelineBuilder
     /// Cannot be combined with <see cref="WithScorer"/>.
     /// </summary>
     /// <param name="scorer">The scorer to add.</param>
-    /// <param name="weight">The relative weight for this scorer.</param>
+    /// <param name="weight">The relative weight for this scorer. Must be finite and greater than zero.</param>
     /// <returns>This builder for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="scorer"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="weight"/> is not finite or is less than or equal to zero.</exception>
     public PipelineBuilder AddScorer(IScorer scorer, double weight)
     {
         ArgumentNullException.ThrowIfNull(scorer);
+        if (!double.IsFinite(weight) || weight <= 0)
+            throw new ArgumentOutOfRangeException(nameof(weight), weight, "Weight must be finite and greater than zero.");
+
         _scorerEntries ??= [];
         _scorerEntries.Add((scorer, weight));
         return this;

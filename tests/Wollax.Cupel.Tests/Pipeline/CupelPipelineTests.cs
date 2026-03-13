@@ -284,6 +284,64 @@ public class CupelPipelineTests
         await Assert.That(result.Items.Count).IsEqualTo(2);
     }
 
+    // Null / empty input tests
+
+    [Test]
+    public async Task Execute_NullItems_ThrowsArgumentNull()
+    {
+        var pipeline = BuildPipeline();
+
+        await Assert.That(() => pipeline.Execute(null!))
+            .Throws<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task Execute_EmptyItems_ReturnsEmpty()
+    {
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute([]);
+
+        await Assert.That(result.Items.Count).IsEqualTo(0);
+        await Assert.That(result.TotalTokens).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task PinnedItems_CapturedScoreIs1_0()
+    {
+        // Capture the ScoredItem[] passed to placer to verify pinned score directly
+        var capturedScores = new List<(string Content, double Score)>();
+        var placer = new DelegatePlacer((items, trace) =>
+        {
+            for (var i = 0; i < items.Count; i++)
+                capturedScores.Add((items[i].Item.Content, items[i].Score));
+            var result = new ContextItem[items.Count];
+            for (var i = 0; i < items.Count; i++)
+                result[i] = items[i].Item;
+            return result;
+        });
+
+        var pinned = CreateItem("pinned", tokens: 10, pinned: true);
+        var normal = CreateItem("normal", tokens: 10, futureRelevanceHint: 0.5);
+
+        var pipeline = BuildPipeline(placer: placer);
+        pipeline.Execute([pinned, normal]);
+
+        var pinnedEntry = capturedScores.Find(x => x.Content == "pinned");
+        await Assert.That(pinnedEntry.Score).IsEqualTo(1.0);
+    }
+
+    [Test]
+    public async Task AllPinnedItems_ExecutesSuccessfully()
+    {
+        var pinned1 = CreateItem("p1", tokens: 10, pinned: true);
+        var pinned2 = CreateItem("p2", tokens: 10, pinned: true);
+
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute([pinned1, pinned2]);
+
+        await Assert.That(result.Items.Count).IsEqualTo(2);
+    }
+
     // Classify validation tests
 
     [Test]

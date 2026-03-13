@@ -3,13 +3,15 @@ using Wollax.Cupel.Diagnostics;
 namespace Wollax.Cupel;
 
 /// <summary>
-/// Placer that positions highest-scored items at the edges (start and end)
-/// of the context window, exploiting primacy and recency bias in LLM attention.
+/// Placer that distributes items in a U-shaped pattern across the context window,
+/// placing the highest-scored items at the start and end positions where LLM
+/// attention is strongest (primacy and recency bias).
 /// </summary>
 /// <remarks>
-/// Items are sorted by score descending, then alternately placed at the left
-/// and right edges. The result is a U-shaped attention curve where the most
-/// important items occupy positions with the strongest attention signal.
+/// Items are sorted by score descending. The highest-scored item is placed at
+/// the start (left edge), the second-highest at the end (right edge), the third
+/// at position 1, and so on — alternating inward from both edges. Lower-scored
+/// items end up in the middle where attention is weakest.
 /// </remarks>
 public sealed class UShapedPlacer : IPlacer
 {

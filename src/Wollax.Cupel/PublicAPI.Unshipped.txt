@@ -159,7 +159,6 @@ Wollax.Cupel.CupelPipeline.Execute(System.Collections.Generic.IReadOnlyList<Woll
 Wollax.Cupel.CupelPipeline.ExecuteAsync(Wollax.Cupel.IContextSource! source, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wollax.Cupel.ContextResult!>!
 static Wollax.Cupel.CupelPipeline.CreateBuilder() -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder
-Wollax.Cupel.PipelineBuilder.PipelineBuilder() -> void
 Wollax.Cupel.PipelineBuilder.WithBudget(Wollax.Cupel.ContextBudget! budget) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.WithScorer(Wollax.Cupel.IScorer! scorer) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.AddScorer(Wollax.Cupel.IScorer! scorer, double weight) -> Wollax.Cupel.PipelineBuilder!

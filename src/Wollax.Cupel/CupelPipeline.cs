@@ -44,10 +44,13 @@ public sealed class CupelPipeline
     /// <param name="items">The context items to process.</param>
     /// <param name="traceCollector">Optional trace collector for diagnostics.</param>
     /// <returns>The pipeline result containing selected and ordered items.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="items"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">Pinned items exceed available token budget.</exception>
     public ContextResult Execute(
         IReadOnlyList<ContextItem> items,
         ITraceCollector? traceCollector = null)
     {
+        ArgumentNullException.ThrowIfNull(items);
         var trace = traceCollector ?? NullTraceCollector.Instance;
         var sw = trace.IsEnabled ? Stopwatch.StartNew() : null;
 
@@ -135,11 +138,15 @@ public sealed class CupelPipeline
                 }
             }
 
+            // Collect surviving indices via indexed iteration (zero-allocation discipline)
             deduped = new ScoredItem[bestByContent.Count];
             var dedupIdx = 0;
-            foreach (var kvp in bestByContent)
+            for (var i = 0; i < scored.Length; i++)
             {
-                deduped[dedupIdx++] = scored[kvp.Value];
+                if (bestByContent.TryGetValue(scored[i].Item.Content, out var bestIdx) && bestIdx == i)
+                {
+                    deduped[dedupIdx++] = scored[i];
+                }
             }
         }
         else
@@ -178,7 +185,7 @@ public sealed class CupelPipeline
         }
 
         // SLICE: create adjusted budget and slice
-        var effectiveMax = _budget.MaxTokens - _budget.OutputReserve - pinnedTokens;
+        var effectiveMax = Math.Max(0, _budget.MaxTokens - _budget.OutputReserve - pinnedTokens);
         var effectiveTarget = Math.Max(0, _budget.TargetTokens - pinnedTokens);
         effectiveTarget = Math.Min(effectiveTarget, effectiveMax);
 
@@ -215,7 +222,7 @@ public sealed class CupelPipeline
             }
         }
 
-        // MERGE PINNED: add pinned items with score 1.0
+        // MERGE PINNED: add pinned items with effective score 1.0 (highest possible ordinal ranking)
         var merged = new ScoredItem[pinned.Count + slicedScored.Count];
         for (var i = 0; i < pinned.Count; i++)
         {

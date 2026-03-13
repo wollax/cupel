@@ -112,6 +112,90 @@ public class PipelineBuilderTests
         await Assert.That(pipeline).IsNotNull();
     }
 
+    // AddScorer weight validation tests
+
+    [Test]
+    public async Task AddScorer_ZeroWeight_Throws()
+    {
+        var builder = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget());
+
+        await Assert.That(() => builder.AddScorer(new ReflexiveScorer(), 0.0))
+            .Throws<ArgumentOutOfRangeException>();
+    }
+
+    [Test]
+    public async Task AddScorer_NegativeWeight_Throws()
+    {
+        var builder = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget());
+
+        await Assert.That(() => builder.AddScorer(new ReflexiveScorer(), -1.0))
+            .Throws<ArgumentOutOfRangeException>();
+    }
+
+    [Test]
+    public async Task AddScorer_NaNWeight_Throws()
+    {
+        var builder = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget());
+
+        await Assert.That(() => builder.AddScorer(new ReflexiveScorer(), double.NaN))
+            .Throws<ArgumentOutOfRangeException>();
+    }
+
+    [Test]
+    public async Task AddScorer_InfinityWeight_Throws()
+    {
+        var builder = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget());
+
+        await Assert.That(() => builder.AddScorer(new ReflexiveScorer(), double.PositiveInfinity))
+            .Throws<ArgumentOutOfRangeException>();
+    }
+
+    // Behavioral verification tests
+
+    [Test]
+    public async Task WithScorer_AppliedInPipeline()
+    {
+        var scorerCalled = false;
+        var scorer = new DelegateScorer((item, allItems) =>
+        {
+            scorerCalled = true;
+            return 0.5;
+        });
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithScorer(scorer)
+            .Build();
+
+        pipeline.Execute([CreateItem()]);
+
+        await Assert.That(scorerCalled).IsTrue();
+    }
+
+    [Test]
+    public async Task AddScorer_CompositeAppliedInPipeline()
+    {
+        var scorerACalled = false;
+        var scorerBCalled = false;
+        var scorerA = new DelegateScorer((item, allItems) => { scorerACalled = true; return 0.5; });
+        var scorerB = new DelegateScorer((item, allItems) => { scorerBCalled = true; return 0.5; });
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .AddScorer(scorerA, 1.0)
+            .AddScorer(scorerB, 1.0)
+            .Build();
+
+        pipeline.Execute([CreateItem()]);
+
+        await Assert.That(scorerACalled).IsTrue();
+        await Assert.That(scorerBCalled).IsTrue();
+    }
+
     // Override tests
 
     [Test]
@@ -177,6 +261,13 @@ public class PipelineBuilderTests
     }
 
     // Test helpers
+
+    private sealed class DelegateScorer(Func<ContextItem, IReadOnlyList<ContextItem>, double> scoreFunc)
+        : IScorer
+    {
+        public double Score(ContextItem item, IReadOnlyList<ContextItem> allItems) =>
+            scoreFunc(item, allItems);
+    }
 
     private sealed class DelegateSlicer(
         Func<IReadOnlyList<ScoredItem>, ContextBudget, ITraceCollector, IReadOnlyList<ContextItem>> sliceFunc)
