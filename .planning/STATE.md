@@ -4,13 +4,13 @@
 
 Phase: 5 of 12 — Pipeline Assembly & Basic Execution
 Milestone: v1.0 Core Library
-Plan: 2 of 3
-Status: In progress
-Last activity: 2026-03-13 — Completed 05-02-PLAN.md (CupelPipeline, PipelineBuilder)
+Plan: 3 of 3
+Status: Complete
+Last activity: 2026-03-13 — Completed 05-03-PLAN.md (PipelineBenchmark)
 
 ## Phase Overview
 
-NEXT_PHASE=5
+NEXT_PHASE=6
 
 | Phase | Status |
 |-------|--------|
@@ -18,7 +18,7 @@ NEXT_PHASE=5
 | 2. Interfaces & Diagnostics Infrastructure | ● complete (2/2 plans) |
 | 3. Individual Scorers | ● complete (3/3 plans) |
 | 4. Composite Scoring | ● complete (3/3 plans) |
-| 5. Pipeline Assembly & Basic Execution | ◐ in progress (1/3 plans) |
+| 5. Pipeline Assembly & Basic Execution | ● complete (3/3 plans) |
 | 6. Advanced Slicers & Quota System | ○ planned |
 | 7. Explainability & Overflow Handling | ○ planned |
 | 8. Policy System & Named Presets | ○ planned |
