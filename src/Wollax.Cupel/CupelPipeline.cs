@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Wollax.Cupel.Diagnostics;
 
 namespace Wollax.Cupel;
@@ -48,6 +49,7 @@ public sealed class CupelPipeline
         ITraceCollector? traceCollector = null)
     {
         var trace = traceCollector ?? NullTraceCollector.Instance;
+        var sw = trace.IsEnabled ? Stopwatch.StartNew() : null;
 
         // CLASSIFY: partition into pinned and scoreable, skip negative tokens
         var pinned = new List<ContextItem>();
@@ -71,6 +73,17 @@ public sealed class CupelPipeline
             }
         }
 
+        if (sw is not null)
+        {
+            trace.RecordStageEvent(new TraceEvent
+            {
+                Stage = PipelineStage.Classify,
+                Duration = sw.Elapsed,
+                ItemCount = pinned.Count + scoreable.Count
+            });
+            sw.Restart();
+        }
+
         // VALIDATE PINNED BUDGET
         var pinnedTokens = 0;
         for (var i = 0; i < pinned.Count; i++)
@@ -88,6 +101,17 @@ public sealed class CupelPipeline
         for (var i = 0; i < scoreable.Count; i++)
         {
             scored[i] = new ScoredItem(scoreable[i], _scorer.Score(scoreable[i], scoreable));
+        }
+
+        if (sw is not null)
+        {
+            trace.RecordStageEvent(new TraceEvent
+            {
+                Stage = PipelineStage.Score,
+                Duration = sw.Elapsed,
+                ItemCount = scored.Length
+            });
+            sw.Restart();
         }
 
         // DEDUPLICATE
@@ -123,6 +147,17 @@ public sealed class CupelPipeline
             deduped = scored;
         }
 
+        if (sw is not null)
+        {
+            trace.RecordStageEvent(new TraceEvent
+            {
+                Stage = PipelineStage.Deduplicate,
+                Duration = sw.Elapsed,
+                ItemCount = deduped.Length
+            });
+            sw.Restart();
+        }
+
         // SORT: stable sort by score descending
         var sortKeys = new (double Score, int Index)[deduped.Length];
         for (var i = 0; i < deduped.Length; i++)
@@ -153,6 +188,17 @@ public sealed class CupelPipeline
 
         var slicedItems = _slicer.Slice(sorted, adjustedBudget, trace);
 
+        if (sw is not null)
+        {
+            trace.RecordStageEvent(new TraceEvent
+            {
+                Stage = PipelineStage.Slice,
+                Duration = sw.Elapsed,
+                ItemCount = slicedItems.Count
+            });
+            sw.Restart();
+        }
+
         // RE-ASSOCIATE SCORES: match slicer output back to scored items
         var slicedSet = new HashSet<ContextItem>(ReferenceEqualityComparer.Instance);
         for (var i = 0; i < slicedItems.Count; i++)
@@ -182,6 +228,16 @@ public sealed class CupelPipeline
 
         // PLACE
         var placed = _placer.Place(merged, trace);
+
+        if (sw is not null)
+        {
+            trace.RecordStageEvent(new TraceEvent
+            {
+                Stage = PipelineStage.Place,
+                Duration = sw.Elapsed,
+                ItemCount = placed.Count
+            });
+        }
 
         // BUILD RESULT
         SelectionReport? report = null;
