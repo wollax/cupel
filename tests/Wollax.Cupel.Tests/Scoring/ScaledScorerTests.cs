@@ -172,4 +172,32 @@ public class ScaledScorerTests
 
         await Assert.That(score).IsEqualTo(0.5);
     }
+
+    // === ScaledScorer wrapping CompositeScorer ===
+
+    [Test]
+    public async Task ScaledComposite_OutputInZeroToOne()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var composite = new CompositeScorer([
+            (new RecencyScorer(), 2.0),
+            (new PriorityScorer(), 1.0),
+            (new ReflexiveScorer(), 1.0)
+        ]);
+        var scaled = new ScaledScorer(composite);
+
+        var items = new List<ContextItem>
+        {
+            CreateItem(content: "a", futureRelevanceHint: 0.9, priority: 10, timestamp: now),
+            CreateItem(content: "b", futureRelevanceHint: 0.1, priority: 1, timestamp: now.AddHours(-2)),
+            CreateItem(content: "c", futureRelevanceHint: 0.5, priority: 5, timestamp: now.AddHours(-1))
+        };
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            var score = scaled.Score(items[i], items);
+            await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+            await Assert.That(score).IsLessThanOrEqualTo(1.0);
+        }
+    }
 }

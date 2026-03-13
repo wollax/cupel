@@ -350,4 +350,174 @@ public class CompositeScorerTests
 
         await Assert.That(score).IsEqualTo(0.6);
     }
+
+    // === CompositeScorer + ScaledScorer Integration ===
+
+    [Test]
+    public async Task CompositeWithScaledScorer_ProducesValidScores()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var composite = new CompositeScorer([
+            (new ScaledScorer(new RecencyScorer()), 2.0),
+            (new PriorityScorer(), 1.0)
+        ]);
+
+        var items = new List<ContextItem>
+        {
+            CreateItem(content: "a", priority: 5, timestamp: now),
+            CreateItem(content: "b", priority: 10, timestamp: now.AddHours(-1)),
+            CreateItem(content: "c", priority: 1, timestamp: now.AddHours(-2))
+        };
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            var score = composite.Score(items[i], items);
+            await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+            await Assert.That(score).IsLessThanOrEqualTo(1.0);
+        }
+    }
+
+    [Test]
+    public async Task CompositeWithScaledScorer_OrdinalRelationships()
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        // ScaledRecency weight 3, Priority weight 1
+        // ScaledRecency normalizes recency to [0,1] via min-max across items
+        var composite = new CompositeScorer([
+            (new ScaledScorer(new RecencyScorer()), 3.0),
+            (new PriorityScorer(), 1.0)
+        ]);
+
+        // Item A: newest (scaled recency=1.0), low priority
+        var itemA = CreateItem(content: "a", priority: 1, timestamp: now);
+        // Item B: oldest (scaled recency=0.0), high priority
+        var itemB = CreateItem(content: "b", priority: 10, timestamp: now.AddHours(-2));
+        var allItems = new List<ContextItem> { itemA, itemB };
+
+        var scoreA = composite.Score(itemA, allItems);
+        var scoreB = composite.Score(itemB, allItems);
+
+        // Scaled recency dominates (weight 3x) — newest item wins
+        await Assert.That(scoreA).IsGreaterThan(scoreB);
+    }
+
+    [Test]
+    public async Task ScaledScorerWrappingComposite_Succeeds()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var inner = new CompositeScorer([
+            (new RecencyScorer(), 2.0),
+            (new PriorityScorer(), 1.0)
+        ]);
+        var scaled = new ScaledScorer(inner);
+
+        var items = new List<ContextItem>
+        {
+            CreateItem(content: "a", priority: 5, timestamp: now),
+            CreateItem(content: "b", priority: 10, timestamp: now.AddHours(-1)),
+            CreateItem(content: "c", priority: 1, timestamp: now.AddHours(-2))
+        };
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            var score = scaled.Score(items[i], items);
+            await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+            await Assert.That(score).IsLessThanOrEqualTo(1.0);
+        }
+    }
+
+    [Test]
+    public async Task CompositeWithScaledComposite_NoCycleDetectionFalsePositive()
+    {
+        // CompositeScorer containing ScaledScorer(anotherComposite) — valid DAG, no cycle
+        var innerComposite = new CompositeScorer([
+            (new RecencyScorer(), 1.0),
+            (new ReflexiveScorer(), 1.0)
+        ]);
+        var scaledComposite = new ScaledScorer(innerComposite);
+
+        var outer = new CompositeScorer([
+            (scaledComposite, 2.0),
+            (new PriorityScorer(), 1.0)
+        ]);
+
+        var now = DateTimeOffset.UtcNow;
+        var items = new List<ContextItem>
+        {
+            CreateItem(content: "a", futureRelevanceHint: 0.8, priority: 5, timestamp: now),
+            CreateItem(content: "b", futureRelevanceHint: 0.2, priority: 10, timestamp: now.AddHours(-1))
+        };
+
+        // Should not throw — valid DAG
+        var score = outer.Score(items[0], items);
+
+        await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+        await Assert.That(score).IsLessThanOrEqualTo(1.0);
+    }
+
+    // === Stable Sort Tiebreaking ===
+
+    [Test]
+    public async Task IdenticalCompositeScores_PreserveInsertionOrder()
+    {
+        // All items produce identical composite scores (FutureRelevanceHint=null → 0.0)
+        var items = new List<ContextItem>();
+        for (var i = 0; i < 5; i++)
+            items.Add(CreateItem(content: $"item-{i}"));
+
+        var scorer = new CompositeScorer([(new ReflexiveScorer(), 1.0)]);
+
+        var scored = new (double Score, int Index)[items.Count];
+        for (var i = 0; i < items.Count; i++)
+            scored[i] = (scorer.Score(items[i], items), i);
+
+        Array.Sort(scored, static (a, b) =>
+        {
+            var cmp = b.Score.CompareTo(a.Score); // descending
+            return cmp != 0 ? cmp : a.Index.CompareTo(b.Index); // ascending index
+        });
+
+        // Insertion order preserved for identical scores
+        for (var i = 0; i < scored.Length; i++)
+            await Assert.That(scored[i].Index).IsEqualTo(i);
+    }
+
+    [Test]
+    public async Task TiedScoresWithDifferentInsertionOrder_StableSort()
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        // Group A (items 0,1,2): same timestamp → same recency score
+        // Group B (items 3,4): different timestamp → different recency score, but tied within group
+        var items = new List<ContextItem>
+        {
+            CreateItem(content: "a0", timestamp: now),
+            CreateItem(content: "a1", timestamp: now),
+            CreateItem(content: "a2", timestamp: now),
+            CreateItem(content: "b0", timestamp: now.AddHours(-1)),
+            CreateItem(content: "b1", timestamp: now.AddHours(-1))
+        };
+
+        var scorer = new CompositeScorer([(new RecencyScorer(), 1.0)]);
+
+        var scored = new (double Score, int Index)[items.Count];
+        for (var i = 0; i < items.Count; i++)
+            scored[i] = (scorer.Score(items[i], items), i);
+
+        Array.Sort(scored, static (a, b) =>
+        {
+            var cmp = b.Score.CompareTo(a.Score); // descending
+            return cmp != 0 ? cmp : a.Index.CompareTo(b.Index); // ascending index
+        });
+
+        // Group A (higher recency) comes first, in insertion order
+        await Assert.That(scored[0].Index).IsEqualTo(0);
+        await Assert.That(scored[1].Index).IsEqualTo(1);
+        await Assert.That(scored[2].Index).IsEqualTo(2);
+
+        // Group B comes second, in insertion order
+        await Assert.That(scored[3].Index).IsEqualTo(3);
+        await Assert.That(scored[4].Index).IsEqualTo(4);
+    }
 }
