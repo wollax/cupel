@@ -260,4 +260,94 @@ public class CompositeScorerTests
         // A wins
         await Assert.That(scoreA).IsGreaterThan(scoreB);
     }
+
+    // === Cycle Detection (valid DAGs — no false positives) ===
+
+    [Test]
+    public async Task DeepNesting_Succeeds()
+    {
+        // A contains B, B contains C, C contains RecencyScorer — three levels deep
+        var c = new CompositeScorer([(new RecencyScorer(), 1.0)]);
+        var b = new CompositeScorer([(c, 1.0)]);
+        var a = new CompositeScorer([(b, 1.0)]);
+
+        var now = DateTimeOffset.UtcNow;
+        var item = CreateItem(timestamp: now);
+        var allItems = new List<ContextItem>
+        {
+            item,
+            CreateItem(content: "other", timestamp: now.AddHours(-1))
+        };
+
+        var score = a.Score(item, allItems);
+
+        // Should produce a valid score without throwing
+        await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+        await Assert.That(score).IsLessThanOrEqualTo(1.0);
+    }
+
+    [Test]
+    public async Task SameScorerInstanceReused_Succeeds()
+    {
+        // Same RecencyScorer instance in two branches — diamond DAG, not a cycle
+        var recency = new RecencyScorer();
+        var composite = new CompositeScorer([
+            (recency, 2.0),
+            (recency, 1.0)
+        ]);
+
+        var now = DateTimeOffset.UtcNow;
+        var item = CreateItem(timestamp: now);
+        var allItems = new List<ContextItem>
+        {
+            item,
+            CreateItem(content: "other", timestamp: now.AddHours(-1))
+        };
+
+        var score = composite.Score(item, allItems);
+
+        await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+        await Assert.That(score).IsLessThanOrEqualTo(1.0);
+    }
+
+    [Test]
+    public async Task DuplicateScorerType_DifferentInstances_Succeeds()
+    {
+        // Two separate RecencyScorer instances — valid, no cycle
+        var composite = new CompositeScorer([
+            (new RecencyScorer(), 1.0),
+            (new RecencyScorer(), 1.0)
+        ]);
+
+        var now = DateTimeOffset.UtcNow;
+        var item = CreateItem(timestamp: now);
+        var allItems = new List<ContextItem>
+        {
+            item,
+            CreateItem(content: "other", timestamp: now.AddHours(-1))
+        };
+
+        var score = composite.Score(item, allItems);
+
+        await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+        await Assert.That(score).IsLessThanOrEqualTo(1.0);
+    }
+
+    [Test]
+    public async Task CompositeInDiamondDAG_Succeeds()
+    {
+        // Shared inner composite used in two branches of an outer composite — diamond DAG
+        var shared = new CompositeScorer([(new ReflexiveScorer(), 1.0)]);
+        var outer = new CompositeScorer([
+            (shared, 1.0),
+            (shared, 2.0)
+        ]);
+
+        var item = CreateItem(futureRelevanceHint: 0.6);
+        var allItems = new List<ContextItem> { item };
+
+        var score = outer.Score(item, allItems);
+
+        await Assert.That(score).IsEqualTo(0.6);
+    }
 }
