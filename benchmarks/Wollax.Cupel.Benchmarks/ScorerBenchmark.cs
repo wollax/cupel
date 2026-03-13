@@ -26,6 +26,9 @@ public class ScorerBenchmark
     private KindScorer _kindScorer = null!;
     private TagScorer _tagScorer = null!;
     private FrequencyScorer _frequencyScorer = null!;
+    private CompositeScorer _compositeScorer = null!;
+    private ScaledScorer _scaledScorer = null!;
+    private ScaledScorer _scaledCompositeScorer = null!;
 
     [Params(100, 500)]
     public int ItemCount { get; set; }
@@ -61,6 +64,13 @@ public class ScorerBenchmark
             ["tag-4"] = 0.2,
         });
         _frequencyScorer = new FrequencyScorer();
+        _compositeScorer = new CompositeScorer([
+            (new RecencyScorer(), 2.0),
+            (new PriorityScorer(), 1.0),
+            (new ReflexiveScorer(), 1.0)
+        ]);
+        _scaledScorer = new ScaledScorer(new RecencyScorer());
+        _scaledCompositeScorer = new ScaledScorer(_compositeScorer);
     }
 
     [Benchmark]
@@ -125,6 +135,39 @@ public class ScorerBenchmark
         for (var i = 0; i < _items.Length; i++)
         {
             sum += _frequencyScorer.Score(_items[i], _items);
+        }
+        return sum;
+    }
+
+    [Benchmark]
+    public double CompositeScorer_Score()
+    {
+        var sum = 0.0;
+        for (var i = 0; i < _items.Length; i++)
+        {
+            sum += _compositeScorer.Score(_items[i], _items);
+        }
+        return sum;
+    }
+
+    [Benchmark]
+    public double ScaledScorer_Score()
+    {
+        var sum = 0.0;
+        for (var i = 0; i < _items.Length; i++)
+        {
+            sum += _scaledScorer.Score(_items[i], _items);
+        }
+        return sum;
+    }
+
+    [Benchmark]
+    public double ScaledCompositeScorer_Score()
+    {
+        var sum = 0.0;
+        for (var i = 0; i < _items.Length; i++)
+        {
+            sum += _scaledCompositeScorer.Score(_items[i], _items);
         }
         return sum;
     }
