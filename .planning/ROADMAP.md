@@ -284,10 +284,12 @@ Plans:
 3. Published to crates.io with documentation
 4. Assay project can consume the crate as a dependency
 
-**Plans:** 0 plans
+**Plans:** 3 plans in 3 waves
 
 Plans:
-- [ ] TBD (run /kata-plan-phase 12 to break down)
+- [ ] 12-01-PLAN.md — Crate scaffold, data model types, error enum, Scorer trait, and all 8 scorer implementations (wave 1)
+- [ ] 12-02-PLAN.md — Slicer trait, 3 slicers, Placer trait, 2 placers, pipeline stages, and Pipeline orchestrator (wave 2)
+- [ ] 12-03-PLAN.md — Conformance test suite: copy 28 TOML vectors, build test runner, pass all required tests (wave 3)
 
 ---
 
