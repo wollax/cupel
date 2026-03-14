@@ -1,0 +1,15 @@
+[book]
+title = "Cupel Specification"
+authors = ["Cupel Contributors"]
+description = "Language-agnostic specification for the Cupel context selection algorithm"
+language = "en"
+src = "src"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+smart-punctuation = true
+git-repository-url = "https://github.com/wollax/cupel"
+edit-url-template = "https://github.com/wollax/cupel/edit/main/spec/{path}"
+site-url = "/cupel/"
+additional-css = []
