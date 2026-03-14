@@ -171,9 +171,9 @@ Plans:
 **Plans:** 3 plans in 3 waves
 
 Plans:
-- [ ] 07-01-PLAN.md — Explainability and overflow data types (TDD): enums, records, ReportBuilder (wave 1)
-- [ ] 07-02-PLAN.md — Pipeline integration: ExecuteCore, exclusion tracking, overflow handling, DryRun (wave 2)
-- [ ] 07-03-PLAN.md — PublicAPI surface update and end-to-end integration tests (wave 3)
+- [x] 07-01-PLAN.md — Explainability and overflow data types (TDD): enums, records, ReportBuilder (wave 1)
+- [x] 07-02-PLAN.md — Pipeline integration: ExecuteCore, exclusion tracking, overflow handling, DryRun (wave 2)
+- [x] 07-03-PLAN.md — PublicAPI surface update and end-to-end integration tests (wave 3)
 
 ---
 
@@ -278,7 +278,7 @@ Plans:
 | 4 | Composite Scoring | SCORE-08, SCORE-09 | ● complete |
 | 5 | Pipeline Assembly & Basic Execution | PIPE-03, PIPE-04, PIPE-05, SLICE-02, PLACE-02, PLACE-03, API-02 | ● complete |
 | 6 | Advanced Slicers & Quota System | SLICE-03, SLICE-04, SLICE-05, SLICE-06 | ● complete |
-| 7 | Explainability & Overflow Handling | TRACE-05, TRACE-06 | ◐ ready (3 plans) |
+| 7 | Explainability & Overflow Handling | TRACE-05, TRACE-06 | ● complete |
 | 8 | Policy System & Named Presets | API-01, API-03, POLICY-01, POLICY-02, POLICY-03 | ○ planned |
 | 9 | Serialization & JSON Package | JSON-02, JSON-03, JSON-04, PKG-04 | ○ planned |
 | 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ○ planned |

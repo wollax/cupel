@@ -41,8 +41,8 @@
 - [x] **TRACE-02**: ITraceCollector with NullTraceCollector (no-op default) and DiagnosticTraceCollector
 - [x] **TRACE-03**: Trace event construction gated (IsEnabled check before allocation)
 - [x] **TRACE-04**: Explicit trace propagation (no AsyncLocal)
-- [ ] **TRACE-05**: SelectionReport / DryRun() returning included items with scores, excluded items with ExclusionReason enum
-- [ ] **TRACE-06**: OverflowStrategy enum (Throw | Truncate | Proceed) with optional observer callback
+- [x] **TRACE-05**: SelectionReport / DryRun() returning included items with scores, excluded items with ExclusionReason enum
+- [x] **TRACE-06**: OverflowStrategy enum (Throw | Truncate | Proceed) with optional observer callback
 
 ## API Surface
 
@@ -128,8 +128,8 @@
 | TRACE-02 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | TRACE-03 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | TRACE-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
-| TRACE-05 | Phase 7: Explainability & Overflow Handling | ○ planned |
-| TRACE-06 | Phase 7: Explainability & Overflow Handling | ○ planned |
+| TRACE-05 | Phase 7: Explainability & Overflow Handling | ● complete |
+| TRACE-06 | Phase 7: Explainability & Overflow Handling | ● complete |
 | API-01 | Phase 8: Policy System & Named Presets | ○ planned |
 | API-02 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
 | API-03 | Phase 8: Policy System & Named Presets | ○ planned |
