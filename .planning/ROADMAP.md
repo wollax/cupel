@@ -261,10 +261,12 @@ Plans:
 3. Test vectors / conformance suite defined so implementations can validate correctness
 4. Specification versioned and published (e.g., as a standalone document or GitHub Pages)
 
-**Plans:** 0 plans
+**Plans:** 3 plans in 3 waves
 
 Plans:
-- [ ] TBD (run /kata-plan-phase 11 to break down)
+- [ ] 11-01-PLAN.md — mdBook scaffold, introduction, data model, and pipeline stage chapters (wave 1)
+- [ ] 11-02-PLAN.md — Scorer, slicer, and placer algorithm specification chapters (wave 2)
+- [ ] 11-03-PLAN.md — Conformance test suite (TOML vectors), conformance chapters, and GitHub Pages workflow (wave 3)
 
 ---
 
