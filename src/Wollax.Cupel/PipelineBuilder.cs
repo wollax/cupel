@@ -1,3 +1,4 @@
+using Wollax.Cupel.Diagnostics;
 using Wollax.Cupel.Scoring;
 using Wollax.Cupel.Slicing;
 
@@ -18,6 +19,8 @@ public sealed class PipelineBuilder
     private IPlacer? _placer;
     private IAsyncSlicer? _asyncSlicer;
     private bool _deduplicationEnabled = true;
+    private OverflowStrategy _overflowStrategy = OverflowStrategy.Throw;
+    private Action<OverflowEvent>? _overflowObserver;
 
     /// <summary>
     /// Sets the token budget for the pipeline.
@@ -160,6 +163,24 @@ public sealed class PipelineBuilder
     }
 
     /// <summary>
+    /// Configures the overflow strategy for when selected items exceed the token budget
+    /// after merging pinned and sliced items.
+    /// </summary>
+    /// <param name="strategy">The overflow strategy to apply.</param>
+    /// <param name="onOverflow">Optional callback invoked when <see cref="OverflowStrategy.Proceed"/> is used and overflow occurs.</param>
+    /// <returns>This builder for chaining.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="strategy"/> is not a defined enum value.</exception>
+    public PipelineBuilder WithOverflowStrategy(OverflowStrategy strategy, Action<OverflowEvent>? onOverflow = null)
+    {
+        if (!Enum.IsDefined(strategy))
+            throw new ArgumentOutOfRangeException(nameof(strategy), strategy, "Strategy must be a defined OverflowStrategy value.");
+
+        _overflowStrategy = strategy;
+        _overflowObserver = onOverflow;
+        return this;
+    }
+
+    /// <summary>
     /// Validates configuration and creates a <see cref="CupelPipeline"/>.
     /// </summary>
     /// <exception cref="InvalidOperationException">
@@ -189,6 +210,8 @@ public sealed class PipelineBuilder
             _placer ?? new ChronologicalPlacer(),
             _budget,
             _deduplicationEnabled,
-            _asyncSlicer);
+            _asyncSlicer,
+            _overflowStrategy,
+            _overflowObserver);
     }
 }

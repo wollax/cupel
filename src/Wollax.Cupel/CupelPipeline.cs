@@ -329,6 +329,65 @@ public sealed class CupelPipeline
             }
         }
 
+        // OVERFLOW DETECTION: check if merged tokens exceed TargetTokens
+        var mergedTokens = 0;
+        for (var i = 0; i < merged.Length; i++)
+            mergedTokens += merged[i].Item.Tokens;
+
+        if (mergedTokens > _budget.TargetTokens)
+        {
+            switch (_overflowStrategy)
+            {
+                case OverflowStrategy.Throw:
+                    throw new OverflowException(
+                        $"Selected items require {mergedTokens} tokens, exceeding the target budget of {_budget.TargetTokens} tokens ({mergedTokens - _budget.TargetTokens} tokens over budget).");
+
+                case OverflowStrategy.Truncate:
+                {
+                    var hasPinned = pinned.Count > 0;
+                    var truncateReason = hasPinned
+                        ? ExclusionReason.PinnedOverride
+                        : ExclusionReason.BudgetExceeded;
+
+                    // Build a list from merged, removing lowest-scored non-pinned items from the end
+                    var truncated = new List<ScoredItem>(merged.Length);
+                    for (var i = 0; i < merged.Length; i++)
+                        truncated.Add(merged[i]);
+
+                    // Sort by score ascending so lowest-scored are first, but keep pinned items
+                    // We iterate from end of merged (lowest scored sliced items) and remove
+                    var currentTokens = mergedTokens;
+                    for (var i = truncated.Count - 1; i >= 0 && currentTokens > _budget.TargetTokens; i--)
+                    {
+                        if (truncated[i].Item.Pinned)
+                            continue;
+
+                        currentTokens -= truncated[i].Item.Tokens;
+                        reportBuilder?.AddExcluded(truncated[i].Item, truncated[i].Score, truncateReason);
+                        truncated.RemoveAt(i);
+                    }
+
+                    merged = truncated.ToArray();
+                    break;
+                }
+
+                case OverflowStrategy.Proceed:
+                {
+                    var overflowItems = new List<ContextItem>();
+                    for (var i = 0; i < merged.Length; i++)
+                        overflowItems.Add(merged[i].Item);
+
+                    _overflowObserver?.Invoke(new OverflowEvent
+                    {
+                        TokensOverBudget = mergedTokens - _budget.TargetTokens,
+                        OverflowingItems = overflowItems,
+                        Budget = _budget
+                    });
+                    break;
+                }
+            }
+        }
+
         // PLACE
         var placed = _placer.Place(merged, trace);
 
