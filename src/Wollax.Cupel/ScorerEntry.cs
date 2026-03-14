@@ -32,24 +32,35 @@ public sealed class ScorerEntry
     public IReadOnlyDictionary<string, double>? TagWeights { get; }
 
     /// <summary>
+    /// Inner scorer entry for the <see cref="ScorerType.Scaled"/> type.
+    /// Must be specified when <see cref="Type"/> is Scaled.
+    /// </summary>
+    [JsonPropertyName("innerScorer")]
+    public ScorerEntry? InnerScorer { get; }
+
+    /// <summary>
     /// Creates a new scorer entry with the specified type, weight, and optional type-specific configuration.
     /// </summary>
     /// <param name="type">The built-in scorer algorithm to use.</param>
     /// <param name="weight">Relative weight — must be positive and finite.</param>
     /// <param name="kindWeights">Optional per-kind weight overrides for the Kind scorer.</param>
     /// <param name="tagWeights">Required tag-to-weight mapping when <paramref name="type"/> is <see cref="ScorerType.Tag"/>.</param>
+    /// <param name="innerScorer">Required inner scorer when <paramref name="type"/> is <see cref="ScorerType.Scaled"/>.</param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="weight"/> is not positive or not finite.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="type"/> is <see cref="ScorerType.Tag"/> and <paramref name="tagWeights"/> is null.
+    /// Thrown when <paramref name="type"/> is <see cref="ScorerType.Tag"/> and <paramref name="tagWeights"/> is null,
+    /// or when <paramref name="type"/> is <see cref="ScorerType.Scaled"/> and <paramref name="innerScorer"/> is null,
+    /// or when <paramref name="type"/> is not <see cref="ScorerType.Scaled"/> and <paramref name="innerScorer"/> is not null.
     /// </exception>
     [JsonConstructor]
     public ScorerEntry(
         ScorerType type,
         double weight,
         IReadOnlyDictionary<ContextKind, double>? kindWeights = null,
-        IReadOnlyDictionary<string, double>? tagWeights = null)
+        IReadOnlyDictionary<string, double>? tagWeights = null,
+        ScorerEntry? innerScorer = null)
     {
         if (!Enum.IsDefined(type))
             throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown ScorerType value.");
@@ -66,9 +77,22 @@ public sealed class ScorerEntry
                 "TagWeights must be specified when Type is Tag.", nameof(tagWeights));
         }
 
+        if (type == ScorerType.Scaled && innerScorer is null)
+        {
+            throw new ArgumentException(
+                "InnerScorer must be specified when Type is Scaled.", nameof(innerScorer));
+        }
+
+        if (type != ScorerType.Scaled && innerScorer is not null)
+        {
+            throw new ArgumentException(
+                "InnerScorer must be null when Type is not Scaled.", nameof(innerScorer));
+        }
+
         Type = type;
         Weight = weight;
         KindWeights = kindWeights is not null ? new Dictionary<ContextKind, double>(kindWeights) : null;
         TagWeights = tagWeights is not null ? new Dictionary<string, double>(tagWeights) : null;
+        InnerScorer = innerScorer;
     }
 }

@@ -1,4 +1,6 @@
+using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Wollax.Cupel.Json;
 
@@ -9,9 +11,14 @@ namespace Wollax.Cupel.Json;
 /// </summary>
 public static class CupelJsonSerializer
 {
-    // Matches the [JsonStringEnumMemberName] values on ScorerType members
-    private static readonly string[] BuiltInScorerTypes =
-        ["recency", "priority", "kind", "tag", "frequency", "reflexive"];
+    // Derived from [JsonStringEnumMemberName] attributes on ScorerType members via reflection.
+    // Runs once at class load — no per-call overhead.
+    internal static readonly string[] BuiltInScorerTypes = Enum.GetValues<ScorerType>()
+        .Select(t => typeof(ScorerType)
+            .GetField(t.ToString())!
+            .GetCustomAttribute<JsonStringEnumMemberNameAttribute>()!
+            .Name)
+        .ToArray();
 
     private static readonly HashSet<string> BuiltInScorerTypeSet =
         new(BuiltInScorerTypes, StringComparer.OrdinalIgnoreCase);

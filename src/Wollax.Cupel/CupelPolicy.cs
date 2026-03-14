@@ -38,6 +38,13 @@ public sealed class CupelPolicy
     [JsonPropertyName("knapsackBucketSize")]
     public int? KnapsackBucketSize { get; }
 
+    /// <summary>
+    /// Batch size for the stream slicer. Must be null when <see cref="SlicerType"/> is not
+    /// <see cref="Cupel.SlicerType.Stream"/>, and must be positive when specified.
+    /// </summary>
+    [JsonPropertyName("streamBatchSize")]
+    public int? StreamBatchSize { get; }
+
     /// <summary>Optional per-kind quota constraints for budget allocation.</summary>
     [JsonPropertyName("quotas")]
     public IReadOnlyList<QuotaEntry>? Quotas { get; }
@@ -62,13 +69,15 @@ public sealed class CupelPolicy
     /// <param name="quotas">Optional per-kind quota constraints.</param>
     /// <param name="name">Optional policy name.</param>
     /// <param name="description">Optional policy description.</param>
+    /// <param name="streamBatchSize">Batch size for the stream slicer. Must be null unless slicer is Stream.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="scorers"/> is null.</exception>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="scorers"/> is empty, or when <paramref name="knapsackBucketSize"/>
-    /// is specified with a non-Knapsack slicer.
+    /// Thrown when <paramref name="scorers"/> is empty, when <paramref name="knapsackBucketSize"/>
+    /// is specified with a non-Knapsack slicer, when <paramref name="streamBatchSize"/> is specified
+    /// with a non-Stream slicer, or when quotas are specified with a Stream slicer.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="knapsackBucketSize"/> is not positive.
+    /// Thrown when <paramref name="knapsackBucketSize"/> or <paramref name="streamBatchSize"/> is not positive.
     /// </exception>
     [JsonConstructor]
     public CupelPolicy(
@@ -80,7 +89,8 @@ public sealed class CupelPolicy
         int? knapsackBucketSize = null,
         IReadOnlyList<QuotaEntry>? quotas = null,
         string? name = null,
-        string? description = null)
+        string? description = null,
+        int? streamBatchSize = null)
     {
         ArgumentNullException.ThrowIfNull(scorers);
 
@@ -106,12 +116,32 @@ public sealed class CupelPolicy
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(knapsackBucketSize.Value, nameof(knapsackBucketSize));
         }
 
+        if (streamBatchSize is not null && slicerType != SlicerType.Stream)
+        {
+            throw new ArgumentException(
+                "StreamBatchSize can only be specified when SlicerType is Stream.",
+                nameof(streamBatchSize));
+        }
+
+        if (streamBatchSize is not null)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(streamBatchSize.Value, nameof(streamBatchSize));
+        }
+
+        if (quotas is { Count: > 0 } && slicerType == SlicerType.Stream)
+        {
+            throw new ArgumentException(
+                "Quotas cannot be combined with SlicerType.Stream. QuotaSlice wraps ISlicer (sync) and cannot wrap StreamSlice (IAsyncSlicer).",
+                nameof(quotas));
+        }
+
         Scorers = [..scorers];
         SlicerType = slicerType;
         PlacerType = placerType;
         DeduplicationEnabled = deduplicationEnabled;
         OverflowStrategy = overflowStrategy;
         KnapsackBucketSize = knapsackBucketSize;
+        StreamBatchSize = streamBatchSize;
         Quotas = quotas is not null ? [..quotas] : null;
         Name = name;
         Description = description;
