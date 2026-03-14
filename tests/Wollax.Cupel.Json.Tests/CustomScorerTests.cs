@@ -99,6 +99,28 @@ public class CustomScorerTests
     }
 
     [Test]
+    public async Task Deserialize_UnknownScorerType_IncludesScaledInKnownTypes()
+    {
+        var json = """
+            {
+                "scorers": [{"type": "custom-foo", "weight": 1.0}],
+                "slicerType": "greedy",
+                "placerType": "chronological",
+                "deduplicationEnabled": true,
+                "overflowStrategy": "throw"
+            }
+            """;
+
+        var exception = await Assert.ThrowsAsync<JsonException>(
+            () => Task.FromResult(CupelJsonSerializer.Deserialize(json)));
+
+        var message = exception!.Message;
+        await Assert.That(message).Contains("custom-foo");
+        await Assert.That(message).Contains("scaled");
+        await Assert.That(message).Contains("RegisterScorer");
+    }
+
+    [Test]
     public async Task Deserialize_UnknownScorerType_WithRegistrations_ListsCustomTypes()
     {
         var json = """
