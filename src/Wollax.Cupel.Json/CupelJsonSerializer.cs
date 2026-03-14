@@ -13,6 +13,9 @@ public static class CupelJsonSerializer
     private static readonly string[] BuiltInScorerTypes =
         ["recency", "priority", "kind", "tag", "frequency", "reflexive"];
 
+    private static readonly HashSet<string> BuiltInScorerTypeSet =
+        new(BuiltInScorerTypes, StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Serializes a <see cref="CupelPolicy"/> to a JSON string.
     /// </summary>
@@ -60,9 +63,9 @@ public static class CupelJsonSerializer
             return JsonSerializer.Deserialize(json, context.CupelPolicy)
                 ?? throw new JsonException("Policy cannot be null. Received JSON literal 'null'.");
         }
-        catch (JsonException ex) when (ContainsUnknownScorerType(json))
+        catch (JsonException ex) when (FindUnknownScorerTypeName(json) is string unknownType)
         {
-            throw BuildUnknownScorerTypeException(ex, json, options);
+            throw BuildUnknownScorerTypeException(ex, unknownType, options);
         }
         catch (ArgumentException ex)
         {
@@ -141,7 +144,7 @@ public static class CupelJsonSerializer
     /// <exception cref="JsonException">Thrown when the JSON is malformed or cannot be deserialized.</exception>
     public static ContextBudget DeserializeBudget(string json) => DeserializeBudget(json, null);
 
-    private static bool ContainsUnknownScorerType(string json)
+    private static string? FindUnknownScorerTypeName(string json)
     {
         try
         {
@@ -149,34 +152,31 @@ public static class CupelJsonSerializer
             if (doc.RootElement.TryGetProperty("scorers", out var scorers) &&
                 scorers.ValueKind == JsonValueKind.Array)
             {
-                var builtInSet = new HashSet<string>(BuiltInScorerTypes, StringComparer.OrdinalIgnoreCase);
                 foreach (var scorer in scorers.EnumerateArray())
                 {
                     if (scorer.TryGetProperty("type", out var typeElement) &&
                         typeElement.ValueKind == JsonValueKind.String)
                     {
                         var typeName = typeElement.GetString()!;
-                        if (!builtInSet.Contains(typeName))
+                        if (!BuiltInScorerTypeSet.Contains(typeName))
                         {
-                            return true;
+                            return typeName;
                         }
                     }
                 }
             }
         }
-        catch
+        catch (Exception)
         {
             // If we can't parse, it's not an unknown scorer type issue
         }
 
-        return false;
+        return null;
     }
 
     private static JsonException BuildUnknownScorerTypeException(
-        JsonException innerException, string json, CupelJsonOptions? options)
+        JsonException innerException, string unknownTypeName, CupelJsonOptions? options)
     {
-        var unknownTypeName = ExtractUnknownScorerTypeName(json);
-
         var builtInList = string.Join(", ", BuiltInScorerTypes);
         var message = $"Unknown scorer type '{unknownTypeName}'. Known built-in types: {builtInList}.";
 
@@ -190,37 +190,6 @@ public static class CupelJsonSerializer
 
         return new JsonException(message, innerException.Path, innerException.LineNumber,
             innerException.BytePositionInLine, innerException);
-    }
-
-    private static string ExtractUnknownScorerTypeName(string json)
-    {
-        try
-        {
-            using var doc = JsonDocument.Parse(json);
-            if (doc.RootElement.TryGetProperty("scorers", out var scorers) &&
-                scorers.ValueKind == JsonValueKind.Array)
-            {
-                var builtInSet = new HashSet<string>(BuiltInScorerTypes, StringComparer.OrdinalIgnoreCase);
-                foreach (var scorer in scorers.EnumerateArray())
-                {
-                    if (scorer.TryGetProperty("type", out var typeElement) &&
-                        typeElement.ValueKind == JsonValueKind.String)
-                    {
-                        var typeName = typeElement.GetString()!;
-                        if (!builtInSet.Contains(typeName))
-                        {
-                            return typeName;
-                        }
-                    }
-                }
-            }
-        }
-        catch
-        {
-            // If we can't parse, fall through
-        }
-
-        return "<unknown>";
     }
 
     private static CupelJsonContext GetContext(CupelJsonOptions? options)
