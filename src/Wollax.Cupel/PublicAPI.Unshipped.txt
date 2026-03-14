@@ -264,3 +264,14 @@ Wollax.Cupel.Slicing.QuotaEntry.QuotaEntry(Wollax.Cupel.ContextKind! kind, doubl
 Wollax.Cupel.Slicing.QuotaEntry.Kind.get -> Wollax.Cupel.ContextKind!
 Wollax.Cupel.Slicing.QuotaEntry.MinPercent.get -> double?
 Wollax.Cupel.Slicing.QuotaEntry.MaxPercent.get -> double?
+Wollax.Cupel.CupelPolicy
+Wollax.Cupel.CupelPolicy.CupelPolicy(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScorerEntry!>! scorers, Wollax.Cupel.SlicerType slicerType = Wollax.Cupel.SlicerType.Greedy, Wollax.Cupel.PlacerType placerType = Wollax.Cupel.PlacerType.Chronological, bool deduplicationEnabled = true, Wollax.Cupel.Diagnostics.OverflowStrategy overflowStrategy = Wollax.Cupel.Diagnostics.OverflowStrategy.Throw, int? knapsackBucketSize = null, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaEntry!>? quotas = null, string? name = null, string? description = null) -> void
+Wollax.Cupel.CupelPolicy.Scorers.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScorerEntry!>!
+Wollax.Cupel.CupelPolicy.SlicerType.get -> Wollax.Cupel.SlicerType
+Wollax.Cupel.CupelPolicy.PlacerType.get -> Wollax.Cupel.PlacerType
+Wollax.Cupel.CupelPolicy.DeduplicationEnabled.get -> bool
+Wollax.Cupel.CupelPolicy.OverflowStrategy.get -> Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.CupelPolicy.KnapsackBucketSize.get -> int?
+Wollax.Cupel.CupelPolicy.Quotas.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaEntry!>?
+Wollax.Cupel.CupelPolicy.Name.get -> string?
+Wollax.Cupel.CupelPolicy.Description.get -> string?
