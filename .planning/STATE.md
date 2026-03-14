@@ -2,11 +2,11 @@
 
 ## Current Position
 
-Phase: 7 of 12 — Explainability & Overflow Handling
+Phase: 8 of 12 — Policy System & Named Presets
 Milestone: v1.0 Core Library
-Plan: 3 of 3
-Status: Complete
-Last activity: 2026-03-13 — Completed 07-03-PLAN.md (PublicAPI and Integration Tests)
+Plan: 1 of 3
+Status: In progress
+Last activity: 2026-03-14 — Completed 08-01-PLAN.md (Core Policy Data Types)
 
 ## Phase Overview
 
@@ -21,7 +21,7 @@ NEXT_PHASE=8
 | 5. Pipeline Assembly & Basic Execution | ● complete (3/3 plans) |
 | 6. Advanced Slicers & Quota System | ● complete (5/5 plans) |
 | 7. Explainability & Overflow Handling | ● complete (3/3 plans) |
-| 8. Policy System & Named Presets | ○ planned |
+| 8. Policy System & Named Presets | ◐ in progress (1/3 plans) |
 | 9. Serialization & JSON Package | ○ planned |
 | 10. Companion Packages & Release | ○ planned |
 | 11. Language-Agnostic Specification | ○ planned |
@@ -76,6 +76,8 @@ NEXT_PHASE=8
 - SelectionReport.TotalCandidates and TotalTokensConsidered are `required` (not optional) to avoid ambiguous default-0 semantics
 - InternalsVisibleTo added to Wollax.Cupel.csproj for test access to internal ReportBuilder
 - ReportBuilder uses (ExcludedItem, int Index) tuple array sort for stable descending score ordering
+- ScorerEntry uses IReadOnlyDictionary for KindWeights/TagWeights with defensive copies via new Dictionary(source)
+- CupelPolicy uses [..source] collection expression spread for defensive copies of Scorers and Quotas lists
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
