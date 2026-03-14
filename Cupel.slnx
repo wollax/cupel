@@ -5,9 +5,11 @@
   <Folder Name="/src/">
     <Project Path="src/Wollax.Cupel/Wollax.Cupel.csproj" />
     <Project Path="src/Wollax.Cupel.Json/Wollax.Cupel.Json.csproj" />
+    <Project Path="src/Wollax.Cupel.Extensions.DependencyInjection/Wollax.Cupel.Extensions.DependencyInjection.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Wollax.Cupel.Tests/Wollax.Cupel.Tests.csproj" />
     <Project Path="tests/Wollax.Cupel.Json.Tests/Wollax.Cupel.Json.Tests.csproj" />
+    <Project Path="tests/Wollax.Cupel.Extensions.DependencyInjection.Tests/Wollax.Cupel.Extensions.DependencyInjection.Tests.csproj" />
   </Folder>
 </Solution>
