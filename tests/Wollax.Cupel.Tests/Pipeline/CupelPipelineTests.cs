@@ -800,6 +800,106 @@ public class CupelPipelineTests
         await Assert.That(result.Report.Included[0].Reason).IsEqualTo(InclusionReason.ZeroToken);
     }
 
+    // ReservedSlots budget reduction tests
+
+    [Test]
+    public async Task Execute_WithReservedSlots_ReducesEffectiveBudget()
+    {
+        // Budget: maxTokens=1000, targetTokens=800, reservedSlots: { "message": 200 }
+        // 10 items at 100 tokens each, all equal score
+        // Without reserved: effectiveTarget = 800, fits 8 items
+        // With reserved: effectiveTarget = 800 - 200 = 600, fits 6 items
+        var items = new List<ContextItem>();
+        for (var i = 0; i < 10; i++)
+            items.Add(CreateItem($"item-{i}", tokens: 100, futureRelevanceHint: 0.5));
+
+        var budgetWithReserved = new ContextBudget(
+            maxTokens: 1000,
+            targetTokens: 800,
+            reservedSlots: new Dictionary<ContextKind, int> { [ContextKind.Message] = 200 });
+
+        var pipelineWithReserved = CupelPipeline.CreateBuilder()
+            .WithBudget(budgetWithReserved)
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var resultWithReserved = pipelineWithReserved.Execute(items);
+
+        // Baseline without reserved slots
+        var budgetBaseline = new ContextBudget(maxTokens: 1000, targetTokens: 800);
+        var pipelineBaseline = CupelPipeline.CreateBuilder()
+            .WithBudget(budgetBaseline)
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var resultBaseline = pipelineBaseline.Execute(items);
+
+        // Baseline should select 8 items (800 / 100)
+        await Assert.That(resultBaseline.Items.Count).IsEqualTo(8);
+        // Reserved should select 6 items (600 / 100)
+        await Assert.That(resultWithReserved.Items.Count).IsEqualTo(6);
+    }
+
+    [Test]
+    public async Task Execute_WithMultipleReservedSlots_SubtractsCombinedTotal()
+    {
+        // Budget: maxTokens=1000, targetTokens=1000, reservedSlots: { "message": 100, "tool_result": 150 }
+        // 10 items at 100 tokens each, all equal score
+        // effectiveTarget = 1000 - 250 = 750, fits 7 items
+        var items = new List<ContextItem>();
+        for (var i = 0; i < 10; i++)
+            items.Add(CreateItem($"item-{i}", tokens: 100, futureRelevanceHint: 0.5));
+
+        var budget = new ContextBudget(
+            maxTokens: 1000,
+            targetTokens: 1000,
+            reservedSlots: new Dictionary<ContextKind, int>
+            {
+                [ContextKind.Message] = 100,
+                [new ContextKind("tool_result")] = 150
+            });
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(budget)
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        await Assert.That(result.Items.Count).IsEqualTo(7);
+    }
+
+    [Test]
+    public async Task Execute_WithEmptyReservedSlots_NoChange()
+    {
+        // Default empty reservedSlots should produce same result as no reservedSlots
+        var items = new List<ContextItem>();
+        for (var i = 0; i < 10; i++)
+            items.Add(CreateItem($"item-{i}", tokens: 100, futureRelevanceHint: 0.5));
+
+        var budgetExplicitEmpty = new ContextBudget(
+            maxTokens: 1000,
+            targetTokens: 800,
+            reservedSlots: new Dictionary<ContextKind, int>());
+
+        var budgetDefault = new ContextBudget(maxTokens: 1000, targetTokens: 800);
+
+        var pipelineEmpty = CupelPipeline.CreateBuilder()
+            .WithBudget(budgetExplicitEmpty)
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var pipelineDefault = CupelPipeline.CreateBuilder()
+            .WithBudget(budgetDefault)
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var resultEmpty = pipelineEmpty.Execute(items);
+        var resultDefault = pipelineDefault.Execute(items);
+
+        await Assert.That(resultEmpty.Items.Count).IsEqualTo(resultDefault.Items.Count);
+    }
+
     // Stream helper
 
     private static async IAsyncEnumerable<ContextItem> CreateStreamSource(
