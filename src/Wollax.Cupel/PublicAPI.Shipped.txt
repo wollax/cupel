@@ -1,1 +1,301 @@
 #nullable enable
+Wollax.Cupel.ContextKind
+Wollax.Cupel.ContextKind.ContextKind(string! value) -> void
+Wollax.Cupel.ContextKind.Equals(Wollax.Cupel.ContextKind? other) -> bool
+Wollax.Cupel.ContextKind.Value.get -> string!
+override Wollax.Cupel.ContextKind.Equals(object? obj) -> bool
+override Wollax.Cupel.ContextKind.GetHashCode() -> int
+override Wollax.Cupel.ContextKind.ToString() -> string!
+static Wollax.Cupel.ContextKind.operator !=(Wollax.Cupel.ContextKind? left, Wollax.Cupel.ContextKind? right) -> bool
+static Wollax.Cupel.ContextKind.operator ==(Wollax.Cupel.ContextKind? left, Wollax.Cupel.ContextKind? right) -> bool
+static readonly Wollax.Cupel.ContextKind.Document -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.Memory -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.Message -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.SystemPrompt -> Wollax.Cupel.ContextKind!
+static readonly Wollax.Cupel.ContextKind.ToolOutput -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.ContextSource
+Wollax.Cupel.ContextSource.ContextSource(string! value) -> void
+Wollax.Cupel.ContextSource.Equals(Wollax.Cupel.ContextSource? other) -> bool
+Wollax.Cupel.ContextSource.Value.get -> string!
+override Wollax.Cupel.ContextSource.Equals(object? obj) -> bool
+override Wollax.Cupel.ContextSource.GetHashCode() -> int
+override Wollax.Cupel.ContextSource.ToString() -> string!
+static Wollax.Cupel.ContextSource.operator !=(Wollax.Cupel.ContextSource? left, Wollax.Cupel.ContextSource? right) -> bool
+static Wollax.Cupel.ContextSource.operator ==(Wollax.Cupel.ContextSource? left, Wollax.Cupel.ContextSource? right) -> bool
+static readonly Wollax.Cupel.ContextSource.Chat -> Wollax.Cupel.ContextSource!
+static readonly Wollax.Cupel.ContextSource.Rag -> Wollax.Cupel.ContextSource!
+static readonly Wollax.Cupel.ContextSource.Tool -> Wollax.Cupel.ContextSource!
+Wollax.Cupel.ContextItem
+Wollax.Cupel.ContextItem.Content.get -> string!
+Wollax.Cupel.ContextItem.Content.init -> void
+Wollax.Cupel.ContextItem.Tokens.get -> int
+Wollax.Cupel.ContextItem.Tokens.init -> void
+Wollax.Cupel.ContextItem.Kind.get -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.ContextItem.Kind.init -> void
+Wollax.Cupel.ContextItem.Source.get -> Wollax.Cupel.ContextSource!
+Wollax.Cupel.ContextItem.Source.init -> void
+Wollax.Cupel.ContextItem.Priority.get -> int?
+Wollax.Cupel.ContextItem.Priority.init -> void
+Wollax.Cupel.ContextItem.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Wollax.Cupel.ContextItem.Tags.init -> void
+Wollax.Cupel.ContextItem.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Wollax.Cupel.ContextItem.Metadata.init -> void
+Wollax.Cupel.ContextItem.Timestamp.get -> System.DateTimeOffset?
+Wollax.Cupel.ContextItem.Timestamp.init -> void
+Wollax.Cupel.ContextItem.FutureRelevanceHint.get -> double?
+Wollax.Cupel.ContextItem.FutureRelevanceHint.init -> void
+Wollax.Cupel.ContextItem.Pinned.get -> bool
+Wollax.Cupel.ContextItem.Pinned.init -> void
+Wollax.Cupel.ContextItem.OriginalTokens.get -> int?
+Wollax.Cupel.ContextItem.OriginalTokens.init -> void
+Wollax.Cupel.ContextBudget
+Wollax.Cupel.ContextBudget.ContextBudget(int maxTokens, int targetTokens, int outputReserve = 0, System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>? reservedSlots = null, double estimationSafetyMarginPercent = 0) -> void
+Wollax.Cupel.ContextBudget.Equals(Wollax.Cupel.ContextBudget? other) -> bool
+override Wollax.Cupel.ContextBudget.Equals(object? obj) -> bool
+override Wollax.Cupel.ContextBudget.GetHashCode() -> int
+Wollax.Cupel.ContextBudget.MaxTokens.get -> int
+Wollax.Cupel.ContextBudget.TargetTokens.get -> int
+Wollax.Cupel.ContextBudget.OutputReserve.get -> int
+Wollax.Cupel.ContextBudget.ReservedSlots.get -> System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>!
+Wollax.Cupel.ContextBudget.EstimationSafetyMarginPercent.get -> double
+Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Classify = 0 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Score = 1 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Deduplicate = 2 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Slice = 3 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.PipelineStage.Place = 4 -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.TraceDetailLevel
+Wollax.Cupel.Diagnostics.TraceDetailLevel.Stage = 0 -> Wollax.Cupel.Diagnostics.TraceDetailLevel
+Wollax.Cupel.Diagnostics.TraceDetailLevel.Item = 1 -> Wollax.Cupel.Diagnostics.TraceDetailLevel
+Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.BudgetExceeded = 0 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.ScoredTooLow = 1 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.Deduplicated = 2 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.QuotaCapExceeded = 3 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.QuotaRequireDisplaced = 4 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.NegativeTokens = 5 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.PinnedOverride = 6 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.Filtered = 7 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.InclusionReason.Scored = 0 -> Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.InclusionReason.Pinned = 1 -> Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.InclusionReason.ZeroToken = 2 -> Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.Diagnostics.OverflowStrategy.Throw = 0 -> Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.Diagnostics.OverflowStrategy.Truncate = 1 -> Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.Diagnostics.OverflowStrategy.Proceed = 2 -> Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.Diagnostics.OverflowEvent
+Wollax.Cupel.Diagnostics.OverflowEvent.TokensOverBudget.get -> int
+Wollax.Cupel.Diagnostics.OverflowEvent.TokensOverBudget.init -> void
+Wollax.Cupel.Diagnostics.OverflowEvent.OverflowingItems.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.Diagnostics.OverflowEvent.OverflowingItems.init -> void
+Wollax.Cupel.Diagnostics.OverflowEvent.Budget.get -> Wollax.Cupel.ContextBudget!
+Wollax.Cupel.Diagnostics.OverflowEvent.Budget.init -> void
+Wollax.Cupel.Diagnostics.TraceEvent
+Wollax.Cupel.Diagnostics.TraceEvent.TraceEvent() -> void
+Wollax.Cupel.Diagnostics.TraceEvent.Stage.get -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.TraceEvent.Stage.init -> void
+Wollax.Cupel.Diagnostics.TraceEvent.Duration.get -> System.TimeSpan
+Wollax.Cupel.Diagnostics.TraceEvent.Duration.init -> void
+Wollax.Cupel.Diagnostics.TraceEvent.ItemCount.get -> int
+Wollax.Cupel.Diagnostics.TraceEvent.ItemCount.init -> void
+Wollax.Cupel.Diagnostics.TraceEvent.Message.get -> string?
+Wollax.Cupel.Diagnostics.TraceEvent.Message.init -> void
+Wollax.Cupel.ScoredItem
+Wollax.Cupel.ScoredItem.ScoredItem() -> void
+Wollax.Cupel.ScoredItem.ScoredItem(Wollax.Cupel.ContextItem! Item, double Score) -> void
+Wollax.Cupel.ScoredItem.Item.get -> Wollax.Cupel.ContextItem!
+Wollax.Cupel.ScoredItem.Item.init -> void
+Wollax.Cupel.ScoredItem.Score.get -> double
+Wollax.Cupel.ScoredItem.Score.init -> void
+Wollax.Cupel.Diagnostics.ITraceCollector
+Wollax.Cupel.Diagnostics.ITraceCollector.IsEnabled.get -> bool
+Wollax.Cupel.Diagnostics.ITraceCollector.RecordStageEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.Diagnostics.ITraceCollector.RecordItemEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.Diagnostics.NullTraceCollector
+Wollax.Cupel.Diagnostics.NullTraceCollector.IsEnabled.get -> bool
+Wollax.Cupel.Diagnostics.NullTraceCollector.RecordStageEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.Diagnostics.NullTraceCollector.RecordItemEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+static readonly Wollax.Cupel.Diagnostics.NullTraceCollector.Instance -> Wollax.Cupel.Diagnostics.NullTraceCollector!
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.DiagnosticTraceCollector(Wollax.Cupel.Diagnostics.TraceDetailLevel detailLevel = Wollax.Cupel.Diagnostics.TraceDetailLevel.Stage, System.Action<Wollax.Cupel.Diagnostics.TraceEvent>? callback = null) -> void
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.IsEnabled.get -> bool
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.Events.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.TraceEvent>!
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.RecordStageEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.Diagnostics.DiagnosticTraceCollector.RecordItemEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.IScorer
+Wollax.Cupel.IScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.ISlicer
+Wollax.Cupel.ISlicer.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.IPlacer
+Wollax.Cupel.IPlacer.Place(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! items, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.IContextSource
+Wollax.Cupel.IContextSource.GetItemsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!>!
+Wollax.Cupel.IContextSource.GetItemsStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.ContextResult
+Wollax.Cupel.ContextResult.Items.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.ContextResult.Items.init -> void
+Wollax.Cupel.ContextResult.TotalTokens.get -> int
+Wollax.Cupel.ContextResult.Report.get -> Wollax.Cupel.Diagnostics.SelectionReport?
+Wollax.Cupel.ContextResult.Report.init -> void
+Wollax.Cupel.Diagnostics.IncludedItem
+Wollax.Cupel.Diagnostics.IncludedItem.Item.get -> Wollax.Cupel.ContextItem!
+Wollax.Cupel.Diagnostics.IncludedItem.Item.init -> void
+Wollax.Cupel.Diagnostics.IncludedItem.Score.get -> double
+Wollax.Cupel.Diagnostics.IncludedItem.Score.init -> void
+Wollax.Cupel.Diagnostics.IncludedItem.Reason.get -> Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.IncludedItem.Reason.init -> void
+Wollax.Cupel.Diagnostics.ExcludedItem
+Wollax.Cupel.Diagnostics.ExcludedItem.Item.get -> Wollax.Cupel.ContextItem!
+Wollax.Cupel.Diagnostics.ExcludedItem.Item.init -> void
+Wollax.Cupel.Diagnostics.ExcludedItem.Score.get -> double
+Wollax.Cupel.Diagnostics.ExcludedItem.Score.init -> void
+Wollax.Cupel.Diagnostics.ExcludedItem.Reason.get -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExcludedItem.Reason.init -> void
+Wollax.Cupel.Diagnostics.ExcludedItem.DeduplicatedAgainst.get -> Wollax.Cupel.ContextItem?
+Wollax.Cupel.Diagnostics.ExcludedItem.DeduplicatedAgainst.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport
+Wollax.Cupel.Diagnostics.SelectionReport.Events.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.TraceEvent>!
+Wollax.Cupel.Diagnostics.SelectionReport.Events.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport.Included.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.IncludedItem!>!
+Wollax.Cupel.Diagnostics.SelectionReport.Included.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport.Excluded.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.ExcludedItem!>!
+Wollax.Cupel.Diagnostics.SelectionReport.Excluded.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport.TotalCandidates.get -> int
+Wollax.Cupel.Diagnostics.SelectionReport.TotalCandidates.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport.TotalTokensConsidered.get -> int
+Wollax.Cupel.Diagnostics.SelectionReport.TotalTokensConsidered.init -> void
+Wollax.Cupel.Scoring.RecencyScorer
+Wollax.Cupel.Scoring.RecencyScorer.RecencyScorer() -> void
+Wollax.Cupel.Scoring.RecencyScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.PriorityScorer
+Wollax.Cupel.Scoring.PriorityScorer.PriorityScorer() -> void
+Wollax.Cupel.Scoring.PriorityScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.ReflexiveScorer
+Wollax.Cupel.Scoring.ReflexiveScorer.ReflexiveScorer() -> void
+Wollax.Cupel.Scoring.ReflexiveScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.KindScorer
+Wollax.Cupel.Scoring.KindScorer.KindScorer() -> void
+Wollax.Cupel.Scoring.KindScorer.KindScorer(System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, double>! weights) -> void
+Wollax.Cupel.Scoring.KindScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.TagScorer
+Wollax.Cupel.Scoring.TagScorer.TagScorer(System.Collections.Generic.IReadOnlyDictionary<string!, double>! tagWeights) -> void
+Wollax.Cupel.Scoring.TagScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.FrequencyScorer
+Wollax.Cupel.Scoring.FrequencyScorer.FrequencyScorer() -> void
+Wollax.Cupel.Scoring.FrequencyScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.CompositeScorer
+Wollax.Cupel.Scoring.CompositeScorer.CompositeScorer(System.Collections.Generic.IReadOnlyList<(Wollax.Cupel.IScorer! Scorer, double Weight)>! entries) -> void
+Wollax.Cupel.Scoring.CompositeScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.ScaledScorer
+Wollax.Cupel.Scoring.ScaledScorer.ScaledScorer(Wollax.Cupel.IScorer! inner) -> void
+Wollax.Cupel.Scoring.ScaledScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.GreedySlice
+Wollax.Cupel.GreedySlice.GreedySlice() -> void
+Wollax.Cupel.GreedySlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.KnapsackSlice
+Wollax.Cupel.KnapsackSlice.KnapsackSlice(int bucketSize = 100) -> void
+Wollax.Cupel.KnapsackSlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.UShapedPlacer
+Wollax.Cupel.UShapedPlacer.UShapedPlacer() -> void
+Wollax.Cupel.UShapedPlacer.Place(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! items, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.ChronologicalPlacer
+Wollax.Cupel.ChronologicalPlacer.ChronologicalPlacer() -> void
+Wollax.Cupel.ChronologicalPlacer.Place(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! items, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.CupelPipeline
+Wollax.Cupel.CupelPipeline.DryRun(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items) -> Wollax.Cupel.ContextResult!
+Wollax.Cupel.CupelPipeline.Execute(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null) -> Wollax.Cupel.ContextResult!
+Wollax.Cupel.CupelPipeline.ExecuteAsync(Wollax.Cupel.IContextSource! source, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wollax.Cupel.ContextResult!>!
+Wollax.Cupel.CupelPipeline.ExecuteStreamAsync(System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ContextItem!>! source, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wollax.Cupel.ContextResult!>!
+static Wollax.Cupel.CupelPipeline.CreateBuilder() -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder
+Wollax.Cupel.PipelineBuilder.WithBudget(Wollax.Cupel.ContextBudget! budget) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithScorer(Wollax.Cupel.IScorer! scorer) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.AddScorer(Wollax.Cupel.IScorer! scorer, double weight) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithSlicer(Wollax.Cupel.ISlicer! slicer) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithPlacer(Wollax.Cupel.IPlacer! placer) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithDeduplication(bool enabled) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.UseGreedySlice() -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.UseKnapsackSlice(int bucketSize = 100) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithQuotas(System.Action<Wollax.Cupel.Slicing.QuotaBuilder!>! configure) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithAsyncSlicer(Wollax.Cupel.IAsyncSlicer! asyncSlicer) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithOverflowStrategy(Wollax.Cupel.Diagnostics.OverflowStrategy strategy, System.Action<Wollax.Cupel.Diagnostics.OverflowEvent!>? onOverflow = null) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithPolicy(Wollax.Cupel.CupelPolicy! policy) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.Build() -> Wollax.Cupel.CupelPipeline!
+Wollax.Cupel.IAsyncSlicer
+Wollax.Cupel.IAsyncSlicer.SliceAsync(System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!>!
+Wollax.Cupel.Slicing.StreamSlice
+Wollax.Cupel.Slicing.StreamSlice.StreamSlice(int batchSize = 32) -> void
+Wollax.Cupel.Slicing.StreamSlice.BatchSize.get -> int
+Wollax.Cupel.Slicing.StreamSlice.SliceAsync(System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!>!
+Wollax.Cupel.Slicing.QuotaSet
+Wollax.Cupel.Slicing.QuotaSet.GetRequire(Wollax.Cupel.ContextKind! kind) -> double
+Wollax.Cupel.Slicing.QuotaSet.GetCap(Wollax.Cupel.ContextKind! kind) -> double
+Wollax.Cupel.Slicing.QuotaSet.Kinds.get -> System.Collections.Generic.IReadOnlyCollection<Wollax.Cupel.ContextKind!>!
+Wollax.Cupel.Slicing.QuotaBuilder
+Wollax.Cupel.Slicing.QuotaBuilder.QuotaBuilder() -> void
+Wollax.Cupel.Slicing.QuotaBuilder.Require(Wollax.Cupel.ContextKind! kind, double minPercent) -> Wollax.Cupel.Slicing.QuotaBuilder!
+Wollax.Cupel.Slicing.QuotaBuilder.Cap(Wollax.Cupel.ContextKind! kind, double maxPercent) -> Wollax.Cupel.Slicing.QuotaBuilder!
+Wollax.Cupel.Slicing.QuotaBuilder.Build() -> Wollax.Cupel.Slicing.QuotaSet!
+Wollax.Cupel.Slicing.QuotaSlice
+Wollax.Cupel.Slicing.QuotaSlice.QuotaSlice(Wollax.Cupel.ISlicer! innerSlicer, Wollax.Cupel.Slicing.QuotaSet! quotas) -> void
+Wollax.Cupel.Slicing.QuotaSlice.Quotas.get -> Wollax.Cupel.Slicing.QuotaSet!
+Wollax.Cupel.Slicing.QuotaSlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.ScorerType
+Wollax.Cupel.ScorerType.Recency = 0 -> Wollax.Cupel.ScorerType
+Wollax.Cupel.ScorerType.Priority = 1 -> Wollax.Cupel.ScorerType
+Wollax.Cupel.ScorerType.Kind = 2 -> Wollax.Cupel.ScorerType
+Wollax.Cupel.ScorerType.Tag = 3 -> Wollax.Cupel.ScorerType
+Wollax.Cupel.ScorerType.Frequency = 4 -> Wollax.Cupel.ScorerType
+Wollax.Cupel.ScorerType.Reflexive = 5 -> Wollax.Cupel.ScorerType
+Wollax.Cupel.SlicerType
+Wollax.Cupel.SlicerType.Greedy = 0 -> Wollax.Cupel.SlicerType
+Wollax.Cupel.SlicerType.Knapsack = 1 -> Wollax.Cupel.SlicerType
+Wollax.Cupel.PlacerType
+Wollax.Cupel.PlacerType.Chronological = 0 -> Wollax.Cupel.PlacerType
+Wollax.Cupel.PlacerType.UShaped = 1 -> Wollax.Cupel.PlacerType
+Wollax.Cupel.ScorerEntry
+Wollax.Cupel.ScorerEntry.ScorerEntry(Wollax.Cupel.ScorerType type, double weight, System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, double>? kindWeights = null, System.Collections.Generic.IReadOnlyDictionary<string!, double>? tagWeights = null) -> void
+Wollax.Cupel.ScorerEntry.Type.get -> Wollax.Cupel.ScorerType
+Wollax.Cupel.ScorerEntry.Weight.get -> double
+Wollax.Cupel.ScorerEntry.KindWeights.get -> System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, double>?
+Wollax.Cupel.ScorerEntry.TagWeights.get -> System.Collections.Generic.IReadOnlyDictionary<string!, double>?
+Wollax.Cupel.Slicing.QuotaEntry
+Wollax.Cupel.Slicing.QuotaEntry.QuotaEntry(Wollax.Cupel.ContextKind! kind, double? minPercent = null, double? maxPercent = null) -> void
+Wollax.Cupel.Slicing.QuotaEntry.Kind.get -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.Slicing.QuotaEntry.MinPercent.get -> double?
+Wollax.Cupel.Slicing.QuotaEntry.MaxPercent.get -> double?
+Wollax.Cupel.CupelPolicy
+Wollax.Cupel.CupelPolicy.CupelPolicy(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScorerEntry!>! scorers, Wollax.Cupel.SlicerType slicerType = Wollax.Cupel.SlicerType.Greedy, Wollax.Cupel.PlacerType placerType = Wollax.Cupel.PlacerType.Chronological, bool deduplicationEnabled = true, Wollax.Cupel.Diagnostics.OverflowStrategy overflowStrategy = Wollax.Cupel.Diagnostics.OverflowStrategy.Throw, int? knapsackBucketSize = null, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaEntry!>? quotas = null, string? name = null, string? description = null) -> void
+Wollax.Cupel.CupelPolicy.Scorers.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScorerEntry!>!
+Wollax.Cupel.CupelPolicy.SlicerType.get -> Wollax.Cupel.SlicerType
+Wollax.Cupel.CupelPolicy.PlacerType.get -> Wollax.Cupel.PlacerType
+Wollax.Cupel.CupelPolicy.DeduplicationEnabled.get -> bool
+Wollax.Cupel.CupelPolicy.OverflowStrategy.get -> Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.CupelPolicy.KnapsackBucketSize.get -> int?
+Wollax.Cupel.CupelPolicy.Quotas.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaEntry!>?
+Wollax.Cupel.CupelPolicy.Name.get -> string?
+Wollax.Cupel.CupelPolicy.Description.get -> string?
+Wollax.Cupel.CupelPresets
+static Wollax.Cupel.CupelPresets.Chat() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.CodeReview() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.Rag() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.DocumentQa() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.ToolUse() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.LongRunning() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.Debugging() -> Wollax.Cupel.CupelPolicy!
+Wollax.Cupel.CupelOptions
+Wollax.Cupel.CupelOptions.CupelOptions() -> void
+Wollax.Cupel.CupelOptions.AddPolicy(string! intent, Wollax.Cupel.CupelPolicy! policy) -> Wollax.Cupel.CupelOptions!
+Wollax.Cupel.CupelOptions.GetPolicy(string! intent) -> Wollax.Cupel.CupelPolicy!
+Wollax.Cupel.CupelOptions.TryGetPolicy(string! intent, out Wollax.Cupel.CupelPolicy? policy) -> bool
+Wollax.Cupel.ContextKindJsonConverter
+Wollax.Cupel.ContextKindJsonConverter.ContextKindJsonConverter() -> void
+override Wollax.Cupel.ContextKindJsonConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> Wollax.Cupel.ContextKind!
+override Wollax.Cupel.ContextKindJsonConverter.Write(System.Text.Json.Utf8JsonWriter! writer, Wollax.Cupel.ContextKind! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override Wollax.Cupel.ContextKindJsonConverter.ReadAsPropertyName(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> Wollax.Cupel.ContextKind!
+override Wollax.Cupel.ContextKindJsonConverter.WriteAsPropertyName(System.Text.Json.Utf8JsonWriter! writer, Wollax.Cupel.ContextKind! value, System.Text.Json.JsonSerializerOptions! options) -> void
+Wollax.Cupel.ContextKindDictionaryConverter
+Wollax.Cupel.ContextKindDictionaryConverter.ContextKindDictionaryConverter() -> void
+override Wollax.Cupel.ContextKindDictionaryConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>!
+override Wollax.Cupel.ContextKindDictionaryConverter.Write(System.Text.Json.Utf8JsonWriter! writer, System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>! value, System.Text.Json.JsonSerializerOptions! options) -> void

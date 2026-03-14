@@ -1,19 +1,1 @@
 #nullable enable
-Wollax.Cupel.Json.CupelJsonOptions
-Wollax.Cupel.Json.CupelJsonOptions.CupelJsonOptions() -> void
-Wollax.Cupel.Json.CupelJsonOptions.WriteIndented.get -> bool
-Wollax.Cupel.Json.CupelJsonOptions.WriteIndented.set -> void
-Wollax.Cupel.Json.CupelJsonOptions.RegisterScorer(string! typeName, System.Func<Wollax.Cupel.IScorer!>! factory) -> Wollax.Cupel.Json.CupelJsonOptions!
-Wollax.Cupel.Json.CupelJsonOptions.RegisterScorer(string! typeName, System.Func<System.Text.Json.JsonElement?, Wollax.Cupel.IScorer!>! factory) -> Wollax.Cupel.Json.CupelJsonOptions!
-Wollax.Cupel.Json.CupelJsonOptions.GetScorerFactory(string! typeName) -> System.Func<System.Text.Json.JsonElement?, Wollax.Cupel.IScorer!>?
-Wollax.Cupel.Json.CupelJsonOptions.HasScorerFactory(string! typeName) -> bool
-Wollax.Cupel.Json.CupelJsonOptions.RegisteredScorerNames.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
-Wollax.Cupel.Json.CupelJsonSerializer
-static Wollax.Cupel.Json.CupelJsonSerializer.Serialize(Wollax.Cupel.CupelPolicy! policy, Wollax.Cupel.Json.CupelJsonOptions? options) -> string!
-static Wollax.Cupel.Json.CupelJsonSerializer.Serialize(Wollax.Cupel.CupelPolicy! policy) -> string!
-static Wollax.Cupel.Json.CupelJsonSerializer.Deserialize(string! json, Wollax.Cupel.Json.CupelJsonOptions? options) -> Wollax.Cupel.CupelPolicy!
-static Wollax.Cupel.Json.CupelJsonSerializer.Deserialize(string! json) -> Wollax.Cupel.CupelPolicy!
-static Wollax.Cupel.Json.CupelJsonSerializer.Serialize(Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Json.CupelJsonOptions? options) -> string!
-static Wollax.Cupel.Json.CupelJsonSerializer.Serialize(Wollax.Cupel.ContextBudget! budget) -> string!
-static Wollax.Cupel.Json.CupelJsonSerializer.DeserializeBudget(string! json, Wollax.Cupel.Json.CupelJsonOptions? options) -> Wollax.Cupel.ContextBudget!
-static Wollax.Cupel.Json.CupelJsonSerializer.DeserializeBudget(string! json) -> Wollax.Cupel.ContextBudget!
