@@ -217,6 +217,10 @@ public sealed class PipelineBuilder
             case SlicerType.Knapsack:
                 UseKnapsackSlice(policy.KnapsackBucketSize ?? 100);
                 break;
+            case SlicerType.Stream:
+                UseGreedySlice(); // sync fallback for Execute()
+                WithAsyncSlicer(new StreamSlice(policy.StreamBatchSize ?? 32));
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(policy), policy.SlicerType, "Unknown SlicerType.");
         }
@@ -263,6 +267,8 @@ public sealed class PipelineBuilder
             ScorerType.Tag => new TagScorer(entry.TagWeights!),
             ScorerType.Frequency => new FrequencyScorer(),
             ScorerType.Reflexive => new ReflexiveScorer(),
+            ScorerType.Scaled => new ScaledScorer(CreateScorer(entry.InnerScorer
+                ?? throw new InvalidOperationException("InnerScorer is required for Scaled type."))),
             _ => throw new ArgumentOutOfRangeException(nameof(entry), entry.Type, "Unknown ScorerType.")
         };
     }

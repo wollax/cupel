@@ -2,13 +2,13 @@
 
 ## Current Position
 
-Phase: 13 of 15 — Budget Contract Implementation
+Phase: 14 of 15 — Policy Type Completeness
 Milestone: v1.0 Core Library
-Plan: 2 of 2
-Status: Complete
-Last activity: 2026-03-14 — Completed 13-02-PLAN.md (Spec Alignment for Budget Contract)
+Plan: 2 of 3
+Status: In Progress
+Last activity: 2026-03-14 — Completed 14-02-PLAN.md (JSON Serialization Completeness)
 
-Progress: ██████████████████████████████████████████░░░ 42/42 plans (100% through phase 13)
+Progress: ████████████████████████████████████████████░░ 44/45 plans (through phase 14, plan 2)
 
 ## Phase Overview
 
@@ -29,7 +29,7 @@ NEXT_PHASE=14
 | 11. Language-Agnostic Specification | ● complete (3/3 plans) |
 | 12. Rust Crate (Assay) | ● complete (3/3 plans) |
 | 13. Budget Contract Implementation | ● complete (2/2 plans) |
-| 14. Policy Type Completeness | ○ planned |
+| 14. Policy Type Completeness | ◐ in progress (2/3 plans) |
 | 15. Conformance Hardening | ○ planned |
 | **v1.1 Rust Crate Migration & crates.io Publishing** | |
 | 16. Pre-flight & Crate Scaffold | ○ planned |
