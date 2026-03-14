@@ -138,9 +138,33 @@ Wollax.Cupel.ContextResult.Items.init -> void
 Wollax.Cupel.ContextResult.TotalTokens.get -> int
 Wollax.Cupel.ContextResult.Report.get -> Wollax.Cupel.Diagnostics.SelectionReport?
 Wollax.Cupel.ContextResult.Report.init -> void
+Wollax.Cupel.Diagnostics.IncludedItem
+Wollax.Cupel.Diagnostics.IncludedItem.Item.get -> Wollax.Cupel.ContextItem!
+Wollax.Cupel.Diagnostics.IncludedItem.Item.init -> void
+Wollax.Cupel.Diagnostics.IncludedItem.Score.get -> double
+Wollax.Cupel.Diagnostics.IncludedItem.Score.init -> void
+Wollax.Cupel.Diagnostics.IncludedItem.Reason.get -> Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.IncludedItem.Reason.init -> void
+Wollax.Cupel.Diagnostics.ExcludedItem
+Wollax.Cupel.Diagnostics.ExcludedItem.Item.get -> Wollax.Cupel.ContextItem!
+Wollax.Cupel.Diagnostics.ExcludedItem.Item.init -> void
+Wollax.Cupel.Diagnostics.ExcludedItem.Score.get -> double
+Wollax.Cupel.Diagnostics.ExcludedItem.Score.init -> void
+Wollax.Cupel.Diagnostics.ExcludedItem.Reason.get -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExcludedItem.Reason.init -> void
+Wollax.Cupel.Diagnostics.ExcludedItem.DeduplicatedAgainst.get -> Wollax.Cupel.ContextItem?
+Wollax.Cupel.Diagnostics.ExcludedItem.DeduplicatedAgainst.init -> void
 Wollax.Cupel.Diagnostics.SelectionReport
 Wollax.Cupel.Diagnostics.SelectionReport.Events.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.TraceEvent>!
 Wollax.Cupel.Diagnostics.SelectionReport.Events.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport.Included.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.IncludedItem!>!
+Wollax.Cupel.Diagnostics.SelectionReport.Included.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport.Excluded.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.ExcludedItem!>!
+Wollax.Cupel.Diagnostics.SelectionReport.Excluded.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport.TotalCandidates.get -> int
+Wollax.Cupel.Diagnostics.SelectionReport.TotalCandidates.init -> void
+Wollax.Cupel.Diagnostics.SelectionReport.TotalTokensConsidered.get -> int
+Wollax.Cupel.Diagnostics.SelectionReport.TotalTokensConsidered.init -> void
 Wollax.Cupel.Scoring.RecencyScorer
 Wollax.Cupel.Scoring.RecencyScorer.RecencyScorer() -> void
 Wollax.Cupel.Scoring.RecencyScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double

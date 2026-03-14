@@ -286,7 +286,14 @@ public sealed class CupelPipeline
         SelectionReport? report = null;
         if (traceCollector is DiagnosticTraceCollector diagnosticCollector)
         {
-            report = new SelectionReport { Events = diagnosticCollector.Events };
+            report = new SelectionReport
+            {
+                Events = diagnosticCollector.Events,
+                Included = [],
+                Excluded = [],
+                TotalCandidates = 0,
+                TotalTokensConsidered = 0
+            };
         }
 
         return new ContextResult { Items = placed, Report = report };
@@ -366,7 +373,14 @@ public sealed class CupelPipeline
         SelectionReport? report = null;
         if (traceCollector is DiagnosticTraceCollector diagnosticCollector)
         {
-            report = new SelectionReport { Events = diagnosticCollector.Events };
+            report = new SelectionReport
+            {
+                Events = diagnosticCollector.Events,
+                Included = [],
+                Excluded = [],
+                TotalCandidates = 0,
+                TotalTokensConsidered = 0
+            };
         }
 
         return new ContextResult { Items = placed, Report = report };
