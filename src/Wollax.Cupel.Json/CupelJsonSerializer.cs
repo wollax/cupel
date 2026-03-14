@@ -60,6 +60,10 @@ public static class CupelJsonSerializer
             return JsonSerializer.Deserialize(json, context.CupelPolicy)
                 ?? throw new JsonException("Policy cannot be null. Received JSON literal 'null'.");
         }
+        catch (JsonException ex) when (ContainsUnknownScorerType(json))
+        {
+            throw BuildUnknownScorerTypeException(ex, json, options);
+        }
         catch (ArgumentException ex)
         {
             throw new JsonException($"$: {ex.Message}", ex);
