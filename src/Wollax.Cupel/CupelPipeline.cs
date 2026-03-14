@@ -238,8 +238,14 @@ public sealed class CupelPipeline
         }
 
         // SLICE: create adjusted budget and slice
-        var effectiveMax = Math.Max(0, _budget.MaxTokens - _budget.OutputReserve - pinnedTokens);
-        var effectiveTarget = Math.Max(0, _budget.TargetTokens - pinnedTokens);
+        var reservedTokens = 0;
+        foreach (var kvp in _budget.ReservedSlots)
+        {
+            reservedTokens += kvp.Value;
+        }
+
+        var effectiveMax = Math.Max(0, _budget.MaxTokens - _budget.OutputReserve - pinnedTokens - reservedTokens);
+        var effectiveTarget = Math.Max(0, _budget.TargetTokens - pinnedTokens - reservedTokens);
         effectiveTarget = Math.Min(effectiveTarget, effectiveMax);
 
         var adjustedBudget = new ContextBudget(
