@@ -8,7 +8,7 @@ public sealed record OverflowEvent
     /// <summary>Number of tokens over the budget limit.</summary>
     public required int TokensOverBudget { get; init; }
 
-    /// <summary>The items that caused the overflow.</summary>
+    /// <summary>All items in the selection at the time of overflow (pinned and sliced combined).</summary>
     public required IReadOnlyList<ContextItem> OverflowingItems { get; init; }
 
     /// <summary>The budget that was exceeded.</summary>

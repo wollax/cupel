@@ -67,7 +67,7 @@ internal sealed class ReportBuilder
 
         return new SelectionReport
         {
-            Events = events,
+            Events = events is TraceEvent[] arr ? arr : [.. events],
             Included = _included.ToArray(),
             Excluded = excludedItems,
             TotalCandidates = _totalCandidates,

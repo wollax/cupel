@@ -167,13 +167,17 @@ public sealed class PipelineBuilder
     /// after merging pinned and sliced items.
     /// </summary>
     /// <param name="strategy">The overflow strategy to apply.</param>
-    /// <param name="onOverflow">Optional callback invoked when <see cref="OverflowStrategy.Proceed"/> is used and overflow occurs.</param>
+    /// <param name="onOverflow">Callback invoked when overflow occurs. Only supported with <see cref="OverflowStrategy.Proceed"/>; an <see cref="ArgumentException"/> is thrown if provided with other strategies.</param>
     /// <returns>This builder for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="strategy"/> is not a defined enum value.</exception>
+    /// <exception cref="ArgumentException"><paramref name="onOverflow"/> is provided with a strategy other than <see cref="OverflowStrategy.Proceed"/>.</exception>
     public PipelineBuilder WithOverflowStrategy(OverflowStrategy strategy, Action<OverflowEvent>? onOverflow = null)
     {
         if (!Enum.IsDefined(strategy))
             throw new ArgumentOutOfRangeException(nameof(strategy), strategy, "Strategy must be a defined OverflowStrategy value.");
+
+        if (onOverflow is not null && strategy != OverflowStrategy.Proceed)
+            throw new ArgumentException("Observer callback is only supported with OverflowStrategy.Proceed.", nameof(onOverflow));
 
         _overflowStrategy = strategy;
         _overflowObserver = onOverflow;

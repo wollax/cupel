@@ -19,7 +19,7 @@ public class ReportBuilderTests
         await Assert.That(report.Excluded.Count).IsEqualTo(0);
         await Assert.That(report.TotalCandidates).IsEqualTo(0);
         await Assert.That(report.TotalTokensConsidered).IsEqualTo(0);
-        await Assert.That(report.Events).IsEqualTo(events);
+        await Assert.That(report.Events.Count).IsEqualTo(0);
     }
 
     [Test]

@@ -159,4 +159,20 @@ public class DryRunTests
         await Assert.That(() => pipeline.DryRun(null!))
             .Throws<ArgumentNullException>();
     }
+
+    [Test]
+    public async Task DryRun_AlwaysPopulatesReport_WhileExecuteWithoutTraceDoesNot()
+    {
+        var item = CreateItem("a", tokens: 10, futureRelevanceHint: 0.5);
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var executeResult = pipeline.Execute([item]); // no trace collector
+        var dryRunResult = pipeline.DryRun([item]);
+
+        await Assert.That(executeResult.Report).IsNull();
+        await Assert.That(dryRunResult.Report).IsNotNull();
+    }
 }

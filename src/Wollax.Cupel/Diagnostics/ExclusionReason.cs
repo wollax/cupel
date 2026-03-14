@@ -7,15 +7,18 @@ public enum ExclusionReason
     BudgetExceeded,
 
     /// <summary>Item scored below the selection threshold.</summary>
+    /// <remarks>Reserved for future use. Not currently emitted by any built-in pipeline stage.</remarks>
     ScoredTooLow,
 
     /// <summary>Item was removed during deduplication in favor of a higher-scoring duplicate.</summary>
     Deduplicated,
 
     /// <summary>Item was excluded because its kind exceeded the quota cap.</summary>
+    /// <remarks>Reserved for future use. Not currently emitted by any built-in pipeline stage.</remarks>
     QuotaCapExceeded,
 
     /// <summary>Item was displaced to satisfy a quota require constraint for another kind.</summary>
+    /// <remarks>Reserved for future use. Not currently emitted by any built-in pipeline stage.</remarks>
     QuotaRequireDisplaced,
 
     /// <summary>Item was excluded because it has a negative token count.</summary>
@@ -25,5 +28,6 @@ public enum ExclusionReason
     PinnedOverride,
 
     /// <summary>Item was excluded by a filter predicate.</summary>
+    /// <remarks>Reserved for future use. Not currently emitted by any built-in pipeline stage.</remarks>
     Filtered
 }
