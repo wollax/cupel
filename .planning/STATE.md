@@ -4,11 +4,11 @@
 
 Phase: 12 of 12 — Rust Crate (Assay)
 Milestone: v1.0 Core Library
-Plan: 2 of 3
-Status: In progress
-Last activity: 2026-03-14 — Completed 12-02-PLAN.md (Slicers, Placers & Pipeline)
+Plan: 3 of 3
+Status: Complete
+Last activity: 2026-03-14 — Completed 12-03-PLAN.md (Conformance Test Suite)
 
-Progress: ██████████████████████████████████████████░ 97% (39/40 plans)
+Progress: ██████████████████████████████████████████ 100% (40/40 plans)
 
 ## Phase Overview
 
@@ -27,7 +27,7 @@ NEXT_PHASE=12
 | 9. Serialization & JSON Package | ● complete (3/3 plans) |
 | 10. Companion Packages & Release | ● complete (3/3 plans) |
 | 11. Language-Agnostic Specification | ● complete (3/3 plans) |
-| 12. Rust Crate (Assay) | ◐ in progress (2/3 plans) |
+| 12. Rust Crate (Assay) | ● complete (3/3 plans) |
 
 ## Accumulated Context
 
@@ -107,6 +107,8 @@ NEXT_PHASE=12
 - Rust QuotaSlice sub-budget uses ContextBudget::new with maxTokens=cap, targetTokens=kindBudget (cap may be < kindBudget when proportional exceeds cap)
 - Rust UShapedPlacer uses Vec<Option<ContextItem>> for result array to avoid unsafe uninitialized memory
 - Rust place stage looks up original scores by content match when re-associating sliced items with scores
+- Rust conformance test runner uses toml::Value for dynamic TOML parsing with factory functions for scorers/slicers/placers
+- All 28 required conformance tests pass — first non-C# implementation validated against the spec
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
