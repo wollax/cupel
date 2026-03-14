@@ -73,6 +73,12 @@ jobs:
     needs: consumption-tests
     if: ${{ inputs.dry-run != true }}
     steps:
+      - name: Verify running from main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Release workflow must be run from the main branch, not ${{ github.ref }}"
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -105,7 +111,11 @@ jobs:
       - name: Get version
         id: version
         run: |
-          VERSION=$(dotnet msbuild -getProperty:Version)
+          VERSION=$(dotnet msbuild src/Wollax.Cupel/Wollax.Cupel.csproj -getProperty:Version)
+          if [ -z "$VERSION" ]; then
+            echo "::error::Failed to extract version from project"
+            exit 1
+          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 

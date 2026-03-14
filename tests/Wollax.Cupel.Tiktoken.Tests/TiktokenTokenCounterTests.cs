@@ -109,4 +109,49 @@ public class TiktokenTokenCounterTests
 
         await Assert.That(action).ThrowsExactly<NotSupportedException>();
     }
+
+    [Test]
+    public async Task CreateForEncoding_InvalidEncoding_Throws()
+    {
+        var action = () => TiktokenTokenCounter.CreateForEncoding("nonexistent-encoding-xyz");
+
+        await Assert.That(action).Throws<Exception>();
+    }
+
+    [Test]
+    public async Task CountTokens_Span_ReturnsSameAsString()
+    {
+        var counter = TiktokenTokenCounter.CreateForModel("gpt-4o");
+        var text = "Hello, world!";
+
+        var stringCount = counter.CountTokens(text);
+        var spanCount = counter.CountTokens(text.AsSpan());
+
+        await Assert.That(spanCount).IsEqualTo(stringCount);
+    }
+
+    [Test]
+    public async Task CreateForModel_NullModelName_ThrowsArgumentException()
+    {
+        await Assert.That(() => TiktokenTokenCounter.CreateForModel(null!))
+            .Throws<ArgumentException>();
+    }
+
+    [Test]
+    public async Task CountTokens_NullString_ThrowsArgumentNullException()
+    {
+        var counter = TiktokenTokenCounter.CreateForModel("gpt-4o");
+
+        await Assert.That(() => counter.CountTokens((string)null!))
+            .Throws<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task WithTokenCount_NullItem_ThrowsArgumentNullException()
+    {
+        var counter = TiktokenTokenCounter.CreateForModel("gpt-4o");
+
+        await Assert.That(() => counter.WithTokenCount(null!))
+            .Throws<ArgumentNullException>();
+    }
 }

@@ -28,7 +28,7 @@ public class ConsumptionTests
 
         await Assert.That(result).IsNotNull();
         await Assert.That(result.Items).IsNotNull();
-        await Assert.That(result.Items.Count).IsGreaterThanOrEqualTo(1);
+        await Assert.That(result.Items.Count).IsEqualTo(1);
         await Assert.That(result.TotalTokens).IsGreaterThan(0);
     }
 
@@ -60,6 +60,15 @@ public class ConsumptionTests
         var pipeline = provider.GetRequiredKeyedService<CupelPipeline>("chat");
 
         await Assert.That(pipeline).IsNotNull();
+
+        // Verify the pipeline is functional — not just resolvable
+        var items = new[]
+        {
+            new ContextItem { Content = "Hello", Tokens = 3, Kind = ContextKind.Message, Source = ContextSource.Chat },
+        };
+        var result = pipeline.Execute(items);
+
+        await Assert.That(result.Items.Count).IsEqualTo(1);
     }
 
     [Test]

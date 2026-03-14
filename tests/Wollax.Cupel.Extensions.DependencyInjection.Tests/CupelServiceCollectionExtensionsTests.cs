@@ -69,7 +69,7 @@ public class CupelServiceCollectionExtensionsTests
     }
 
     [Test]
-    public async Task AddCupelPipeline_MissingPolicy_ThrowsKeyNotFoundException()
+    public async Task AddCupelPipeline_MissingPolicy_ThrowsInvalidOperationException()
     {
         var services = new ServiceCollection();
         var budget = new ContextBudget(maxTokens: 4000, targetTokens: 3000);
@@ -81,7 +81,7 @@ public class CupelServiceCollectionExtensionsTests
         var provider = services.BuildServiceProvider();
 
         await Assert.That(() => provider.GetRequiredKeyedService<CupelPipeline>("missing"))
-            .Throws<KeyNotFoundException>();
+            .Throws<InvalidOperationException>();
     }
 
     [Test]
@@ -165,5 +165,35 @@ public class CupelServiceCollectionExtensionsTests
         await Assert.That(collector1).IsNotNull();
         await Assert.That(collector1).IsTypeOf<DiagnosticTraceCollector>();
         await Assert.That(ReferenceEquals(collector1, collector2)).IsFalse();
+    }
+
+    [Test]
+    public async Task AddCupel_NullConfigure_ThrowsArgumentNullException()
+    {
+        var services = new ServiceCollection();
+
+        await Assert.That(() => services.AddCupel(null!))
+            .Throws<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task AddCupelPipeline_NullBudget_ThrowsArgumentNullException()
+    {
+        var services = new ServiceCollection();
+
+        await Assert.That(() => services.AddCupelPipeline("chat", null!))
+            .Throws<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task AddCupelTracing_CalledTwice_DoesNotDoubleRegister()
+    {
+        var services = new ServiceCollection();
+
+        services.AddCupelTracing();
+        services.AddCupelTracing();
+
+        var registrations = services.Where(d => d.ServiceType == typeof(ITraceCollector)).ToList();
+        await Assert.That(registrations.Count).IsEqualTo(1);
     }
 }

@@ -34,6 +34,7 @@ public sealed class TiktokenTokenCounter
     /// <exception cref="NotSupportedException">The model name is not recognized.</exception>
     public static TiktokenTokenCounter CreateForModel(string modelName)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(modelName);
         var tokenizer = TiktokenTokenizer.CreateForModel(modelName);
         return new TiktokenTokenCounter(tokenizer);
     }
@@ -46,6 +47,7 @@ public sealed class TiktokenTokenCounter
     /// <exception cref="NotSupportedException">The encoding name is not recognized.</exception>
     public static TiktokenTokenCounter CreateForEncoding(string encodingName)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(encodingName);
         var tokenizer = TiktokenTokenizer.CreateForEncoding(encodingName);
         return new TiktokenTokenCounter(tokenizer);
     }
@@ -57,6 +59,7 @@ public sealed class TiktokenTokenCounter
     /// <returns>The number of tokens in the text.</returns>
     public int CountTokens(string text)
     {
+        ArgumentNullException.ThrowIfNull(text);
         return _tokenizer.CountTokens(text);
     }
 
@@ -77,8 +80,10 @@ public sealed class TiktokenTokenCounter
     /// </summary>
     /// <param name="item">The context item whose tokens should be counted.</param>
     /// <returns>A new <see cref="ContextItem"/> with the accurate token count.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="item"/> is <see langword="null"/>.</exception>
     public ContextItem WithTokenCount(ContextItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
         return item with { Tokens = CountTokens(item.Content) };
     }
 }

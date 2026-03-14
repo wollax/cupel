@@ -53,7 +53,13 @@ public static class CupelServiceCollectionExtensions
         services.AddKeyedTransient<CupelPipeline>(intent, (provider, _) =>
         {
             var options = provider.GetRequiredService<IOptions<CupelOptions>>().Value;
-            var policy = options.GetPolicy(intent);
+
+            if (!options.TryGetPolicy(intent, out var policy))
+            {
+                throw new InvalidOperationException(
+                    $"No policy registered for intent '{intent}'. Call AddCupel(o => o.AddPolicy(\"{intent}\", ...)) before AddCupelPipeline.");
+            }
+
             return CupelPipeline.CreateBuilder()
                 .WithPolicy(policy)
                 .WithBudget(budget)
