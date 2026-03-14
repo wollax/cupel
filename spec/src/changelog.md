@@ -15,13 +15,13 @@ Initial specification release.
 - **Scorers**: RecencyScorer, PriorityScorer, KindScorer, TagScorer, FrequencyScorer, ReflexiveScorer, CompositeScorer, ScaledScorer
 - **Slicers**: GreedySlice, KnapsackSlice, QuotaSlice
 - **Placers**: ChronologicalPlacer, UShapedPlacer
-- **Conformance suite**: 37 TOML test vectors (27 required, 10 optional) covering all algorithms and edge cases
+- **Conformance suite**: 37 TOML test vectors (28 required, 9 optional) covering all algorithms and edge cases
   - 13 required scoring vectors (all 8 scorer types)
-  - 5 required slicing vectors (GreedySlice, KnapsackSlice)
+  - 6 required slicing vectors (GreedySlice, KnapsackSlice, QuotaSlice)
   - 4 required placing vectors (ChronologicalPlacer, UShapedPlacer)
   - 5 required pipeline vectors (multiple slicer/placer combinations, pinned items)
   - 4 optional scoring vectors (edge cases)
-  - 2 optional slicing vectors (empty input, QuotaSlice)
+  - 1 optional slicing vector (empty input)
   - 4 optional pipeline vectors (empty input, all-pinned, deduplication, overflow)
 
 ### Specification Decisions
