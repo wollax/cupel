@@ -4,15 +4,15 @@
 
 Phase: 13 of 15 — Budget Contract Implementation
 Milestone: v1.0 Core Library
-Plan: 1 of 2
-Status: In progress
-Last activity: 2026-03-14 — Completed 13-01-PLAN.md (Budget Contract Wiring)
+Plan: 2 of 2
+Status: Complete
+Last activity: 2026-03-14 — Completed 13-02-PLAN.md (Spec Alignment for Budget Contract)
 
-Progress: █████████████████████████████████████████░░░░ 41/42 plans (97%)
+Progress: ██████████████████████████████████████████░░░ 42/42 plans (100% through phase 13)
 
 ## Phase Overview
 
-NEXT_PHASE=13
+NEXT_PHASE=14
 
 | Phase | Status |
 |-------|--------|
@@ -28,7 +28,7 @@ NEXT_PHASE=13
 | 10. Companion Packages & Release | ● complete (3/3 plans) |
 | 11. Language-Agnostic Specification | ● complete (3/3 plans) |
 | 12. Rust Crate (Assay) | ● complete (3/3 plans) |
-| 13. Budget Contract Implementation | ◐ in progress (1/2 plans) |
+| 13. Budget Contract Implementation | ● complete (2/2 plans) |
 | 14. Policy Type Completeness | ○ planned |
 | 15. Conformance Hardening | ○ planned |
 
@@ -115,6 +115,7 @@ NEXT_PHASE=13
 - Budget contract wiring: ReservedSlots subtracted first, then EstimationSafetyMarginPercent applied as multiplicative reduction
 - Safety margin uses int cast (truncation) for effective budget values, consistent with existing int budget semantics
 - Streaming path uses foreach over ReservedSlots (no pinnedTokens in streaming mode)
+- Spec effective budget formula updated: reservedTokens subtracted alongside outputReserve/pinnedTokens, safety margin applied as multiplicative floor after all subtractions
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
