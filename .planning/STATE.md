@@ -4,11 +4,11 @@
 
 Phase: 14 of 15 — Policy Type Completeness
 Milestone: v1.0 Core Library
-Plan: 2 of 3
-Status: In Progress
-Last activity: 2026-03-14 — Completed 14-02-PLAN.md (JSON Serialization Completeness)
+Plan: 3 of 3
+Status: Complete
+Last activity: 2026-03-14 — Completed 14-03-PLAN.md (DI Singleton Lifetime Fix)
 
-Progress: ████████████████████████████████████████████░░ 44/45 plans (through phase 14, plan 2)
+Progress: █████████████████████████████████████████████ 45/45 plans (through phase 14, plan 3)
 
 ## Phase Overview
 
@@ -29,7 +29,7 @@ NEXT_PHASE=14
 | 11. Language-Agnostic Specification | ● complete (3/3 plans) |
 | 12. Rust Crate (Assay) | ● complete (3/3 plans) |
 | 13. Budget Contract Implementation | ● complete (2/2 plans) |
-| 14. Policy Type Completeness | ◐ in progress (2/3 plans) |
+| 14. Policy Type Completeness | ● complete (3/3 plans) |
 | 15. Conformance Hardening | ○ planned |
 | **v1.1 Rust Crate Migration & crates.io Publishing** | |
 | 16. Pre-flight & Crate Scaffold | ○ planned |
