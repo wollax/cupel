@@ -344,9 +344,9 @@ Plans:
 **Plans:** 3 plans in 2 waves
 
 Plans:
-- [ ] 14-01-PLAN.md — Enum extensions, ScorerEntry/CupelPolicy model changes, PipelineBuilder wiring (wave 1)
-- [ ] 14-02-PLAN.md — JSON serialization: BuiltInScorerTypes enum-derived refactor and round-trip tests (wave 1)
-- [ ] 14-03-PLAN.md — DI singleton lifetime fix, InternalsVisibleTo, PublicAPI updates (wave 2)
+- [x] 14-01-PLAN.md — Enum extensions, ScorerEntry/CupelPolicy model changes, PipelineBuilder wiring (wave 1)
+- [x] 14-02-PLAN.md — JSON serialization: BuiltInScorerTypes enum-derived refactor and round-trip tests (wave 1)
+- [x] 14-03-PLAN.md — DI singleton lifetime fix, InternalsVisibleTo, PublicAPI updates (wave 2)
 
 ---
 
@@ -504,7 +504,7 @@ Plans:
 | 11 | Language-Agnostic Specification | TBD | ● complete |
 | 12 | Rust Crate (Assay) | TBD | ● complete |
 | 13 | Budget Contract Implementation | audit gap closure | ● complete |
-| 14 | Policy Type Completeness | audit gap closure | ○ planned |
+| 14 | Policy Type Completeness | audit gap closure | ● complete |
 | 15 | Conformance Hardening | audit gap closure | ○ planned |
 | 16 | Pre-flight & Crate Scaffold | MIGRATE-01–05 | ○ planned |
 | 17 | Crate Migration & Conformance Verification | MIGRATE-06–07, CONFORM-01–03 | ○ planned |

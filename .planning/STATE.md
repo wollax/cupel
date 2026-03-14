@@ -12,7 +12,7 @@ Progress: ███████████████████████�
 
 ## Phase Overview
 
-NEXT_PHASE=14
+NEXT_PHASE=15
 
 | Phase | Status |
 |-------|--------|
@@ -96,7 +96,7 @@ NEXT_PHASE=14
 - CupelJsonSerializer uses separate overloads (not optional params) to satisfy RS0026 backcompat analyzer
 - RegisterScorer stores all factories as Func<JsonElement?, IScorer> internally; parameterless overload wraps via _ => factory()
 - Unknown scorer type detection uses JsonDocument.Parse on raw JSON to extract type names and compare against built-in set
-- Built-in scorer type names hardcoded as string array matching [JsonStringEnumMemberName] values on ScorerType
+- Built-in scorer type names derived from Enum.GetValues<ScorerType>() + JsonStringEnumMemberName reflection — no hardcoded array
 - .NET 10 STJ does NOT wrap JsonConstructor ArgumentException in JsonException — exceptions propagate unwrapped
 - CupelJsonSerializer facade catches ArgumentException from constructors and wraps in JsonException with `$:` path prefix
 - DI extension methods namespace: Microsoft.Extensions.DependencyInjection (standard .NET convention)
@@ -123,6 +123,13 @@ NEXT_PHASE=14
 - Safety margin uses int cast (truncation) for effective budget values, consistent with existing int budget semantics
 - Streaming path uses foreach over ReservedSlots (no pinnedTokens in streaming mode)
 - Spec effective budget formula updated: reservedTokens subtracted alongside outputReserve/pinnedTokens, safety margin applied as multiplicative floor after all subtractions
+- ScorerType.Scaled = 6 and SlicerType.Stream = 2 added as enum values with [JsonStringEnumMemberName] attributes
+- ScorerEntry.InnerScorer validated at construction: required for Scaled, forbidden for non-Scaled types
+- CupelPolicy.StreamBatchSize validated at construction: ThrowIfNegativeOrZero, only valid for Stream slicer type
+- Quota + Stream combination rejected at CupelPolicy construction time (QuotaSlice wraps ISlicer, cannot wrap IAsyncSlicer)
+- PipelineBuilder.WithPolicy Stream case sets dual slicers: GreedySlice (sync fallback) + StreamSlice (async)
+- DI singleton components via PolicyComponents keyed singleton record + transient CupelPipeline wrapping shared components
+- InternalsVisibleTo extended from Wollax.Cupel to DI package and DI test project for internal constructor/accessor access
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
