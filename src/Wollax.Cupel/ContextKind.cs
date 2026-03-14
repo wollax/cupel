@@ -60,4 +60,18 @@ public sealed class ContextKindJsonConverter : JsonConverter<ContextKind>
     {
         writer.WriteStringValue(value.Value);
     }
+
+    public override ContextKind ReadAsPropertyName(
+        ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var value = reader.GetString()
+            ?? throw new JsonException("ContextKind property name cannot be null.");
+        return new ContextKind(value);
+    }
+
+    public override void WriteAsPropertyName(
+        Utf8JsonWriter writer, ContextKind value, JsonSerializerOptions options)
+    {
+        writer.WritePropertyName(value.Value);
+    }
 }

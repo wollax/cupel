@@ -293,6 +293,8 @@ Wollax.Cupel.ContextKindJsonConverter
 Wollax.Cupel.ContextKindJsonConverter.ContextKindJsonConverter() -> void
 override Wollax.Cupel.ContextKindJsonConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> Wollax.Cupel.ContextKind!
 override Wollax.Cupel.ContextKindJsonConverter.Write(System.Text.Json.Utf8JsonWriter! writer, Wollax.Cupel.ContextKind! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override Wollax.Cupel.ContextKindJsonConverter.ReadAsPropertyName(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> Wollax.Cupel.ContextKind!
+override Wollax.Cupel.ContextKindJsonConverter.WriteAsPropertyName(System.Text.Json.Utf8JsonWriter! writer, Wollax.Cupel.ContextKind! value, System.Text.Json.JsonSerializerOptions! options) -> void
 Wollax.Cupel.ContextKindDictionaryConverter
 Wollax.Cupel.ContextKindDictionaryConverter.ContextKindDictionaryConverter() -> void
 override Wollax.Cupel.ContextKindDictionaryConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>!
