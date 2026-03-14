@@ -46,17 +46,17 @@
 
 ## API Surface
 
-- [ ] **API-01**: CupelPolicy as declarative, serializable config tying pipeline together
+- [x] **API-01**: CupelPolicy as declarative, serializable config tying pipeline together
 - [x] **API-02**: Fluent builder via CupelPipeline.CreateBuilder() over fixed pipeline (no call-next middleware)
-- [ ] **API-03**: Both explicit policy and intent-based lookup via CupelOptions.AddPolicy("intent", policy)
+- [x] **API-03**: Both explicit policy and intent-based lookup via CupelOptions.AddPolicy("intent", policy)
 - [x] **API-04**: IContextSource interface (IAsyncEnumerable<ContextItem>) in core
 - [x] **API-05**: Token counting is caller's responsibility — ContextItem.Tokens is required non-nullable int
 
 ## Named Policies
 
-- [ ] **POLICY-01**: 7+ built-in policies: chat, code-review, rag, document-qa, tool-use, long-running, debugging
-- [ ] **POLICY-02**: [Experimental] attribute on preset methods
-- [ ] **POLICY-03**: Policy presets serve as living documentation and test fixtures
+- [x] **POLICY-01**: 7+ built-in policies: chat, code-review, rag, document-qa, tool-use, long-running, debugging
+- [x] **POLICY-02**: [Experimental] attribute on preset methods
+- [x] **POLICY-03**: Policy presets serve as living documentation and test fixtures
 
 ## Serialization
 
@@ -130,14 +130,14 @@
 | TRACE-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | TRACE-05 | Phase 7: Explainability & Overflow Handling | ● complete |
 | TRACE-06 | Phase 7: Explainability & Overflow Handling | ● complete |
-| API-01 | Phase 8: Policy System & Named Presets | ○ planned |
+| API-01 | Phase 8: Policy System & Named Presets | ● complete |
 | API-02 | Phase 5: Pipeline Assembly & Basic Execution | ● complete |
-| API-03 | Phase 8: Policy System & Named Presets | ○ planned |
+| API-03 | Phase 8: Policy System & Named Presets | ● complete |
 | API-04 | Phase 2: Interfaces & Diagnostics Infrastructure | ● complete |
 | API-05 | Phase 1: Project Scaffold & Core Models | ● complete |
-| POLICY-01 | Phase 8: Policy System & Named Presets | ○ planned |
-| POLICY-02 | Phase 8: Policy System & Named Presets | ○ planned |
-| POLICY-03 | Phase 8: Policy System & Named Presets | ○ planned |
+| POLICY-01 | Phase 8: Policy System & Named Presets | ● complete |
+| POLICY-02 | Phase 8: Policy System & Named Presets | ● complete |
+| POLICY-03 | Phase 8: Policy System & Named Presets | ● complete |
 | JSON-01 | Phase 1: Project Scaffold & Core Models | ● complete |
 | JSON-02 | Phase 9: Serialization & JSON Package | ○ planned |
 | JSON-03 | Phase 9: Serialization & JSON Package | ○ planned |

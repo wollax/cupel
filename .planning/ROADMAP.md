@@ -194,9 +194,9 @@ Plans:
 **Plans:** 3 plans in 2 waves
 
 Plans:
-- [ ] 08-01-PLAN.md — Enums (ScorerType, SlicerType, PlacerType), ScorerEntry, QuotaEntry, CupelPolicy sealed class (TDD) (wave 1)
-- [ ] 08-02-PLAN.md — CupelPresets (7 named presets with [Experimental]) and CupelOptions intent-based registry (TDD) (wave 2)
-- [ ] 08-03-PLAN.md — PipelineBuilder.WithPolicy() integration and end-to-end policy integration tests (wave 2)
+- [x] 08-01-PLAN.md — Enums (ScorerType, SlicerType, PlacerType), ScorerEntry, QuotaEntry, CupelPolicy sealed class (TDD) (wave 1)
+- [x] 08-02-PLAN.md — CupelPresets (7 named presets with [Experimental]) and CupelOptions intent-based registry (TDD) (wave 2)
+- [x] 08-03-PLAN.md — PipelineBuilder.WithPolicy() integration and end-to-end policy integration tests (wave 2)
 
 ---
 
@@ -286,7 +286,7 @@ Plans:
 | 5 | Pipeline Assembly & Basic Execution | PIPE-03, PIPE-04, PIPE-05, SLICE-02, PLACE-02, PLACE-03, API-02 | ● complete |
 | 6 | Advanced Slicers & Quota System | SLICE-03, SLICE-04, SLICE-05, SLICE-06 | ● complete |
 | 7 | Explainability & Overflow Handling | TRACE-05, TRACE-06 | ● complete |
-| 8 | Policy System & Named Presets | API-01, API-03, POLICY-01, POLICY-02, POLICY-03 | ○ planned |
+| 8 | Policy System & Named Presets | API-01, API-03, POLICY-01, POLICY-02, POLICY-03 | ● complete |
 | 9 | Serialization & JSON Package | JSON-02, JSON-03, JSON-04, PKG-04 | ○ planned |
 | 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ○ planned |
 | 11 | Language-Agnostic Specification | TBD | ○ planned |
