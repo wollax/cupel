@@ -4,11 +4,11 @@
 
 Phase: 12 of 12 — Rust Crate (Assay)
 Milestone: v1.0 Core Library
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In progress
-Last activity: 2026-03-14 — Completed 12-01-PLAN.md (Crate Scaffold, Data Model & Scorers)
+Last activity: 2026-03-14 — Completed 12-02-PLAN.md (Slicers, Placers & Pipeline)
 
-Progress: █████████████████████████████████████████░░ 95% (38/40 plans)
+Progress: ██████████████████████████████████████████░ 97% (39/40 plans)
 
 ## Phase Overview
 
@@ -27,7 +27,7 @@ NEXT_PHASE=12
 | 9. Serialization & JSON Package | ● complete (3/3 plans) |
 | 10. Companion Packages & Release | ● complete (3/3 plans) |
 | 11. Language-Agnostic Specification | ● complete (3/3 plans) |
-| 12. Rust Crate (Assay) | ◐ in progress (1/3 plans) |
+| 12. Rust Crate (Assay) | ◐ in progress (2/3 plans) |
 
 ## Accumulated Context
 
@@ -103,6 +103,10 @@ NEXT_PHASE=12
 - Rust Scorer trait requires Any supertrait + as_any() method for CompositeScorer DFS cycle detection downcasting
 - Rust ContextItem metadata uses HashMap<String, String> instead of serde_json::Value to avoid public serde_json dependency
 - Rust cycle detection uses usize (data pointer cast) in HashSet to avoid lifetime issues with raw fat pointers
+- Rust Pipeline uses Box<dyn Scorer>, Box<dyn Slicer>, Box<dyn Placer> for trait object composition
+- Rust QuotaSlice sub-budget uses ContextBudget::new with maxTokens=cap, targetTokens=kindBudget (cap may be < kindBudget when proportional exceeds cap)
+- Rust UShapedPlacer uses Vec<Option<ContextItem>> for result array to avoid unsafe uninitialized memory
+- Rust place stage looks up original scores by content match when re-associating sliced items with scores
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
