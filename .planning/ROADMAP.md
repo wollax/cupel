@@ -341,7 +341,12 @@ Plans:
 4. DI-resolved scorers, slicers, and placers are singletons — verified by reference equality test
 5. All existing tests continue to pass
 
-**Plans:** TBD
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 14-01-PLAN.md — Enum extensions, ScorerEntry/CupelPolicy model changes, PipelineBuilder wiring (wave 1)
+- [ ] 14-02-PLAN.md — JSON serialization: BuiltInScorerTypes enum-derived refactor and round-trip tests (wave 1)
+- [ ] 14-03-PLAN.md — DI singleton lifetime fix, InternalsVisibleTo, PublicAPI updates (wave 2)
 
 ---
 
