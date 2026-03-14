@@ -9,6 +9,10 @@ namespace Wollax.Cupel.Json;
 /// </summary>
 public static class CupelJsonSerializer
 {
+    // Matches the [JsonStringEnumMemberName] values on ScorerType members
+    private static readonly string[] BuiltInScorerTypes =
+        ["recency", "priority", "kind", "tag", "frequency", "reflexive"];
+
     /// <summary>
     /// Serializes a <see cref="CupelPolicy"/> to a JSON string.
     /// </summary>
@@ -38,13 +42,28 @@ public static class CupelJsonSerializer
     /// <param name="options">Optional serialization options.</param>
     /// <returns>A deserialized <see cref="CupelPolicy"/> instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
-    /// <exception cref="JsonException">Thrown when the JSON is malformed or cannot be deserialized.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is malformed or cannot be deserialized,
+    /// or when constructor validation fails during deserialization.</exception>
     public static CupelPolicy Deserialize(string json, CupelJsonOptions? options)
     {
         ArgumentNullException.ThrowIfNull(json);
+
+        if (json.Length == 0)
+        {
+            throw new JsonException("JSON input cannot be empty.");
+        }
+
         var context = GetContext(options);
-        return JsonSerializer.Deserialize(json, context.CupelPolicy)
-            ?? throw new JsonException("Deserialized CupelPolicy was null.");
+
+        try
+        {
+            return JsonSerializer.Deserialize(json, context.CupelPolicy)
+                ?? throw new JsonException("Policy cannot be null. Received JSON literal 'null'.");
+        }
+        catch (ArgumentException ex)
+        {
+            throw new JsonException($"$: {ex.Message}", ex);
+        }
     }
 
     /// <summary>
@@ -85,13 +104,28 @@ public static class CupelJsonSerializer
     /// <param name="options">Optional serialization options.</param>
     /// <returns>A deserialized <see cref="ContextBudget"/> instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
-    /// <exception cref="JsonException">Thrown when the JSON is malformed or cannot be deserialized.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is malformed or cannot be deserialized,
+    /// or when constructor validation fails during deserialization.</exception>
     public static ContextBudget DeserializeBudget(string json, CupelJsonOptions? options)
     {
         ArgumentNullException.ThrowIfNull(json);
+
+        if (json.Length == 0)
+        {
+            throw new JsonException("JSON input cannot be empty.");
+        }
+
         var context = GetContext(options);
-        return JsonSerializer.Deserialize(json, context.ContextBudget)
-            ?? throw new JsonException("Deserialized ContextBudget was null.");
+
+        try
+        {
+            return JsonSerializer.Deserialize(json, context.ContextBudget)
+                ?? throw new JsonException("Budget cannot be null. Received JSON literal 'null'.");
+        }
+        catch (ArgumentException ex)
+        {
+            throw new JsonException($"$: {ex.Message}", ex);
+        }
     }
 
     /// <summary>
@@ -102,6 +136,88 @@ public static class CupelJsonSerializer
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is malformed or cannot be deserialized.</exception>
     public static ContextBudget DeserializeBudget(string json) => DeserializeBudget(json, null);
+
+    private static bool ContainsUnknownScorerType(string json)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("scorers", out var scorers) &&
+                scorers.ValueKind == JsonValueKind.Array)
+            {
+                var builtInSet = new HashSet<string>(BuiltInScorerTypes, StringComparer.OrdinalIgnoreCase);
+                foreach (var scorer in scorers.EnumerateArray())
+                {
+                    if (scorer.TryGetProperty("type", out var typeElement) &&
+                        typeElement.ValueKind == JsonValueKind.String)
+                    {
+                        var typeName = typeElement.GetString()!;
+                        if (!builtInSet.Contains(typeName))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // If we can't parse, it's not an unknown scorer type issue
+        }
+
+        return false;
+    }
+
+    private static JsonException BuildUnknownScorerTypeException(
+        JsonException innerException, string json, CupelJsonOptions? options)
+    {
+        var unknownTypeName = ExtractUnknownScorerTypeName(json);
+
+        var builtInList = string.Join(", ", BuiltInScorerTypes);
+        var message = $"Unknown scorer type '{unknownTypeName}'. Known built-in types: {builtInList}.";
+
+        if (options is not null && options.RegisteredScorerNames.Count > 0)
+        {
+            var customList = string.Join(", ", options.RegisteredScorerNames);
+            message += $" Custom registered types: {customList}.";
+        }
+
+        message += " Use CupelJsonOptions.RegisterScorer() to register custom scorer types.";
+
+        return new JsonException(message, innerException.Path, innerException.LineNumber,
+            innerException.BytePositionInLine, innerException);
+    }
+
+    private static string ExtractUnknownScorerTypeName(string json)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("scorers", out var scorers) &&
+                scorers.ValueKind == JsonValueKind.Array)
+            {
+                var builtInSet = new HashSet<string>(BuiltInScorerTypes, StringComparer.OrdinalIgnoreCase);
+                foreach (var scorer in scorers.EnumerateArray())
+                {
+                    if (scorer.TryGetProperty("type", out var typeElement) &&
+                        typeElement.ValueKind == JsonValueKind.String)
+                    {
+                        var typeName = typeElement.GetString()!;
+                        if (!builtInSet.Contains(typeName))
+                        {
+                            return typeName;
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // If we can't parse, fall through
+        }
+
+        return "<unknown>";
+    }
 
     private static CupelJsonContext GetContext(CupelJsonOptions? options)
     {
