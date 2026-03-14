@@ -369,7 +369,12 @@ Plans:
 3. VERIFICATION.md exists for Phase 01 with retroactive verification notes
 4. VERIFICATION.md exists for Phase 09 with retroactive verification notes
 
-**Plans:** TBD
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [x] 15-01-PLAN.md — Author 13 scoring conformance vectors in spec canonical directory (wave 1)
+- [x] 15-02-PLAN.md — Author 6 slicing and 4 placing conformance vectors in spec canonical directory (wave 1)
+- [x] 15-03-PLAN.md — Author 5 pipeline conformance vectors and final cross-verification (wave 2)
 
 ---
 
@@ -505,7 +510,7 @@ Plans:
 | 12 | Rust Crate (Assay) | TBD | ● complete |
 | 13 | Budget Contract Implementation | audit gap closure | ● complete |
 | 14 | Policy Type Completeness | audit gap closure | ● complete |
-| 15 | Conformance Hardening | audit gap closure | ○ planned |
+| 15 | Conformance Hardening | audit gap closure | ● complete |
 | 16 | Pre-flight & Crate Scaffold | MIGRATE-01–05 | ○ planned |
 | 17 | Crate Migration & Conformance Verification | MIGRATE-06–07, CONFORM-01–03 | ○ planned |
 | 18 | Dual-Language CI | CI-01–02, CI-04–05 | ○ planned |
