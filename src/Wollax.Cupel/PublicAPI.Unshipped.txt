@@ -1,1 +1,5 @@
 #nullable enable
+Wollax.Cupel.ScorerType.Scaled = 6 -> Wollax.Cupel.ScorerType
+Wollax.Cupel.SlicerType.Stream = 2 -> Wollax.Cupel.SlicerType
+Wollax.Cupel.ScorerEntry.InnerScorer.get -> Wollax.Cupel.ScorerEntry?
+Wollax.Cupel.CupelPolicy.StreamBatchSize.get -> int?

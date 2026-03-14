@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Wollax.Cupel.Tests" />
+    <InternalsVisibleTo Include="Wollax.Cupel.Extensions.DependencyInjection" />
+    <InternalsVisibleTo Include="Wollax.Cupel.Extensions.DependencyInjection.Tests" />
   </ItemGroup>
 
   <ItemGroup>

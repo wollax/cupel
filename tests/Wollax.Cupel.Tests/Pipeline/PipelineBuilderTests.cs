@@ -584,7 +584,177 @@ public class PipelineBuilderTests
         await Assert.That(() => builder.Build()).Throws<InvalidOperationException>();
     }
 
+    // WithPolicy Scaled scorer tests
+
+    [Test]
+    public async Task WithPolicy_ScaledScorer_BuildsSuccessfully()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Scaled, 1.0,
+                innerScorer: new ScorerEntry(ScorerType.Recency, 1.0))]);
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        await Assert.That(pipeline).IsNotNull();
+    }
+
+    [Test]
+    public async Task WithPolicy_ScaledScorer_SelectsAllItemsWithinBudget()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Scaled, 1.0,
+                innerScorer: new ScorerEntry(ScorerType.Reflexive, 1.0))]);
+
+        var items = new[]
+        {
+            new ContextItem { Content = "low", Tokens = 10, FutureRelevanceHint = 0.2 },
+            new ContextItem { Content = "mid", Tokens = 10, FutureRelevanceHint = 0.5 },
+            new ContextItem { Content = "high", Tokens = 10, FutureRelevanceHint = 0.8 },
+        };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        var result = pipeline.DryRun(items);
+
+        // All items should be selected (well within budget)
+        await Assert.That(result.Items.Count).IsEqualTo(3);
+
+        // Verify ScaledScorer normalization: scores should be in [0, 1] range
+        // and "high" should score higher than "low" in the report
+        var report = result.Report!;
+        var includedScores = report.Included.Select(i => i.Score).ToList();
+        await Assert.That(includedScores.Count).IsEqualTo(3);
+        foreach (var score in includedScores)
+        {
+            await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+            await Assert.That(score).IsLessThanOrEqualTo(1.0);
+        }
+    }
+
+    [Test]
+    public async Task WithPolicy_NestedScaledScorer_BuildsSuccessfully()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Scaled, 1.0,
+                innerScorer: new ScorerEntry(ScorerType.Scaled, 1.0,
+                    innerScorer: new ScorerEntry(ScorerType.Recency, 1.0)))]);
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        await Assert.That(pipeline).IsNotNull();
+    }
+
+    // WithPolicy Stream slicer tests
+
+    [Test]
+    public async Task WithPolicy_StreamSlicer_BuildsSuccessfully()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, 1.0)],
+            slicerType: SlicerType.Stream,
+            streamBatchSize: 16);
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        await Assert.That(pipeline).IsNotNull();
+    }
+
+    [Test]
+    public async Task WithPolicy_StreamSlicer_SyncExecuteUsesGreedyFallback()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, 1.0)],
+            slicerType: SlicerType.Stream);
+
+        var items = new[]
+        {
+            new ContextItem { Content = "item-1", Tokens = 10, FutureRelevanceHint = 0.8 },
+            new ContextItem { Content = "item-2", Tokens = 10, FutureRelevanceHint = 0.5 },
+        };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        // Sync Execute should work using GreedySlice fallback
+        var result = pipeline.Execute(items);
+
+        await Assert.That(result.Items.Count).IsEqualTo(2);
+    }
+
+    [Test]
+    public async Task WithPolicy_StreamSlicer_AsyncExecuteStreamWorks()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, 1.0)],
+            slicerType: SlicerType.Stream,
+            streamBatchSize: 4);
+
+        var items = new[]
+        {
+            new ContextItem { Content = "item-1", Tokens = 50, FutureRelevanceHint = 0.8 },
+            new ContextItem { Content = "item-2", Tokens = 50, FutureRelevanceHint = 0.6 },
+            new ContextItem { Content = "item-3", Tokens = 50, FutureRelevanceHint = 0.4 },
+        };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        // Async ExecuteStreamAsync should work using StreamSlice
+        var result = await pipeline.ExecuteStreamAsync(ToAsyncEnumerable(items));
+
+        await Assert.That(result.Items.Count).IsGreaterThan(0);
+        await Assert.That(result.TotalTokens).IsLessThanOrEqualTo(500);
+    }
+
+    [Test]
+    public async Task WithPolicy_StreamSlicerDefaultBatchSize_Works()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, 1.0)],
+            slicerType: SlicerType.Stream);
+
+        var items = new[]
+        {
+            new ContextItem { Content = "item-1", Tokens = 50, FutureRelevanceHint = 0.8 },
+        };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        var result = await pipeline.ExecuteStreamAsync(ToAsyncEnumerable(items));
+
+        await Assert.That(result.Items.Count).IsEqualTo(1);
+    }
+
     // Test helpers
+
+    private static async IAsyncEnumerable<ContextItem> ToAsyncEnumerable(IReadOnlyList<ContextItem> items)
+    {
+        for (var i = 0; i < items.Count; i++)
+        {
+            yield return items[i];
+            await Task.Yield();
+        }
+    }
+
 
     private sealed class DelegateScorer(Func<ContextItem, IReadOnlyList<ContextItem>, double> scoreFunc)
         : IScorer

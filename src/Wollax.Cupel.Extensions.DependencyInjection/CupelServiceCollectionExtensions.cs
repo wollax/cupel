@@ -11,6 +11,19 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class CupelServiceCollectionExtensions
 {
     /// <summary>
+    /// Holds the pre-built pipeline components for singleton sharing across transient pipeline instances.
+    /// Components must be stateless and thread-safe. Do not use <see cref="IDisposable"/> implementations
+    /// as component types — the container will not dispose them when held as part of this record.
+    /// </summary>
+    internal sealed record PolicyComponents(
+        IScorer Scorer,
+        ISlicer Slicer,
+        IPlacer Placer,
+        IAsyncSlicer? AsyncSlicer,
+        bool DeduplicationEnabled,
+        OverflowStrategy OverflowStrategy);
+
+    /// <summary>
     /// Registers <see cref="CupelOptions"/> via the <see cref="IOptions{TOptions}"/> pattern.
     /// Call <see cref="AddCupelPipeline"/> after this to register named pipelines.
     /// </summary>
@@ -29,8 +42,8 @@ public static class CupelServiceCollectionExtensions
 
     /// <summary>
     /// Registers a keyed transient <see cref="CupelPipeline"/> for the specified intent.
-    /// The pipeline is built from the policy registered in <see cref="CupelOptions"/> matching
-    /// the <paramref name="intent"/> key, combined with the provided <paramref name="budget"/>.
+    /// Pipeline components (scorer, slicer, placer) are built once and shared as singletons
+    /// across pipeline instances. Each resolution returns a new pipeline wrapping the shared components.
     /// </summary>
     /// <remarks>
     /// <para>The <paramref name="budget"/> is provided at registration time because token budgets
@@ -50,7 +63,9 @@ public static class CupelServiceCollectionExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(intent);
         ArgumentNullException.ThrowIfNull(budget);
 
-        services.AddKeyedTransient<CupelPipeline>(intent, (provider, _) =>
+        // Register singleton components — built once on first resolve, cached thereafter.
+        // Uses a temporary pipeline build to extract the composed component graph.
+        services.AddKeyedSingleton<PolicyComponents>(intent, (provider, _) =>
         {
             var options = provider.GetRequiredService<IOptions<CupelOptions>>().Value;
 
@@ -60,10 +75,38 @@ public static class CupelServiceCollectionExtensions
                     $"No policy registered for intent '{intent}'. Call AddCupel(o => o.AddPolicy(\"{intent}\", ...)) before AddCupelPipeline.");
             }
 
-            return CupelPipeline.CreateBuilder()
+            // Build a temporary pipeline to extract composed components.
+            // Budget is needed for Build() validation but components are budget-independent.
+            var tempPipeline = CupelPipeline.CreateBuilder()
                 .WithPolicy(policy)
                 .WithBudget(budget)
                 .Build();
+
+            return new PolicyComponents(
+                tempPipeline.Scorer,
+                tempPipeline.Slicer,
+                tempPipeline.Placer,
+                tempPipeline.AsyncSlicer,
+                tempPipeline.DeduplicationEnabled,
+                tempPipeline.OverflowStrategyValue);
+        });
+
+        // Register transient pipeline — new instance per resolve, wrapping singleton components.
+        services.AddKeyedTransient<CupelPipeline>(intent, (provider, _) =>
+        {
+            var components = provider.GetRequiredKeyedService<PolicyComponents>(intent);
+
+            // OverflowObserver is intentionally null: CupelPolicy is a declarative data object
+            // and does not carry callback delegates. Observer-based overflow handling requires
+            // the builder API (WithOverflowStrategy with onOverflow callback).
+            return new CupelPipeline(
+                components.Scorer,
+                components.Slicer,
+                components.Placer,
+                budget,
+                components.DeduplicationEnabled,
+                components.AsyncSlicer,
+                components.OverflowStrategy);
         });
 
         return services;

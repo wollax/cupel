@@ -2,17 +2,17 @@
 
 ## Current Position
 
-Phase: 13 of 15 — Budget Contract Implementation
+Phase: 14 of 15 — Policy Type Completeness
 Milestone: v1.0 Core Library
-Plan: 2 of 2
+Plan: 3 of 3
 Status: Complete
-Last activity: 2026-03-14 — Completed 13-02-PLAN.md (Spec Alignment for Budget Contract)
+Last activity: 2026-03-14 — Completed 14-03-PLAN.md (DI Singleton Lifetime Fix)
 
-Progress: ██████████████████████████████████████████░░░ 42/42 plans (100% through phase 13)
+Progress: █████████████████████████████████████████████ 45/45 plans (through phase 14, plan 3)
 
 ## Phase Overview
 
-NEXT_PHASE=14
+NEXT_PHASE=15
 
 | Phase | Status |
 |-------|--------|
@@ -29,8 +29,15 @@ NEXT_PHASE=14
 | 11. Language-Agnostic Specification | ● complete (3/3 plans) |
 | 12. Rust Crate (Assay) | ● complete (3/3 plans) |
 | 13. Budget Contract Implementation | ● complete (2/2 plans) |
-| 14. Policy Type Completeness | ○ planned |
+| 14. Policy Type Completeness | ● complete (3/3 plans) |
 | 15. Conformance Hardening | ○ planned |
+| **v1.1 Rust Crate Migration & crates.io Publishing** | |
+| 16. Pre-flight & Crate Scaffold | ○ planned |
+| 17. Crate Migration & Conformance Verification | ○ planned |
+| 18. Dual-Language CI | ○ planned |
+| 19. First Publish & Assay Switchover | ○ planned |
+| 20. Serde Feature Flag | ○ planned |
+| 21. docs.rs Documentation & Examples | ○ planned |
 
 ## Accumulated Context
 
@@ -89,7 +96,7 @@ NEXT_PHASE=14
 - CupelJsonSerializer uses separate overloads (not optional params) to satisfy RS0026 backcompat analyzer
 - RegisterScorer stores all factories as Func<JsonElement?, IScorer> internally; parameterless overload wraps via _ => factory()
 - Unknown scorer type detection uses JsonDocument.Parse on raw JSON to extract type names and compare against built-in set
-- Built-in scorer type names hardcoded as string array matching [JsonStringEnumMemberName] values on ScorerType
+- Built-in scorer type names derived from Enum.GetValues<ScorerType>() + JsonStringEnumMemberName reflection — no hardcoded array
 - .NET 10 STJ does NOT wrap JsonConstructor ArgumentException in JsonException — exceptions propagate unwrapped
 - CupelJsonSerializer facade catches ArgumentException from constructors and wraps in JsonException with `$:` path prefix
 - DI extension methods namespace: Microsoft.Extensions.DependencyInjection (standard .NET convention)
@@ -116,11 +123,19 @@ NEXT_PHASE=14
 - Safety margin uses int cast (truncation) for effective budget values, consistent with existing int budget semantics
 - Streaming path uses foreach over ReservedSlots (no pinnedTokens in streaming mode)
 - Spec effective budget formula updated: reservedTokens subtracted alongside outputReserve/pinnedTokens, safety margin applied as multiplicative floor after all subtractions
+- ScorerType.Scaled = 6 and SlicerType.Stream = 2 added as enum values with [JsonStringEnumMemberName] attributes
+- ScorerEntry.InnerScorer validated at construction: required for Scaled, forbidden for non-Scaled types
+- CupelPolicy.StreamBatchSize validated at construction: ThrowIfNegativeOrZero, only valid for Stream slicer type
+- Quota + Stream combination rejected at CupelPolicy construction time (QuotaSlice wraps ISlicer, cannot wrap IAsyncSlicer)
+- PipelineBuilder.WithPolicy Stream case sets dual slicers: GreedySlice (sync fallback) + StreamSlice (async)
+- DI singleton components via PolicyComponents keyed singleton record + transient CupelPipeline wrapping shared components
+- InternalsVisibleTo extended from Wollax.Cupel to DI package and DI test project for internal constructor/accessor access
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
 - Phase 12 added: Rust Crate (Assay) — first non-C# implementation, validates spec's language-independence
 - v1.1 milestone defined: Rust crate migration to cupel repo + crates.io publishing (starts after v1.0 gap closure)
+- v1.1 roadmap created: 6 phases (16-21), 24 requirements across 5 categories (MIGRATE, CONFORM, CI, SWITCH, ENHANCE)
 
 ### Blockers
 (None)

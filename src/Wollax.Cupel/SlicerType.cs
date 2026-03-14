@@ -13,5 +13,9 @@ public enum SlicerType
 
     /// <summary>Knapsack-based selection — provably optimal budget fitting via dynamic programming.</summary>
     [JsonStringEnumMemberName("knapsack")]
-    Knapsack
+    Knapsack,
+
+    /// <summary>Online streaming selection via configurable micro-batches.</summary>
+    [JsonStringEnumMemberName("stream")]
+    Stream
 }

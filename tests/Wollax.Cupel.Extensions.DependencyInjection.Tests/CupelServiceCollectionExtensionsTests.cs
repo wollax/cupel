@@ -196,4 +196,105 @@ public class CupelServiceCollectionExtensionsTests
         var registrations = services.Where(d => d.ServiceType == typeof(ITraceCollector)).ToList();
         await Assert.That(registrations.Count).IsEqualTo(1);
     }
+
+    [Test]
+    public async Task AddCupelPipeline_ComponentsAreSingletons_SameInstanceAcrossResolves()
+    {
+        var services = new ServiceCollection();
+        var budget = new ContextBudget(maxTokens: 4000, targetTokens: 3000);
+
+        services
+            .AddCupel(o => o.AddPolicy("chat", CupelPresets.Chat()))
+            .AddCupelPipeline("chat", budget);
+
+        var provider = services.BuildServiceProvider();
+        var pipeline1 = provider.GetRequiredKeyedService<CupelPipeline>("chat");
+        var pipeline2 = provider.GetRequiredKeyedService<CupelPipeline>("chat");
+
+        // Pipelines are different instances (transient)
+        await Assert.That(ReferenceEquals(pipeline1, pipeline2)).IsFalse();
+
+        // Components are the same instances (singleton)
+        await Assert.That(ReferenceEquals(pipeline1.Scorer, pipeline2.Scorer)).IsTrue();
+        await Assert.That(ReferenceEquals(pipeline1.Slicer, pipeline2.Slicer)).IsTrue();
+        await Assert.That(ReferenceEquals(pipeline1.Placer, pipeline2.Placer)).IsTrue();
+    }
+
+    [Test]
+    public async Task AddCupelPipeline_ScaledScorerPolicy_ComponentsAreSingletons()
+    {
+        var policy = new CupelPolicy(
+            scorers:
+            [
+                new ScorerEntry(
+                    ScorerType.Scaled,
+                    weight: 1.0,
+                    innerScorer: new ScorerEntry(ScorerType.Recency, weight: 1.0)),
+            ],
+            name: "ScaledTest");
+
+        var services = new ServiceCollection();
+        var budget = new ContextBudget(maxTokens: 4000, targetTokens: 3000);
+
+        services
+            .AddCupel(o => o.AddPolicy("scaled", policy))
+            .AddCupelPipeline("scaled", budget);
+
+        var provider = services.BuildServiceProvider();
+        var pipeline1 = provider.GetRequiredKeyedService<CupelPipeline>("scaled");
+        var pipeline2 = provider.GetRequiredKeyedService<CupelPipeline>("scaled");
+
+        // Pipelines are different instances (transient)
+        await Assert.That(ReferenceEquals(pipeline1, pipeline2)).IsFalse();
+
+        // Composed scorer tree is the same singleton instance
+        await Assert.That(ReferenceEquals(pipeline1.Scorer, pipeline2.Scorer)).IsTrue();
+        await Assert.That(ReferenceEquals(pipeline1.Slicer, pipeline2.Slicer)).IsTrue();
+        await Assert.That(ReferenceEquals(pipeline1.Placer, pipeline2.Placer)).IsTrue();
+    }
+
+    [Test]
+    public async Task AddCupelPipeline_StreamPolicy_AsyncSlicerIsSingleton()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Recency, weight: 1.0)],
+            slicerType: SlicerType.Stream,
+            streamBatchSize: 16,
+            name: "StreamTest");
+
+        var services = new ServiceCollection();
+        var budget = new ContextBudget(maxTokens: 4000, targetTokens: 3000);
+
+        services
+            .AddCupel(o => o.AddPolicy("stream", policy))
+            .AddCupelPipeline("stream", budget);
+
+        var provider = services.BuildServiceProvider();
+        var pipeline1 = provider.GetRequiredKeyedService<CupelPipeline>("stream");
+        var pipeline2 = provider.GetRequiredKeyedService<CupelPipeline>("stream");
+
+        // Pipelines are different instances (transient)
+        await Assert.That(ReferenceEquals(pipeline1, pipeline2)).IsFalse();
+
+        // All components including async slicer are singleton
+        await Assert.That(ReferenceEquals(pipeline1.Scorer, pipeline2.Scorer)).IsTrue();
+        await Assert.That(ReferenceEquals(pipeline1.Slicer, pipeline2.Slicer)).IsTrue();
+        await Assert.That(ReferenceEquals(pipeline1.Placer, pipeline2.Placer)).IsTrue();
+        await Assert.That(pipeline1.AsyncSlicer).IsNotNull();
+        await Assert.That(ReferenceEquals(pipeline1.AsyncSlicer, pipeline2.AsyncSlicer)).IsTrue();
+    }
+
+    [Test]
+    public async Task AddCupelTracing_IsTransient_DifferentInstancesPerResolve()
+    {
+        var services = new ServiceCollection();
+
+        services.AddCupelTracing();
+
+        var provider = services.BuildServiceProvider();
+        var collector1 = provider.GetRequiredService<ITraceCollector>();
+        var collector2 = provider.GetRequiredService<ITraceCollector>();
+
+        await Assert.That(ReferenceEquals(collector1, collector2)).IsFalse();
+    }
 }

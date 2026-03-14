@@ -187,10 +187,138 @@ public class RoundTripTests
 
         await Assert.That(json).DoesNotContain("\"quotas\"");
         await Assert.That(json).DoesNotContain("\"knapsackBucketSize\"");
+        await Assert.That(json).DoesNotContain("\"streamBatchSize\"");
         await Assert.That(json).DoesNotContain("\"name\"");
         await Assert.That(json).DoesNotContain("\"description\"");
         await Assert.That(json).DoesNotContain("\"kindWeights\"");
         await Assert.That(json).DoesNotContain("\"tagWeights\"");
+        await Assert.That(json).DoesNotContain("\"innerScorer\"");
+    }
+
+    [Test]
+    public async Task ScaledScorer_RoundTrips()
+    {
+        var policy = new CupelPolicy(
+            scorers:
+            [
+                new ScorerEntry(ScorerType.Scaled, 2.0,
+                    innerScorer: new ScorerEntry(ScorerType.Recency, 1.0))
+            ]);
+
+        var json = CupelJsonSerializer.Serialize(policy);
+        var deserialized = CupelJsonSerializer.Deserialize(json);
+
+        await Assert.That(deserialized.Scorers).Count().IsEqualTo(1);
+        await Assert.That(deserialized.Scorers[0].Type).IsEqualTo(ScorerType.Scaled);
+        await Assert.That(deserialized.Scorers[0].Weight).IsEqualTo(2.0);
+        await Assert.That(deserialized.Scorers[0].InnerScorer).IsNotNull();
+        await Assert.That(deserialized.Scorers[0].InnerScorer!.Type).IsEqualTo(ScorerType.Recency);
+        await Assert.That(deserialized.Scorers[0].InnerScorer!.Weight).IsEqualTo(1.0);
+        await Assert.That(deserialized.Scorers[0].InnerScorer!.InnerScorer).IsNull();
+    }
+
+    [Test]
+    public async Task NestedScaledScorer_RoundTrips()
+    {
+        var policy = new CupelPolicy(
+            scorers:
+            [
+                new ScorerEntry(ScorerType.Scaled, 3.0,
+                    innerScorer: new ScorerEntry(ScorerType.Scaled, 2.0,
+                        innerScorer: new ScorerEntry(ScorerType.Priority, 1.0)))
+            ]);
+
+        var json = CupelJsonSerializer.Serialize(policy);
+        var deserialized = CupelJsonSerializer.Deserialize(json);
+
+        await Assert.That(deserialized.Scorers).Count().IsEqualTo(1);
+
+        var outer = deserialized.Scorers[0];
+        await Assert.That(outer.Type).IsEqualTo(ScorerType.Scaled);
+        await Assert.That(outer.Weight).IsEqualTo(3.0);
+        await Assert.That(outer.InnerScorer).IsNotNull();
+
+        var middle = outer.InnerScorer!;
+        await Assert.That(middle.Type).IsEqualTo(ScorerType.Scaled);
+        await Assert.That(middle.Weight).IsEqualTo(2.0);
+        await Assert.That(middle.InnerScorer).IsNotNull();
+
+        var inner = middle.InnerScorer!;
+        await Assert.That(inner.Type).IsEqualTo(ScorerType.Priority);
+        await Assert.That(inner.Weight).IsEqualTo(1.0);
+        await Assert.That(inner.InnerScorer).IsNull();
+    }
+
+    [Test]
+    public async Task StreamSlice_WithBatchSize_RoundTrips()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Recency, 1.0)],
+            slicerType: SlicerType.Stream,
+            streamBatchSize: 16);
+
+        var json = CupelJsonSerializer.Serialize(policy);
+        var deserialized = CupelJsonSerializer.Deserialize(json);
+
+        await Assert.That(deserialized.SlicerType).IsEqualTo(SlicerType.Stream);
+        await Assert.That(deserialized.StreamBatchSize).IsEqualTo(16);
+    }
+
+    [Test]
+    public async Task StreamSlice_NullBatchSize_RoundTrips()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Recency, 1.0)],
+            slicerType: SlicerType.Stream);
+
+        var json = CupelJsonSerializer.Serialize(policy);
+        var deserialized = CupelJsonSerializer.Deserialize(json);
+
+        await Assert.That(deserialized.SlicerType).IsEqualTo(SlicerType.Stream);
+        await Assert.That(deserialized.StreamBatchSize).IsNull();
+    }
+
+    [Test]
+    public async Task MixedPolicy_ScaledScorerAndStreamSlicer_RoundTrips()
+    {
+        var policy = new CupelPolicy(
+            scorers:
+            [
+                new ScorerEntry(ScorerType.Scaled, 2.0,
+                    innerScorer: new ScorerEntry(ScorerType.Kind, 1.5,
+                        kindWeights: new Dictionary<ContextKind, double>
+                        {
+                            [ContextKind.Message] = 0.8,
+                            [ContextKind.Document] = 1.2
+                        })),
+                new ScorerEntry(ScorerType.Recency, 1.0)
+            ],
+            slicerType: SlicerType.Stream,
+            streamBatchSize: 16,
+            placerType: PlacerType.UShaped,
+            deduplicationEnabled: false);
+
+        var json = CupelJsonSerializer.Serialize(policy);
+        var deserialized = CupelJsonSerializer.Deserialize(json);
+
+        // Scorers
+        await Assert.That(deserialized.Scorers).Count().IsEqualTo(2);
+        await Assert.That(deserialized.Scorers[0].Type).IsEqualTo(ScorerType.Scaled);
+        await Assert.That(deserialized.Scorers[0].Weight).IsEqualTo(2.0);
+        await Assert.That(deserialized.Scorers[0].InnerScorer).IsNotNull();
+        await Assert.That(deserialized.Scorers[0].InnerScorer!.Type).IsEqualTo(ScorerType.Kind);
+        await Assert.That(deserialized.Scorers[0].InnerScorer!.Weight).IsEqualTo(1.5);
+        await Assert.That(deserialized.Scorers[0].InnerScorer!.KindWeights).IsNotNull();
+        await Assert.That(deserialized.Scorers[0].InnerScorer!.KindWeights![ContextKind.Message]).IsEqualTo(0.8);
+        await Assert.That(deserialized.Scorers[0].InnerScorer!.KindWeights![ContextKind.Document]).IsEqualTo(1.2);
+        await Assert.That(deserialized.Scorers[1].Type).IsEqualTo(ScorerType.Recency);
+        await Assert.That(deserialized.Scorers[1].Weight).IsEqualTo(1.0);
+
+        // Strategy
+        await Assert.That(deserialized.SlicerType).IsEqualTo(SlicerType.Stream);
+        await Assert.That(deserialized.StreamBatchSize).IsEqualTo(16);
+        await Assert.That(deserialized.PlacerType).IsEqualTo(PlacerType.UShaped);
+        await Assert.That(deserialized.DeduplicationEnabled).IsFalse();
     }
 
     [Test]

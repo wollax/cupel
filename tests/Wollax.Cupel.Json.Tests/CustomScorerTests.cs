@@ -42,6 +42,33 @@ public class CustomScorerTests
         await Assert.That(options.HasScorerFactory("myCustom")).IsTrue();
     }
 
+    // --- BuiltInScorerTypes derivation tests ---
+
+    [Test]
+    public async Task BuiltInScorerTypes_DerivedFromEnum_HasExpectedCount()
+    {
+        await Assert.That(CupelJsonSerializer.BuiltInScorerTypes).Count().IsEqualTo(7);
+    }
+
+    [Test]
+    public async Task BuiltInScorerTypes_ContainsScaled()
+    {
+        await Assert.That(CupelJsonSerializer.BuiltInScorerTypes).Contains("scaled");
+    }
+
+    [Test]
+    public async Task BuiltInScorerTypes_ContainsAllOriginalTypes()
+    {
+        var types = CupelJsonSerializer.BuiltInScorerTypes;
+
+        await Assert.That(types).Contains("recency");
+        await Assert.That(types).Contains("priority");
+        await Assert.That(types).Contains("kind");
+        await Assert.That(types).Contains("tag");
+        await Assert.That(types).Contains("frequency");
+        await Assert.That(types).Contains("reflexive");
+    }
+
     // --- Unknown type error tests ---
 
     [Test]
@@ -68,6 +95,28 @@ public class CustomScorerTests
         await Assert.That(message).Contains("tag");
         await Assert.That(message).Contains("frequency");
         await Assert.That(message).Contains("reflexive");
+        await Assert.That(message).Contains("RegisterScorer");
+    }
+
+    [Test]
+    public async Task Deserialize_UnknownScorerType_IncludesScaledInKnownTypes()
+    {
+        var json = """
+            {
+                "scorers": [{"type": "custom-foo", "weight": 1.0}],
+                "slicerType": "greedy",
+                "placerType": "chronological",
+                "deduplicationEnabled": true,
+                "overflowStrategy": "throw"
+            }
+            """;
+
+        var exception = await Assert.ThrowsAsync<JsonException>(
+            () => Task.FromResult(CupelJsonSerializer.Deserialize(json)));
+
+        var message = exception!.Message;
+        await Assert.That(message).Contains("custom-foo");
+        await Assert.That(message).Contains("scaled");
         await Assert.That(message).Contains("RegisterScorer");
     }
 

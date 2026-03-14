@@ -29,5 +29,9 @@ public enum ScorerType
 
     /// <summary>Scores items by their self-reported future relevance hint.</summary>
     [JsonStringEnumMemberName("reflexive")]
-    Reflexive
+    Reflexive,
+
+    /// <summary>Wraps another scorer and normalizes its output to [0, 1].</summary>
+    [JsonStringEnumMemberName("scaled")]
+    Scaled
 }

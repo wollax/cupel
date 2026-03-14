@@ -24,6 +24,13 @@ public sealed class CupelPipeline
     private readonly OverflowStrategy _overflowStrategy;
     private readonly Action<OverflowEvent>? _overflowObserver;
 
+    internal IScorer Scorer => _scorer;
+    internal ISlicer Slicer => _slicer;
+    internal IPlacer Placer => _placer;
+    internal IAsyncSlicer? AsyncSlicer => _asyncSlicer;
+    internal bool DeduplicationEnabled => _deduplicationEnabled;
+    internal OverflowStrategy OverflowStrategyValue => _overflowStrategy;
+
     internal CupelPipeline(
         IScorer scorer,
         ISlicer slicer,

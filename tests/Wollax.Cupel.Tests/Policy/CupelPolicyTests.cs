@@ -165,4 +165,79 @@ public class CupelPolicyTests
         await Assert.That(policy.Name).IsEqualTo("test");
         await Assert.That(policy.Description).IsEqualTo("desc");
     }
+
+    // StreamBatchSize tests
+
+    [Test]
+    public async Task Defaults_StreamBatchSizeIsNull()
+    {
+        var policy = new CupelPolicy(MinimalScorers());
+
+        await Assert.That(policy.StreamBatchSize).IsNull();
+    }
+
+    [Test]
+    public async Task ValidConstruction_StreamSlicerWithBatchSize_Succeeds()
+    {
+        var policy = new CupelPolicy(
+            MinimalScorers(),
+            slicerType: SlicerType.Stream,
+            streamBatchSize: 16);
+
+        await Assert.That(policy.SlicerType).IsEqualTo(SlicerType.Stream);
+        await Assert.That(policy.StreamBatchSize).IsEqualTo(16);
+    }
+
+    [Test]
+    public async Task ValidConstruction_StreamSlicerWithNullBatchSize_Succeeds()
+    {
+        var policy = new CupelPolicy(
+            MinimalScorers(),
+            slicerType: SlicerType.Stream);
+
+        await Assert.That(policy.SlicerType).IsEqualTo(SlicerType.Stream);
+        await Assert.That(policy.StreamBatchSize).IsNull();
+    }
+
+    [Test]
+    public async Task Validation_StreamBatchSizeZero_Throws()
+    {
+        await Assert.That(() => new CupelPolicy(
+                MinimalScorers(),
+                slicerType: SlicerType.Stream,
+                streamBatchSize: 0))
+            .ThrowsExactly<ArgumentOutOfRangeException>();
+    }
+
+    [Test]
+    public async Task Validation_StreamBatchSizeNegative_Throws()
+    {
+        await Assert.That(() => new CupelPolicy(
+                MinimalScorers(),
+                slicerType: SlicerType.Stream,
+                streamBatchSize: -1))
+            .ThrowsExactly<ArgumentOutOfRangeException>();
+    }
+
+    [Test]
+    public async Task Validation_StreamBatchSizeWithGreedySlicer_Throws()
+    {
+        await Assert.That(() => new CupelPolicy(
+                MinimalScorers(),
+                slicerType: SlicerType.Greedy,
+                streamBatchSize: 10))
+            .ThrowsExactly<ArgumentException>();
+    }
+
+    [Test]
+    public async Task Validation_QuotasWithStreamSlicer_Throws()
+    {
+        var quotas = new List<QuotaEntry> { new(ContextKind.Message, minPercent: 30) };
+
+        await Assert.That(() => new CupelPolicy(
+                MinimalScorers(),
+                slicerType: SlicerType.Stream,
+                quotas: quotas))
+            .ThrowsExactly<ArgumentException>();
+    }
 }

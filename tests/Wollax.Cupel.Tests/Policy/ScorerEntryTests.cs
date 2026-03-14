@@ -124,4 +124,56 @@ public class ScorerEntryTests
 
         await Assert.That(entry.KindWeights![ContextKind.Message]).IsEqualTo(1.0);
     }
+
+    // Scaled type tests
+
+    [Test]
+    public async Task ValidConstruction_ScaledTypeWithInnerScorer_Works()
+    {
+        var inner = new ScorerEntry(ScorerType.Recency, 1.0);
+        var entry = new ScorerEntry(ScorerType.Scaled, 2.0, innerScorer: inner);
+
+        await Assert.That(entry.Type).IsEqualTo(ScorerType.Scaled);
+        await Assert.That(entry.Weight).IsEqualTo(2.0);
+        await Assert.That(entry.InnerScorer).IsNotNull();
+        await Assert.That(entry.InnerScorer!.Type).IsEqualTo(ScorerType.Recency);
+    }
+
+    [Test]
+    public async Task Validation_ScaledTypeWithoutInnerScorer_Throws()
+    {
+        await Assert.That(() => new ScorerEntry(ScorerType.Scaled, 1.0))
+            .ThrowsExactly<ArgumentException>();
+    }
+
+    [Test]
+    public async Task Validation_NonScaledTypeWithInnerScorer_Throws()
+    {
+        var inner = new ScorerEntry(ScorerType.Recency, 1.0);
+
+        await Assert.That(() => new ScorerEntry(ScorerType.Recency, 1.0, innerScorer: inner))
+            .ThrowsExactly<ArgumentException>();
+    }
+
+    [Test]
+    public async Task ValidConstruction_NestedScaledScorers_Works()
+    {
+        var leaf = new ScorerEntry(ScorerType.Recency, 1.0);
+        var middle = new ScorerEntry(ScorerType.Scaled, 1.0, innerScorer: leaf);
+        var outer = new ScorerEntry(ScorerType.Scaled, 1.0, innerScorer: middle);
+
+        await Assert.That(outer.Type).IsEqualTo(ScorerType.Scaled);
+        await Assert.That(outer.InnerScorer).IsNotNull();
+        await Assert.That(outer.InnerScorer!.Type).IsEqualTo(ScorerType.Scaled);
+        await Assert.That(outer.InnerScorer!.InnerScorer).IsNotNull();
+        await Assert.That(outer.InnerScorer!.InnerScorer!.Type).IsEqualTo(ScorerType.Recency);
+    }
+
+    [Test]
+    public async Task ValidConstruction_NonScaledTypes_InnerScorerDefaultsToNull()
+    {
+        var entry = new ScorerEntry(ScorerType.Recency, 1.0);
+
+        await Assert.That(entry.InnerScorer).IsNull();
+    }
 }
