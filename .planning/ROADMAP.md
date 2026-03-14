@@ -369,7 +369,12 @@ Plans:
 3. VERIFICATION.md exists for Phase 01 with retroactive verification notes
 4. VERIFICATION.md exists for Phase 09 with retroactive verification notes
 
-**Plans:** TBD
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 15-01-PLAN.md — Author 13 scoring conformance vectors in spec canonical directory (wave 1)
+- [ ] 15-02-PLAN.md — Author 6 slicing and 4 placing conformance vectors in spec canonical directory (wave 1)
+- [ ] 15-03-PLAN.md — Author 5 pipeline conformance vectors and final cross-verification (wave 2)
 
 ---
 
