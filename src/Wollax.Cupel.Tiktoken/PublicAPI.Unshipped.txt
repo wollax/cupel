@@ -1,0 +1,7 @@
+#nullable enable
+Wollax.Cupel.Tiktoken.TiktokenTokenCounter
+static Wollax.Cupel.Tiktoken.TiktokenTokenCounter.CreateForModel(string! modelName) -> Wollax.Cupel.Tiktoken.TiktokenTokenCounter!
+static Wollax.Cupel.Tiktoken.TiktokenTokenCounter.CreateForEncoding(string! encodingName) -> Wollax.Cupel.Tiktoken.TiktokenTokenCounter!
+Wollax.Cupel.Tiktoken.TiktokenTokenCounter.CountTokens(string! text) -> int
+Wollax.Cupel.Tiktoken.TiktokenTokenCounter.CountTokens(System.ReadOnlySpan<char> text) -> int
+Wollax.Cupel.Tiktoken.TiktokenTokenCounter.WithTokenCount(Wollax.Cupel.ContextItem! item) -> Wollax.Cupel.ContextItem!
