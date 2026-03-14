@@ -68,10 +68,10 @@
 ## Packaging
 
 - [x] **PKG-01**: Wollax.Cupel — core library with zero external dependencies beyond BCL
-- [ ] **PKG-02**: Wollax.Cupel.Extensions.DependencyInjection — Microsoft.Extensions.DI integration (separate package)
-- [ ] **PKG-03**: Wollax.Cupel.Tiktoken — optional token counting companion using Microsoft.ML.Tokenizers
+- [x] **PKG-02**: Wollax.Cupel.Extensions.DependencyInjection — Microsoft.Extensions.DI integration (separate package)
+- [x] **PKG-03**: Wollax.Cupel.Tiktoken — optional token counting companion using Microsoft.ML.Tokenizers
 - [x] **PKG-04**: Wollax.Cupel.Json — JSON policy serialization companion with source-generated JsonSerializerContext
-- [ ] **PKG-05**: Published to nuget.org as public packages
+- [x] **PKG-05**: Published to nuget.org as public packages
 
 ---
 
@@ -143,7 +143,7 @@
 | JSON-03 | Phase 9: Serialization & JSON Package | ● complete |
 | JSON-04 | Phase 9: Serialization & JSON Package | ● complete |
 | PKG-01 | Phase 1: Project Scaffold & Core Models | ● complete |
-| PKG-02 | Phase 10: Companion Packages & Release | ○ planned |
-| PKG-03 | Phase 10: Companion Packages & Release | ○ planned |
+| PKG-02 | Phase 10: Companion Packages & Release | ● complete |
+| PKG-03 | Phase 10: Companion Packages & Release | ● complete |
 | PKG-04 | Phase 9: Serialization & JSON Package | ● complete |
-| PKG-05 | Phase 10: Companion Packages & Release | ○ planned |
+| PKG-05 | Phase 10: Companion Packages & Release | ● complete |

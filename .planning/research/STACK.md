@@ -507,3 +507,510 @@ Items I could not fully verify and should be checked before implementation:
 3. **Microsoft.ML.Tokenizers net10.0 TFM**: Currently targets net8.0. Verify it works on net10.0 via forward compat (should be fine, but test early).
 4. **Microsoft.SourceLink.GitHub version**: May have a newer release. Check NuGet.
 5. **`[JsonPropertyName]` without System.Text.Json PackageReference**: Verify the attribute is available in-box for net10.0 without an explicit NuGet reference (it should be, as it's part of the shared framework).
+
+---
+
+# Rust Crate & Dual-Language Stack Research
+
+**Date**: 2026-03-14
+**Scope**: Moving `assay-cupel` Rust crate into the cupel monorepo, crates.io publishing, dual-language CI/CD.
+
+**Context**: The Rust crate (`assay-cupel`) was developed in the separate `wollax/assay` repository during Phase 12. It passes all 28 required conformance tests. The next milestone involves migrating it into this monorepo and publishing to crates.io.
+
+---
+
+## 12. Crates.io Trusted Publishing
+
+### Does crates.io support trusted publishing?
+
+**Yes.** Crates.io supports Trusted Publishing via OIDC as of July 2025 (RFC 3691). Over 770 packages had configured it by January 2026.
+
+**Confidence**: HIGH (verified via official Rust Blog, crates.io docs, RFC)
+
+### How It Works
+
+1. Configure a Trusted Publishing policy on crates.io linking your GitHub repo, workflow file, and optionally a GitHub Environment
+2. The `rust-lang/crates-io-auth-action@v1` action exchanges a GitHub OIDC token for a short-lived crates.io access token (30 minutes)
+3. The action's post-step automatically revokes the token when the job completes
+4. `pull_request_target` and `workflow_run` triggers are blocked for security
+
+### Workflow Template
+
+```yaml
+name: Publish to crates.io
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release  # Optional: adds manual approval gate
+    permissions:
+      id-token: write     # Required for OIDC token exchange
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/rust-lang/setup-rust-toolchain@v1
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - run: cargo publish --manifest-path crates/assay-cupel/Cargo.toml
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+```
+
+### Symmetry with NuGet Publishing
+
+Both registries now support OIDC trusted publishing, giving a consistent security model:
+
+| Registry | OIDC Action | Token Lifetime | Setup Location |
+|----------|-------------|----------------|----------------|
+| NuGet.org | `NuGet/login@v1` | 1 hour | nuget.org publisher settings |
+| crates.io | `rust-lang/crates-io-auth-action@v1` | 30 minutes | crates.io crate settings |
+
+No long-lived API tokens need to be stored in repository secrets for either registry.
+
+### crates.io Setup Steps
+
+1. Log into crates.io with GitHub
+2. Navigate to the crate's settings (after first manual `cargo publish`)
+3. Add a Trusted Publishing configuration: repository owner, repo name, workflow filename
+4. Optionally restrict to a specific GitHub Environment (recommended: `release`)
+
+**Note**: The first publish of a new crate must be done manually with `cargo publish` and a personal API token. Trusted Publishing can only be configured after the crate exists on crates.io.
+
+---
+
+## 13. Cargo.toml Metadata for Published Crates
+
+### Required Fields (crates.io rejects without these)
+
+| Field | Purpose | Value for assay-cupel |
+|-------|---------|----------------------|
+| `name` | Crate name on registry | `assay-cupel` |
+| `version` | SemVer version | `1.0.0` (tracks spec major.minor) |
+| `description` | Short plain-text blurb | Required, non-empty |
+| `license` OR `license-file` | SPDX 2.3 expression or path | `MIT` |
+
+### Recommended Fields
+
+| Field | Purpose | Value |
+|-------|---------|-------|
+| `edition` | Rust edition | `"2024"` |
+| `rust-version` | MSRV declaration | `"1.85"` (see section 14) |
+| `repository` | Source code URL | `https://github.com/wollax/cupel` |
+| `homepage` | Project homepage | `https://github.com/wollax/cupel` |
+| `documentation` | Docs URL | `https://docs.rs/assay-cupel` (auto-generated) |
+| `readme` | Path to README | `crates/assay-cupel/README.md` |
+| `keywords` | Max 5, alphanumeric/`-`/`_` | `["context", "llm", "agent", "token", "pipeline"]` |
+| `categories` | Max 5, must match crates.io slugs | `["algorithms", "data-structures"]` |
+| `authors` | List of authors | `["Wollax"]` |
+
+### Custom Metadata for Spec Version
+
+```toml
+[package.metadata.cupel]
+spec_version = "1.0"
+```
+
+This embeds the Cupel spec version the crate implements, enabling tooling to check compatibility. Spec major.minor is the cross-language compatibility anchor (per publishing brainstorm).
+
+### Recommended Cargo.toml
+
+```toml
+[package]
+name = "assay-cupel"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Cupel specification implementation — context management pipeline for LLM agents"
+license = "MIT"
+repository = "https://github.com/wollax/cupel"
+homepage = "https://github.com/wollax/cupel"
+readme = "README.md"
+keywords = ["context", "llm", "agent", "token", "pipeline"]
+categories = ["algorithms", "data-structures"]
+authors = ["Wollax"]
+
+[package.metadata.cupel]
+spec_version = "1.0"
+
+[dependencies]
+thiserror = "2"
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+```
+
+**Confidence**: HIGH (fields verified against Cargo Book manifest reference)
+
+### Keywords vs Categories
+
+- **Keywords** are free-form (max 5, alphanumeric + `-` + `_`, max 20 chars each). Used for search.
+- **Categories** must exactly match a slug from `https://crates.io/category_slugs`. Used for browsing/filtering. Relevant slugs: `algorithms`, `data-structures`, `text-processing`.
+
+---
+
+## 14. MSRV Policy and rust-toolchain.toml
+
+### What is a Reasonable MSRV for a New Crate in 2026?
+
+**Latest stable is Rust 1.94.0** (released 2026-03-05).
+
+Common MSRV policies in the ecosystem:
+
+| Policy | Used By | Implication for assay-cupel |
+|--------|---------|----------------------------|
+| N-2 stable versions | kube-rs | Would be ~1.92 |
+| 6-month window | hyper | Would be ~1.88 |
+| Edition minimum | Many new crates | 1.85 (edition 2024 minimum) |
+| Latest stable | Some libraries | 1.94 |
+
+**Recommendation: `rust-version = "1.85"`** (edition 2024 minimum)
+
+**Rationale**:
+- The crate already uses `edition = "2024"` (from the assay workspace), which requires Rust 1.85+
+- Setting MSRV to the edition minimum is the simplest policy for a new crate
+- No features from 1.86+ are required by the current implementation
+- The Cargo resolver respects `rust-version` and will prefer compatible dependency versions
+- Can be bumped to a newer version in a minor release if new features are needed
+
+**Confidence**: HIGH — edition minimum is the most conservative sensible choice.
+
+### rust-toolchain.toml Configuration
+
+Place at **repository root** (not inside `crates/`). This ensures `rustup` auto-installs the correct toolchain when anyone enters the repo, and GitHub Actions respects it.
+
+```toml
+[toolchain]
+channel = "1.85"
+components = ["rustfmt", "clippy"]
+```
+
+**Key behaviors**:
+- `rustup` reads this file automatically when running any `cargo` command in the repo
+- `actions-rust-lang/setup-rust-toolchain@v1` reads it automatically — no explicit `toolchain` input needed
+- Pins the CI toolchain to the MSRV, ensuring the crate builds on its declared minimum
+- Components ensure `cargo fmt` and `cargo clippy` are available without extra setup
+
+**Alternative**: Use `channel = "stable"` for always-latest in CI, and verify MSRV separately with `cargo msrv` or a dedicated CI job. This is more common for established crates but adds CI complexity.
+
+**Recommendation**: Pin to MSRV in `rust-toolchain.toml` for simplicity. Add a separate "latest stable" CI job if compatibility issues arise.
+
+**Confidence**: HIGH
+
+---
+
+## 15. Dual-Language CI/CD in GitHub Actions
+
+### Architecture: Separate Workflows with Path Filters
+
+A dual-language monorepo should NOT use a single monolithic CI workflow. Use **separate workflows per language** with path-based triggers, plus shared workflows for cross-cutting concerns.
+
+**Confidence**: HIGH (standard pattern for polyglot repos)
+
+### Proposed Workflow Structure
+
+```
+.github/workflows/
+  ci.yml              # .NET build + test (existing, add path filters)
+  ci-rust.yml          # Rust build + test + clippy + fmt (new)
+  release.yml          # NuGet publish (existing, unchanged)
+  release-rust.yml     # crates.io publish (new)
+  spec.yml             # mdBook deploy (existing, unchanged)
+```
+
+### Path Filter Configuration
+
+#### ci.yml (existing, add path filters)
+
+```yaml
+name: CI (.NET)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'benchmarks/**'
+      - '*.sln'
+      - 'Directory.*.props'
+      - 'Directory.*.targets'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'benchmarks/**'
+      - '*.sln'
+      - 'Directory.*.props'
+      - 'Directory.*.targets'
+      - '.github/workflows/ci.yml'
+```
+
+#### ci-rust.yml (new)
+
+```yaml
+name: CI (Rust)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/ci-rust.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/ci-rust.yml'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        # Reads rust-toolchain.toml automatically
+        # Includes Swatinem/rust-cache by default
+      - run: cargo build --release --manifest-path crates/assay-cupel/Cargo.toml
+      - run: cargo test --manifest-path crates/assay-cupel/Cargo.toml
+      - run: cargo clippy --manifest-path crates/assay-cupel/Cargo.toml -- -D warnings
+
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt
+      - run: cargo fmt --manifest-path crates/assay-cupel/Cargo.toml -- --check
+```
+
+### Key Design Decisions
+
+#### Why Separate Workflows (Not Matrix)
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| **Separate workflows** | Independent triggers, clear status checks, no wasted runs | More YAML files |
+| **Single workflow with matrix** | Single file | Can't path-filter per matrix entry; .NET changes trigger Rust builds and vice versa |
+
+Separate workflows are the standard approach for polyglot repos. GitHub's required status checks can be configured per workflow.
+
+#### Path Filter Gotchas
+
+1. **Negation patterns**: Use `!` prefix to exclude paths after including them. Order matters.
+2. **Self-inclusion**: Always include the workflow file itself in path filters (`.github/workflows/ci-rust.yml`), so CI changes are tested.
+3. **Tag pushes**: `paths` filters are NOT evaluated for tag pushes. Release workflows triggered by tags run unconditionally (which is correct).
+4. **Required checks on PRs**: If a path-filtered workflow doesn't run (no matching files changed), the status check is "skipped." GitHub allows configuring branch protection to accept skipped checks for path-filtered workflows.
+
+### actions-rust-lang/setup-rust-toolchain@v1
+
+This is the recommended Rust GitHub Action (replaces the deprecated `actions-rs/toolchain`).
+
+**Key features**:
+- Reads `rust-toolchain.toml` automatically if present
+- Integrates `Swatinem/rust-cache@v2` by default (caches `~/.cargo` and `target/`)
+- Configures problem matchers for Rust compiler output
+- Supports `components` and `targets` inputs for additional toolchain configuration
+
+**Cache behavior**: Enabled by default. Cache key is based on `Cargo.lock`, toolchain, and job name. No manual cache configuration needed.
+
+**Confidence**: HIGH (actively maintained, 3.7k stars, recommended by Rust GitHub Actions org)
+
+### Conformance Test Integration
+
+The conformance TOML test vectors live at `conformance/required/` and `conformance/optional/`. When the Rust crate moves into the monorepo, its integration tests should reference these vectors directly (path dependency), eliminating the need for copying or submodules.
+
+Add `conformance/**` to the Rust CI path filter:
+
+```yaml
+paths:
+  - 'crates/**'
+  - 'conformance/**'  # Spec vector changes should re-run Rust tests
+  - 'Cargo.toml'
+  - 'Cargo.lock'
+  - 'rust-toolchain.toml'
+```
+
+---
+
+## 16. Monorepo Layout After Migration
+
+### Proposed Directory Structure
+
+```
+cupel/
+  .github/workflows/
+    ci.yml               # .NET CI (path-filtered)
+    ci-rust.yml           # Rust CI (path-filtered)
+    release.yml           # NuGet publish (existing)
+    release-rust.yml      # crates.io publish (new)
+    spec.yml              # mdBook deploy (existing)
+
+  # .NET
+  src/                   # .NET source projects
+  tests/                 # .NET test projects
+  benchmarks/            # .NET benchmarks
+  Directory.Build.props
+  Directory.Packages.props
+  cupel.sln
+
+  # Rust
+  crates/
+    assay-cupel/
+      Cargo.toml
+      src/
+      tests/
+  Cargo.toml             # Workspace root (members = ["crates/*"])
+  Cargo.lock
+  rust-toolchain.toml
+
+  # Shared
+  conformance/           # TOML test vectors (consumed by both .NET and Rust)
+  spec/                  # mdBook specification
+  LICENSE
+  README.md
+```
+
+### Workspace Cargo.toml (Root)
+
+```toml
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+```
+
+This is a minimal workspace root. It exists solely to let `cargo` discover crates under `crates/`. The `.sln` file and `Cargo.toml` coexist at the repo root without conflict.
+
+### Build Tool Isolation
+
+- `dotnet` ignores `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`, and `crates/`
+- `cargo` ignores `*.sln`, `*.csproj`, `Directory.*.props`, `src/`, `tests/`, `benchmarks/`
+- No build system contamination between languages
+
+---
+
+## 17. Release Workflow: crates.io
+
+### release-rust.yml
+
+```yaml
+name: Publish to crates.io
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run — verify without publishing'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - run: cargo test --manifest-path crates/assay-cupel/Cargo.toml
+      - run: cargo clippy --manifest-path crates/assay-cupel/Cargo.toml -- -D warnings
+      - run: cargo package --manifest-path crates/assay-cupel/Cargo.toml --allow-dirty
+        # --allow-dirty because untracked .NET files exist in workspace
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: verify
+    if: ${{ inputs.dry-run != true }}
+    environment: release
+    steps:
+      - name: Verify running from main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Must be run from main branch"
+          exit 1
+
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+
+      - run: cargo publish --manifest-path crates/assay-cupel/Cargo.toml
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+```
+
+### Parallel with NuGet Release Workflow
+
+The existing `release.yml` uses `workflow_dispatch` with a dry-run option and the same `release` environment. The Rust workflow mirrors this structure for consistency:
+
+| Concern | NuGet (release.yml) | crates.io (release-rust.yml) |
+|---------|--------------------|-----------------------------|
+| Trigger | `workflow_dispatch` | `workflow_dispatch` |
+| Dry run | Yes | Yes |
+| Environment | `release` (implied) | `release` |
+| OIDC | `NuGet/login@v1` | `rust-lang/crates-io-auth-action@v1` |
+| Branch guard | Main only | Main only |
+| Versioning | MinVer (git tags) | `Cargo.toml` version field |
+
+### Versioning Coordination
+
+Per the publishing brainstorm, versions are independent per language but anchored to the spec version:
+- **NuGet**: MinVer from git tags (e.g., `v1.0.3`)
+- **crates.io**: Manual `version` field in `Cargo.toml` (e.g., `1.0.1`)
+- **Compatibility**: Both track Cupel Spec 1.0 via `[package.metadata.cupel] spec_version = "1.0"`
+
+---
+
+## 18. Summary: Dual-Language Stack Additions
+
+| Layer | Choice | Version | Confidence |
+|---|---|---|---|
+| **Rust edition** | 2024 | — | HIGH |
+| **MSRV** | 1.85 (edition 2024 minimum) | — | HIGH |
+| **Toolchain management** | `rust-toolchain.toml` at repo root | — | HIGH |
+| **CI action** | `actions-rust-lang/setup-rust-toolchain@v1` | Latest | HIGH |
+| **Crate publishing** | crates.io Trusted Publishing (OIDC) | — | HIGH |
+| **OIDC action** | `rust-lang/crates-io-auth-action@v1` | Latest | HIGH |
+| **CI architecture** | Separate workflows + path filters | — | HIGH |
+| **Workspace layout** | `crates/assay-cupel/` under repo root | — | HIGH |
+| **Workspace root** | `Cargo.toml` with `members = ["crates/*"]` | — | HIGH |
+| **Conformance vectors** | Shared `conformance/` dir, path dependency | — | HIGH |
+
+---
+
+## 19. Verification Gaps (Rust/Dual-Language)
+
+1. **First crates.io publish**: The initial `cargo publish` must be done manually with a personal API token before Trusted Publishing can be configured. Plan for this one-time step.
+2. **`cargo package --allow-dirty`**: In a monorepo with .NET files, `cargo package` may complain about untracked files. Test whether `--allow-dirty` is needed or if `.gitignore` / Cargo's `exclude` field handles it cleanly.
+3. **Category slugs**: Verify `algorithms` and `data-structures` are valid slugs at `https://crates.io/category_slugs` before publishing.
+4. **Rust 1.85 on ubuntu-latest**: Verify that `actions-rust-lang/setup-rust-toolchain` can install 1.85 on the current GitHub Actions runner image.
+5. **Path filter + required checks**: Test that GitHub branch protection allows "skipped" status checks when a path-filtered workflow doesn't run (e.g., .NET-only PR doesn't trigger Rust CI).
+6. **`Cargo.lock` in version control**: For library crates, `Cargo.lock` is conventionally not committed. However, in a monorepo with CI, committing it ensures reproducible CI builds. Decide based on whether the workspace will contain binary targets.
+
+### Sources
+
+- [crates.io development update (Jan 2026)](https://blog.rust-lang.org/2026/01/21/crates-io-development-update/)
+- [RFC 3691: Trusted Publishing for crates.io](https://rust-lang.github.io/rfcs/3691-trusted-publishing-cratesio.html)
+- [crates.io Trusted Publishing docs](https://crates.io/docs/trusted-publishing)
+- [rust-lang/crates-io-auth-action](https://github.com/rust-lang/crates-io-auth-action)
+- [actions-rust-lang/setup-rust-toolchain](https://github.com/actions-rust-lang/setup-rust-toolchain)
+- [Cargo Book: The Manifest Format](https://doc.rust-lang.org/cargo/reference/manifest.html)
+- [Cargo Book: Publishing on crates.io](https://doc.rust-lang.org/cargo/reference/publishing.html)
+- [crates.io Category Slugs](https://crates.io/category_slugs)
+- [MSRV Policy Discussion (Rust API Guidelines)](https://github.com/rust-lang/api-guidelines/discussions/231)
+- [Rust releases](https://releases.rs/)
+- [Swatinem/rust-cache](https://github.com/Swatinem/rust-cache)

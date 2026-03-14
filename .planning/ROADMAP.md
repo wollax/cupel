@@ -4,7 +4,7 @@
 
 | Milestone | Status | Phases |
 |-----------|--------|--------|
-| v1.0 Core Library | ✅ complete | 1–12 |
+| v1.0 Core Library | 🔧 gap closure | 1–15 |
 
 ---
 
@@ -293,6 +293,80 @@ Plans:
 
 ---
 
+#### Phase 13: Budget Contract Implementation
+
+**Goal:** Wire the two unused `ContextBudget` properties into the pipeline so the public API contract matches runtime behavior. `ReservedSlots` subtracts per-kind token reservations from the slicer's available budget; `EstimationSafetyMarginPercent` applies a safety margin to the effective token ceiling.
+
+**Dependencies:** Phase 5 (pipeline execution), Phase 6 (slicers)
+
+**Requirements:** (audit gap closure — no new requirement IDs)
+
+**Gap Closure:** Closes audit items:
+- `ContextBudget.ReservedSlots` property exists in public API but pipeline ignores it
+- `ContextBudget.EstimationSafetyMarginPercent` property exists in public API but pipeline ignores it
+- `REQUIREMENTS.md` shows PKG-02, PKG-03, PKG-05 as `[ ] planned` despite being implemented
+
+**Success Criteria:**
+1. Pipeline execution subtracts `ReservedSlots` token totals from the slicer's available budget — verified by test showing reduced capacity
+2. Pipeline execution applies `EstimationSafetyMarginPercent` as a multiplicative reduction to effective budget — verified by test showing margin-adjusted selection
+3. Existing tests continue to pass (default values are zero/empty, preserving backward compatibility)
+4. `REQUIREMENTS.md` checkboxes updated for PKG-02, PKG-03, PKG-05
+
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [x] 13-01-PLAN.md — ReservedSlots & EstimationSafetyMarginPercent pipeline wiring (TDD)
+- [x] 13-02-PLAN.md — Spec documentation updates for budget contract
+
+---
+
+#### Phase 14: Policy Type Completeness
+
+**Goal:** Make `ScaledScorer` and `StreamSlice` reachable from the declarative policy, JSON serialization, and DI paths — closing the integration gap where these components are only usable via manual builder. Align DI lifetimes to the documented singleton specification.
+
+**Dependencies:** Phase 8 (CupelPolicy), Phase 9 (JSON serialization), Phase 10 (DI package)
+
+**Requirements:** (audit gap closure — no new requirement IDs)
+
+**Gap Closure:** Closes audit items:
+- `ScaledScorer` has no `ScorerType` enum value — unreachable from policy/JSON/DI paths
+- `StreamSlice` has no `SlicerType` enum value — unreachable from policy/DI paths
+- DI lifetime divergence: ROADMAP specifies singleton scorers/slicers/placers but implementation creates per-resolve
+
+**Success Criteria:**
+1. `ScorerType.Scaled` enum value exists; `CupelPolicy` can declare a `ScaledScorer` wrapping any inner scorer
+2. `SlicerType.Stream` enum value exists; `CupelPolicy` can declare `StreamSlice` configuration
+3. JSON round-trip of policies containing `ScaledScorer` and `StreamSlice` succeeds
+4. DI-resolved scorers, slicers, and placers are singletons — verified by reference equality test
+5. All existing tests continue to pass
+
+**Plans:** TBD
+
+---
+
+#### Phase 15: Conformance Hardening
+
+**Goal:** Strengthen the conformance guarantee by promoting `QuotaSlice` to the required tier and backfilling missing verification documents for phases 01 and 09.
+
+**Dependencies:** Phase 11 (specification), Phase 12 (Rust crate)
+
+**Requirements:** (audit gap closure — no new requirement IDs)
+
+**Gap Closure:** Closes audit items:
+- `quota-basic.toml` is in optional tier instead of required — weakens conformance for most complex slicer
+- Missing VERIFICATION.md for Phase 01
+- Missing VERIFICATION.md for Phase 09
+
+**Success Criteria:**
+1. `quota-basic.toml` moved from `conformance/optional/` to `conformance/required/` in the spec
+2. Rust conformance test runner updated to include the new required vector — all required tests pass
+3. VERIFICATION.md exists for Phase 01 with retroactive verification notes
+4. VERIFICATION.md exists for Phase 09 with retroactive verification notes
+
+**Plans:** TBD
+
+---
+
 ## Progress Summary
 
 | Phase | Name | Requirements | Status |
@@ -309,3 +383,6 @@ Plans:
 | 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ● complete |
 | 11 | Language-Agnostic Specification | TBD | ● complete |
 | 12 | Rust Crate (Assay) | TBD | ● complete |
+| 13 | Budget Contract Implementation | audit gap closure | ● complete |
+| 14 | Policy Type Completeness | audit gap closure | ○ planned |
+| 15 | Conformance Hardening | audit gap closure | ○ planned |

@@ -1,389 +1,478 @@
-# Cupel Features Research
+# Cupel v1.1 — Features Research: Rust Crate Migration
 
-**Date**: 2026-03-10
-**Dimension**: Features — Context management library ecosystem
-**Confidence methodology**: HIGH (Context7/official docs), MEDIUM (WebSearch + official source), LOW (WebSearch only/unverified)
-
----
-
-## 1. Ecosystem Survey: What Exists Today
-
-### 1.1 LangChain Context Engineering (Python/TypeScript)
-
-**Confidence**: HIGH (Context7 + official docs)
-
-LangChain organizes context management into four strategy buckets: **write, select, compress, isolate**.
-
-**What they offer:**
-- `trim_messages()` — truncates message history by token count with configurable strategy (`"last"`, keep N recent). Accepts a `token_counter` function and `max_tokens` threshold. Can enforce boundary constraints (`start_on="human"`, `end_on=("human", "tool")`).
-- `SummarizationMiddleware` — triggers LLM-based summarization when conversations exceed a token threshold (e.g., `trigger={"tokens": 4000}`), permanently replaces older messages with summaries while keeping recent N messages intact.
-- `createMiddleware` with `beforeModel` / `afterModel` hooks — intercepts context before model invocation. Middleware can remove, replace, or augment messages.
-- No scoring system. No ranking. No placement optimization. Selection is recency-based or role-based filtering only.
-- Deeply coupled to LangGraph's `StateGraph` and `MessagesState` — not standalone.
-
-**Key gap Cupel exploits**: LangChain treats context as messages to trim, not as items to score and optimize. There is no concept of value-weighted selection, no budget optimization, no explainability for why items were included or excluded.
-
-### 1.2 Microsoft Semantic Kernel (.NET/Python)
-
-**Confidence**: HIGH (Context7)
-
-- `ChatHistoryReducer` — reduces chat history for token management. Implementation details are sparse; appears to be a simple truncation/summarization pass.
-- `FunctionAdvertisementFilter` — intercepts function/tool advertisement at prompt invocation time, can vectorize available functions and chat history, then select most relevant functions to expose to the model. This is function-level context selection, not content-level.
-- Context-based function selection uses vector similarity between chat history and function descriptions.
-- No standalone context item scoring, budget optimization, or placement strategy.
-- Tightly coupled to the Semantic Kernel pipeline and `IChatCompletionService`.
-
-**Key gap Cupel exploits**: Semantic Kernel's context management is incidental to its chat completion pipeline. There is no first-class context selection layer. Function selection is interesting but narrow — it selects tools, not content.
-
-### 1.3 LlamaIndex (Python)
-
-**Confidence**: HIGH (Context7)
-
-LlamaIndex has the most sophisticated scoring via its **Node Postprocessor** system:
-- `SimilarityPostprocessor` — filters nodes below a similarity score cutoff
-- `CohereRerank` — reranks nodes using Cohere's trained reranking model
-- `ColbertRerank` — fine-grained token-level similarity via ColBERT v2
-- `RankGPTRerank` — uses an LLM agent to rerank documents by relevance
-- `LLMRerank` — LLM-based batch reranking with parsed relevance scores
-- `RankLLMRerank` — uses RankZephyr or similar models for reranking
-- `TimeWeightedPostprocessor` — temporal decay scoring
-
-**Scoring model**: Nodes carry a `score` field. Postprocessors reorder and filter. Multiple postprocessors can be chained. The pattern is retrieve-then-rerank.
-
-**Key gap Cupel exploits**: LlamaIndex postprocessors are RAG-specific (query-node similarity). They don't handle multi-kind context (messages + documents + tool outputs + memory), don't optimize for token budgets as a constraint, and have no placement strategy. No explainability for exclusion reasons.
-
-### 1.4 Factory.ai / Cursor / Claude Code (Closed-source)
-
-**Confidence**: MEDIUM (blog posts, no source code)
-
-- **Factory.ai**: Layered sequential filtering — repository overviews first, then semantic search, then targeted file operations. Explicit budget awareness ("every additional token processed incurs a direct cost"). No published scoring details.
-- **Cursor**: Workspace indexer with semantic search. Closed-source, IDE-locked.
-- **Claude Code**: "auto-compact" at 95% context capacity. LLM-based summarization. Opaque — no user control over what gets kept or dropped.
-
-### 1.5 Letta/MemGPT
-
-**Confidence**: MEDIUM (blog post)
-
-Letta frames context as an **LLM Operating System** with kernel/user space:
-- **Kernel context**: System prompt, tool schemas, memory blocks (with size limits and access controls), files, system metadata
-- **User context**: Message buffer, tool call history, externally retrieved context
-- Memory blocks are reserved portions of the context window with size limits and metadata labels
-- System tools provide privileged access to modify agent state internals (memory replace/append/rethink)
-
-This is an architectural pattern (how to structure context), not an optimization library (how to select context given a budget).
-
-### 1.6 JetBrains Research (2025)
-
-**Confidence**: HIGH (peer-reviewed research)
-
-Two primary context management techniques evaluated on SWE-agent and OpenHands:
-- **Observation masking**: Preserves agent reasoning/actions, replaces older environment observations with placeholders. Rolling window approach. 2.6% solve rate improvement, 52% cheaper.
-- **LLM summarization**: Separate model compresses older interactions. Causes trajectory elongation (13-15% longer runs), adds 7%+ cost per instance from summary API calls.
-
-Key finding: Observation masking outperforms LLM summarization in efficiency and reliability. Hybrid approaches (masking primary, selective summarization) recommended.
-
-### 1.7 No .NET Prior Art
-
-**Confidence**: HIGH (NuGet search)
-
-There is no standalone .NET context management library on NuGet. The closest are:
-- `ModelContextProtocol` — MCP protocol implementation, not context management
-- `Microsoft.Extensions.AI` — LLM integration abstraction, no context selection
-- `DotnetPrompt` — prompt template library, no budget optimization
-
-Cupel would be the first dedicated context management library in the .NET ecosystem.
+**Date**: 2026-03-14
+**Dimension**: Features — Rust crate migration (assay-cupel → cupel-rs on crates.io)
+**Milestone**: v1.1 Rust Crate Migration & crates.io Publishing
+**Context**: Moving the existing `assay-cupel` crate from `wollax/assay` into `wollax/cupel`,
+publishing as `cupel-rs`, and having assay consume it from crates.io rather than as a path dependency.
 
 ---
 
-## 2. Scoring and Ranking Approaches
+## Baseline: What Already Exists
 
-### 2.1 Approaches Found in the Wild
+The `assay-cupel` crate in `wollax/assay` at `crates/assay-cupel/` is a complete, passing implementation
+of the Cupel specification. It is not a prototype. All 28 required conformance tests pass.
 
-| Approach | Used By | Complexity | Notes |
-|---|---|---|---|
-| Recency (keep last N) | LangChain, most chat apps | Trivial | Default everywhere. Necessary but insufficient alone. |
-| Similarity score cutoff | LlamaIndex | Low | Threshold-based. Binary keep/drop. |
-| Semantic similarity (embeddings) | LlamaIndex, Factory.ai, SK | Medium | Requires embedding model. Query-dependent. |
-| LLM-based reranking | LlamaIndex (RankGPT, LLMRerank) | High | Expensive, non-deterministic. Best quality for RAG. |
-| Trained reranker models | LlamaIndex (Cohere, ColBERT) | Medium | External dependency. Domain-specific quality varies. |
-| Temporal decay | LlamaIndex, general practice | Low | Score decreases with age. Simple exponential or linear. |
-| Role/kind filtering | LangChain, general practice | Low | Include/exclude by message type. |
-| Priority/pinning | General practice | Low | Manual override. Essential for system messages. |
+### Public API Surface (assay-cupel today)
 
-### 2.2 What's Missing (Cupel's Opportunity)
+**Model types** (`src/model/`):
+- `ContextItem` — immutable, private fields, full accessor set. Builder pattern via `ContextItemBuilder`.
+  Fields: `content`, `tokens` (i64), `kind`, `source`, `priority` (Option<i64>), `tags`, `metadata`
+  (HashMap<String, String>), `timestamp` (Option<DateTime<Utc>>), `future_relevance_hint` (Option<f64>),
+  `pinned`, `original_tokens` (Option<i64>).
+- `ContextBudget` — validated at construction. Fields: `max_tokens`, `target_tokens`, `output_reserve`,
+  `reserved_slots` (HashMap<ContextKind, i64>), `estimation_safety_margin_percent` (f64).
+- `ContextKind` — extensible newtype String with case-insensitive comparison and hashing.
+  Well-known constants: Message, Document, ToolOutput, Memory, SystemPrompt.
+- `ContextSource` — extensible newtype String with case-insensitive comparison and hashing.
+  Well-known constants: Chat, Tool, Rag.
+- `OverflowStrategy` — enum: Throw (default), Truncate, Proceed.
+- `ScoredItem` — struct: item + score (f64).
 
-No existing solution offers **composite scoring** — combining multiple signals (recency + priority + kind + frequency + caller hints) into a single ordinal ranking that a slicer can optimize against. Everyone either uses a single signal or chains independent postprocessors without a unified score.
+**Scorer trait and implementations** (`src/scorer/`):
+- `Scorer` trait: `score(&self, item, all_items) -> f64` + `as_any() -> &dyn Any` (for cycle detection).
+- Implementations: `RecencyScorer`, `PriorityScorer`, `KindScorer`, `TagScorer`,
+  `FrequencyScorer`, `ReflexiveScorer`, `CompositeScorer`, `ScaledScorer`.
 
-**Cupel's planned scorers map well to the ecosystem gaps:**
-- `RecencyScorer` — table stakes, everyone does this
-- `PriorityScorer` — table stakes, but Cupel's explicit priority field is cleaner than ad-hoc metadata
-- `KindScorer` — differentiator: no one scores by content kind (message vs document vs tool output)
-- `TagScorer` — differentiator: flexible categorical boosting
-- `FrequencyScorer` — differentiator: reference frequency as relevance signal
-- `ReflexiveScorer` (FutureRelevanceHint) — differentiator: forward-looking caller hint, unique to Cupel
-- `CompositeScorer` — strong differentiator: unified multi-signal scoring with weighted aggregation
+**Slicer trait and implementations** (`src/slicer/`):
+- `Slicer` trait: `slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Vec<ContextItem>`.
+- Implementations: `GreedySlice`, `KnapsackSlice`, `QuotaSlice` (with `QuotaEntry`).
+- Note: `StreamSlice` is NOT present — excluded per spec (Rust has async but streaming is anti-feature
+  for this migration).
 
-### 2.3 Confidence Assessment
+**Placer trait and implementations** (`src/placer/`):
+- `Placer` trait: `place(&self, items: &[ScoredItem]) -> Vec<ContextItem>`.
+- Implementations: `UShapedPlacer`, `ChronologicalPlacer`.
 
-The planned scorer suite covers the practical signals well. The one signal Cupel deliberately excludes — semantic similarity via embeddings — is the right call for core (requires embedding model dependency). The `IScorer` interface allows consumers to add embedding-based scorers without polluting core.
+**Pipeline** (`src/pipeline/`):
+- `Pipeline` — executes fixed 6-stage sequence: Classify → Score → Deduplicate → Sort → Slice → Place.
+- `PipelineBuilder` — builder pattern for constructing a `Pipeline`. Requires scorer, slicer, placer.
+  Optional: `deduplication` (bool, default true), `overflow_strategy`.
+- `Pipeline::run(&self, items: &[ContextItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError>`.
 
----
+**Error type** (`src/error.rs`):
+- `CupelError` — thiserror-derived enum. Variants: EmptyContent, EmptyKind, EmptySource,
+  InvalidBudget, PinnedExceedsBudget, Overflow, PipelineConfig, ScorerConfig, SlicerConfig, CycleDetected.
 
-## 3. Placement Strategies
+**Crate dependencies** (Cargo.toml, production):
+- `chrono` (workspace) — DateTime<Utc> for timestamps.
+- `thiserror` (workspace) — error derive macro.
 
-### 3.1 U-Shaped Attention Curve (Default)
+**Crate dev-dependencies**:
+- `toml`, `serde`, `serde_json` — conformance test runner only.
 
-**Confidence**: HIGH (Stanford "Lost in the Middle" paper, multiple follow-ups)
+### Conformance Test Coverage
 
-The "lost in the middle" phenomenon is well-established: LLMs perform best on information at the beginning (primacy) and end (recency) of context, with significant degradation for middle content. This is not a bug but an emergent property of how autoregressive models optimize for information retrieval demands during pre-training.
+28 required TOML vectors copied from `conformance/required/` into
+`tests/conformance/required/`. The conformance test runner in `tests/conformance.rs`
+dynamically parses vectors and exercises all stages. Test modules: `scoring`, `slicing`,
+`placing`, `pipeline`.
 
-Key findings from 2024-2025 research:
-- Training on free recall yields primacy, running span yields recency, joint training produces U-shape
-- The effect is model-dependent — newer models with improved training show less pronounced U-shapes
-- Scaling attention weights between initial token and others can improve middle-context use by up to 3.6%
+The vectors live in TWO places currently:
+- Canonical source: `cupel/conformance/required/` (owned by the spec)
+- Vendored copy: `assay/crates/assay-cupel/tests/conformance/required/` (duplicated for test runner access)
 
-**Implication for Cupel**: UShapedPlacer as default is well-justified by research. But the effect varies by model, which validates IPlacer being pluggable.
+This duplication is the primary structural problem the migration must solve.
 
-### 3.2 Alternative Placement Strategies
+### What Is NOT in the Crate
 
-| Strategy | Description | Complexity | Confidence |
-|---|---|---|---|
-| Chronological | Items ordered by timestamp. Simple, predictable. | Trivial | HIGH |
-| Reverse chronological | Most recent first. Common in chat. | Trivial | HIGH |
-| Relevance-ordered | Highest-scored items first (at beginning for primacy). | Low | MEDIUM |
-| Semantic grouping | Related items placed adjacent to each other. | Medium | MEDIUM |
-| Priority-stratified | High-priority at edges, low-priority in middle. | Low | HIGH |
-| Interleaved | Alternate between content types for attention diversity. | Medium | LOW |
-
-### 3.3 Research-Backed Mitigations
-
-- **Multi-Scale Positional Encoding (Ms-PoE)**: Model-level fix, not relevant to Cupel (we work above the model).
-- **Focus Directions / Contextual Heads**: Model-internal attention mechanism. Not applicable.
-- **Strategic reranking before placement**: Place most relevant at beginning and end. This IS what UShapedPlacer does.
-
-**Assessment**: UShapedPlacer as default + IPlacer for alternatives is the right architecture. Cupel should ship with UShapedPlacer and ChronologicalPlacer. Additional placers are easy for consumers to implement.
-
----
-
-## 4. Knapsack Problem Approaches for Token Budget Optimization
-
-### 4.1 The Formal Mapping
-
-**Confidence**: HIGH (well-established CS + confirmed by Welihinda's analysis)
-
-Context selection maps to the **0-1 Knapsack Problem**:
-- **Items** = context items (messages, documents, tool outputs)
-- **Weight** w[i] = `ContextItem.Tokens` (token cost)
-- **Value** v[i] = composite score from scorers
-- **Capacity** W = `ContextBudget.TargetTokens` (available budget after reserves)
-
-Budget calculation: `W = MaxTokens - OutputReserve - ReservedSlots - (MaxTokens * SafetyMarginPercent)`
-
-### 4.2 Algorithm Options
-
-| Algorithm | Time Complexity | Optimality | Practical Notes |
-|---|---|---|---|
-| **Greedy (value/weight ratio)** | O(N log N) | Approximate | Best for <500 items. Sorts by score/token ratio, fills greedily. Fast. |
-| **Dynamic Programming** | O(N * W) | Optimal | W is token count (potentially thousands). Memory-intensive. Impractical for large budgets. |
-| **Branch and Bound** | Exponential worst case | Optimal | Practical only for very small N. |
-| **FPTAS** | O(N / epsilon) | (1-epsilon)-approximate | Theoretical interest. Over-engineered for <500 items. |
-
-### 4.3 Practical Recommendation
-
-For Cupel's target workload (<500 items, sub-millisecond budget):
-
-- **GreedySlice**: Sort by score/token ratio, fill until budget exhausted. O(N log N). This is what most practitioners use. Correct default.
-- **KnapsackSlice**: 0-1 DP knapsack. Optimal but O(N * W) where W is in tokens. For W=100K tokens this is impractical. **Must discretize**: bucket tokens into coarser units (e.g., 100-token blocks) to make W manageable. With W'=1000 and N=500, DP table is 500K entries — feasible.
-- **QuotaSlice**: Not a knapsack variant. Enforces kind-level constraints (min/max percentage by Kind). This is a **constrained selection** problem — fill quotas first, then optimize remainder. Correct design.
-- **StreamSlice**: Online/streaming variant for IAsyncEnumerable sources. Greedy with look-ahead. Necessary for large/unbounded item sets.
-
-### 4.4 Interaction with Pinned Items
-
-Pinned items have infinite value (must be included). They consume budget before optimization runs. If pinned items exceed budget, OverflowStrategy determines behavior. This is standard practice in constrained optimization — fix mandatory assignments, optimize the remainder.
+- No serde feature (no `#[derive(Serialize, Deserialize)]` on any public type)
+- No doc examples in lib.rs or any module
+- No `README.md` for the crate itself
+- No `rust-toolchain.toml` in the assay workspace
+- No docs.rs configuration
+- No crates.io publishing metadata (`description`, `keywords`, `categories`, `homepage`, `documentation`)
+- No `CHANGELOG.md`
+- No Cargo workspace — assay-cupel inherits workspace settings from the assay Cargo workspace;
+  a standalone `cupel-rs` crate will need its own complete Cargo.toml
 
 ---
 
-## 5. Explainability and Traceability
+## Table Stakes (Must Have for Migration)
 
-### 5.1 What Exists Today
+These are the minimum viable features for v1.1. Without all of them, the migration is not done.
 
-**Confidence**: MEDIUM (industry blogs, no formal standards)
+### TS-01: Crate Compiles and Tests Pass in New Location
 
-| Solution | Explainability Level | Details |
-|---|---|---|
-| LangChain | None | No explanation for what was trimmed or why. Trimming is silent. |
-| Semantic Kernel | None | ChatHistoryReducer provides no trace. |
-| LlamaIndex | Minimal | Nodes carry scores but no exclusion reasons. |
-| Factory.ai | None visible | Blog mentions "proactively surfacing relevant knowledge" but no inspection mechanism. |
-| Claude Code | None | Compaction is opaque to the user. |
-| LangSmith (observability) | External | Traces LLM calls and tool invocations, but context selection decisions are not traced as first-class events. |
+**What it means**: The Rust source code (all 26 .rs files) moves from
+`assay/crates/assay-cupel/src/` to `cupel/crates/cupel/src/` and `cargo test` passes
+with zero failures.
 
-### 5.2 What the Industry Wants
+**Work required**:
+- Move source tree. No functional changes to logic.
+- Write a standalone `Cargo.toml` at `crates/cupel/Cargo.toml` — cannot inherit from
+  the assay Cargo workspace. Needs: `[package]` with name, version, edition, license, repository,
+  description, keywords, categories; `[dependencies]` section with explicit chrono and thiserror versions;
+  `[dev-dependencies]` with toml, serde, serde_json.
+- Add `rust-toolchain.toml` at repo root specifying the toolchain channel (stable).
+- Verify `cargo check`, `cargo clippy --deny warnings`, `cargo test` all pass.
 
-Per JetBrains and industry blogs: "Nearly 65% of enterprise AI failures in 2025 were attributed to context drift or memory loss during multi-step reasoning." Debugging these failures requires knowing what was in the context window and why.
+**Complexity**: Low. Pure file movement + standalone Cargo.toml.
 
-The emerging pattern is **named, ordered processors** rather than ad-hoc string concatenation — making the compilation step observable and testable.
+### TS-02: Published to crates.io as `cupel-rs`
 
-### 5.3 Cupel's Explainability Design (Assessment)
+**What it means**: `cargo publish` succeeds, the crate appears on crates.io as `cupel-rs`,
+and the version is `1.0.0` (spec-aligned).
 
-Cupel's planned explainability is **the strongest in the ecosystem by a wide margin**:
-- `ContextResult` with optional `ContextTrace` — structured return type from day 1
-- `ITraceCollector` with `NullTraceCollector` (zero-cost default) and `DiagnosticTraceCollector`
-- Trace event construction gated (IsEnabled check before allocation) — performance-safe
-- `SelectionReport` / `DryRun()` — included items with scores, excluded items with `ExclusionReason` enum
-- `OverflowStrategy` enum (Throw | Truncate | Proceed) with optional observer callback
-- No AsyncLocal — explicit trace propagation
+**Work required**:
+- Standalone `Cargo.toml` with all required crates.io metadata:
+  - `name = "cupel-rs"`
+  - `version = "1.0.0"` (pin to spec version, not workspace-inherited)
+  - `license = "MIT"` or `Apache-2.0` (must match assay's license or be set explicitly)
+  - `description` — single sentence
+  - `keywords` — up to 5, e.g. `["llm", "context", "agent", "token-budget", "context-window"]`
+  - `categories` — from crates.io taxonomy
+  - `repository = "https://github.com/wollax/cupel"`
+  - `homepage = "https://wollax.github.io/cupel/"` (spec site)
+  - `documentation = "https://docs.rs/cupel-rs"`
+  - `readme = "crates/cupel/README.md"` (relative to repo root) or per-crate README
+- Run `cargo publish --dry-run` in CI before actual publish.
+- Set up crates.io API token or trusted publishing in GitHub Actions.
 
-This is a genuine differentiator. No existing solution provides exclusion reasons, score breakdowns, or dry-run capability.
+**Complexity**: Low (metadata) + Medium (CI publish pipeline).
 
----
+### TS-03: Assay Consumes from crates.io
 
-## 6. Feature Categorization
+**What it means**: The assay repo's `Cargo.toml` replaces `assay-cupel` path dependency with
+`cupel-rs = "1.0.0"` from crates.io. The assay build passes. The old `crates/assay-cupel/` is deleted.
 
-### Table Stakes (Must Have)
+**Work required**:
+- In assay's workspace `Cargo.toml`: replace `assay-cupel` path/workspace member with
+  `cupel-rs = "1.0.0"`.
+- Update all import paths in assay code: `assay_cupel::` → `cupel_rs::` (or via `extern crate cupel_rs as cupel`).
+- Delete `assay/crates/assay-cupel/` directory.
+- Document `[patch.crates-io]` pattern for local dev:
+  ```toml
+  [patch.crates-io]
+  cupel-rs = { path = "../cupel/crates/cupel" }
+  ```
+- Verify assay builds and all assay tests pass after the switch.
 
-These features are expected behavior. Shipping without them would make Cupel incomplete.
+**Complexity**: Low. Mechanical rename + path cleanup.
 
-| Feature | Complexity | Dependencies | Rationale |
-|---|---|---|---|
-| **ContextItem model** with Content, Kind, Tokens, Timestamp, Priority, Tags, Pinned | S | None | The fundamental data unit. Every solution has one. |
-| **ContextBudget model** with MaxTokens, TargetTokens, OutputReserve, SafetyMargin | S | None | Budget definition. Without it, there's no optimization problem. |
-| **Fixed pipeline** (Classify, Score, Deduplicate, Slice, Place) | M | ContextItem, ContextBudget | The execution model. Must be predictable and inspectable. |
-| **IScorer interface** + RecencyScorer + PriorityScorer | S | ContextItem | Minimum viable scoring. Recency and priority are universal. |
-| **ISlicer interface** + GreedySlice | S | IScorer output | Greedy fill is the baseline algorithm everyone expects. |
-| **IPlacer interface** + at least one implementation | S | ISlicer output | Items must be ordered for the output window. |
-| **Pinned items** bypassing scoring | S | ContextItem.Pinned | System messages must be non-negotiable. Universal expectation. |
-| **Token counting as caller responsibility** | Design decision | None | Keeps core zero-dependency. Standard in .NET ecosystem. |
-| **ContextResult return type** | S | Pipeline | The output contract. Must be stable from day 1. |
-| **Zero external dependencies in core** | Constraint | None | .NET convention for foundational libraries. |
+### TS-04: Conformance Vectors Shared (Not Duplicated)
 
-### Differentiators (Competitive Advantage)
+**What it means**: The 28 (and growing) TOML test vectors have a single source of truth at
+`cupel/conformance/required/`. The cupel-rs crate's conformance test runner reads them from
+the canonical location, not a vendored copy.
 
-These features make Cupel worth choosing over ad-hoc solutions or adapting Python libraries.
+**Current problem**: `assay/crates/assay-cupel/tests/conformance/required/` is a full copy
+of the vectors. When vectors change (e.g., Phase 15 moves quota-basic.toml from optional to required),
+the copy must be manually synchronized.
 
-| Feature | Complexity | Dependencies | Rationale |
-|---|---|---|---|
-| **CompositeScorer** with weighted aggregation | M | IScorer | No existing solution combines multiple scoring signals into a unified rank. This is the core innovation. |
-| **ScaledScorer** wrapper | S | IScorer | Normalizes arbitrary scorer outputs to 0-1 range. Enables composition. |
-| **KnapsackSlice** (0-1 DP with discretization) | M | IScorer, ContextBudget | Optimal budget utilization. Greedy leaves value on the table. No one else offers this. |
-| **QuotaSlice** with semantic quotas | M | ISlicer, ContextItem.Kind | Percentage-based kind constraints (Require/Cap). Unique to Cupel. |
-| **UShapedPlacer** | S | IPlacer | Research-backed placement. No existing library implements this. |
-| **SelectionReport / DryRun()** | M | Pipeline, ContextResult | Exclusion reasons for every item. Zero competitors offer this. Killer feature. |
-| **ContextTrace** with gated construction | M | ITraceCollector | Full pipeline observability with zero overhead when disabled. |
-| **ExclusionReason enum** | S | SelectionReport | Structured reason codes (BudgetExceeded, DedupRemoved, QuotaCapped, etc.) |
-| **OverflowStrategy** (Throw/Truncate/Proceed) | S | ContextBudget | Explicit behavior when pinned items exceed budget. No one else handles this explicitly. |
-| **Named policy presets** (chat, code-review, rag, etc.) | M | All scorers, slicers, placers | Adoption lever. Living documentation. Test fixtures. |
-| **CupelPolicy** as declarative, serializable config | M | Pipeline, all components | Policies as data, not just code. Enables tooling, sharing, versioning. |
-| **Fluent builder** API | M | CupelPolicy, Pipeline | Developer experience. Discoverability. |
-| **Ordinal-only scoring invariant** | Design decision | IScorer, ISlicer, IPlacer | Correctness guarantee. Scorers rank, slicers drop, placers position. No component crosses boundaries. |
-| **KindScorer, TagScorer, FrequencyScorer** | S each | IScorer | Multi-dimensional scoring signals beyond recency/priority. |
-| **ReflexiveScorer** (FutureRelevanceHint) | S | IScorer, ContextItem | Forward-looking relevance signal from caller. Novel. |
-| **OriginalTokens metadata** | S | ContextItem | Density-aware scoring for pre-compressed items. |
-| **First .NET context management library** | N/A | N/A | No competition in the ecosystem. Blue ocean. |
+**Solution options**:
 
-### Anti-Features (Deliberately Not Built)
-
-| Anti-Feature | Rationale |
-|---|---|
-| **Built-in embedding/semantic similarity scorer** | Requires embedding model dependency. Violates zero-dependency core. Available via IScorer plugin. |
-| **LLM-based reranking** | Non-deterministic, expensive, latency-destroying. Contradicts sub-millisecond target. Consumer can implement via IScorer. |
-| **Compression/summarization** | Requires LLM call. Cupel scores pre-compressed items via OriginalTokens. Compression is caller's responsibility. |
-| **Storage/persistence** | Cupel is stateless. No conversation history, vector stores, or caches. Storage is caller's problem. |
-| **Retrieval/RAG** | Cupel scores what you give it. It does not fetch documents from external sources. |
-| **LLM API integration** | Cupel prepares context. It does not call models. |
-| **Middleware/call-next pipeline** | Silent-drop failure mode. Fixed pipeline with substitutable implementations is safer and more predictable. |
-| **AdaptiveScorer / ML-based scoring** | Gradient-boosted on small N (<500 items) is worse than tuned heuristics. Over-engineered. |
-| **YAML serialization** | Additional dependency. JSON is sufficient. Minimal-dependencies constraint. |
-| **Hot reload / PolicyWatcher** | Complex threading. Not needed for v1. |
-| **IContextSink (output conversion)** | Scope creep. Cupel selects; consumers convert to their model's format. |
-| **Cross-language SDK** | Document the algorithm as a spec. Ship CLI only when demand evidence exists. |
-| **Scorer DAG execution engine** | CompositeScorer with nesting achieves the same composition without cycle detection, topological sort, or parallel scheduling. ~30 lines vs hundreds. |
-
----
-
-## 7. Feature Dependencies
-
+Option A — Include path (preferred for monorepo):
+The test runner uses `env!("CARGO_MANIFEST_DIR")` to navigate up to the repo root and read
+from `conformance/required/`. This works because `crates/cupel/` is inside the same repo as
+`conformance/`. No copy needed. The `load_vector()` helper changes from:
+```rust
+Path::new(env!("CARGO_MANIFEST_DIR"))
+    .join("tests").join("conformance").join("required")
 ```
-ContextItem ──────────────────────────────────┐
-ContextBudget ────────────────────────────────┤
-                                              v
-IScorer ─── RecencyScorer ──────────────> CompositeScorer
-        ├── PriorityScorer ──────────────>     |
-        ├── KindScorer ──────────────────>     |
-        ├── TagScorer ────────────────────>     |
-        ├── FrequencyScorer ──────────────>     |
-        └── ReflexiveScorer ──────────────>     |
-                                              |
-ScaledScorer (wraps any IScorer) ────────>     |
-                                              v
-ISlicer ─── GreedySlice ─────────────────> Pipeline
-        ├── KnapsackSlice ───────────────>     |
-        ├── QuotaSlice (semantic quotas) ─>     |
-        └── StreamSlice ─────────────────>     |
-                                              v
-IPlacer ─── UShapedPlacer ───────────────> ContextResult
-        └── (ChronologicalPlacer) ────────>     |
-                                              v
-ITraceCollector ── NullTraceCollector ───> ContextTrace
-               └── DiagnosticTraceCollector    |
-                                              v
-SelectionReport / DryRun() ──────────────> ExclusionReason
-OverflowStrategy ────────────────────────> ContextBudget
-                                              |
-CupelPolicy (declarative config) ─────────> all above
-Fluent builder ────────────────────────────> CupelPolicy
-Named policies ────────────────────────────> Fluent builder
-IContextSource ────────────────────────────> ContextItem (async feed)
-[JsonPropertyName] ────────────────────────> all public types (concurrent)
+to:
+```rust
+Path::new(env!("CARGO_MANIFEST_DIR"))
+    .join("..").join("..").join("conformance").join("required")
 ```
 
-### Critical Path
+Option B — Symlink:
+Create a symlink from `crates/cupel/tests/conformance/` → `../../conformance/`.
+Works locally on Linux/macOS; fragile on Windows CI.
 
-1. ContextItem + ContextBudget (everything depends on these)
-2. IScorer + at least RecencyScorer + PriorityScorer (slicers need scores)
-3. ISlicer + GreedySlice (pipeline needs a slicer)
-4. IPlacer + UShapedPlacer (pipeline needs a placer)
-5. Pipeline + ContextResult (the execution engine)
-6. ITraceCollector + ContextTrace (explainability layer)
-7. CompositeScorer + ScaledScorer (composition)
-8. KnapsackSlice + QuotaSlice (advanced optimization)
-9. SelectionReport / DryRun (explainability surface)
-10. OverflowStrategy (error handling)
-11. Fluent builder + CupelPolicy (developer experience)
-12. Named policies (adoption lever, depends on everything above)
-13. Serialization ([JsonPropertyName] concurrent with type definition)
-14. IContextSource (async item feed, orthogonal to pipeline)
+Option C — CI drift guard:
+Keep the vendored copy but add a CI step that diffs `conformance/required/` against
+`crates/cupel/tests/conformance/required/` and fails if they diverge.
+
+**Recommendation**: Option A is the cleanest. The crate is in the monorepo; relative path navigation
+is stable and avoids duplication entirely. Implement Option A with the path expressed as a constant
+in the test helper.
+
+**Complexity**: Low. Change the base path in `load_vector()`. No logic changes.
+
+### TS-05: CI Runs Rust Tests
+
+**What it means**: The existing `ci.yml` GitHub Actions workflow is extended (or a new `rust-ci.yml`
+is added) with a job that runs `cargo test` in `crates/cupel/`. The job must pass on pull requests
+targeting `main`.
+
+**Work required**:
+- Add a `rust` job to `ci.yml` (or a new workflow file):
+  ```yaml
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        # or read from rust-toolchain.toml automatically
+      - name: Cargo test
+        run: cargo test --manifest-path crates/cupel/Cargo.toml
+  ```
+- Add `cargo clippy --deny warnings` as a lint gate.
+- (Optional but recommended) Cache `~/.cargo/registry` and `target/` between runs for speed.
+
+**Complexity**: Low. Straightforward CI YAML additions.
 
 ---
 
-## 8. Key Findings and Recommendations
+## Differentiators (Nice to Have)
 
-### The Ecosystem Gap is Real
+These features increase the value of the published crate. None block the migration. Prioritized
+by impact-to-effort ratio.
 
-No existing solution treats context selection as a **standalone optimization problem** with:
-- Multi-signal composite scoring
-- Budget-constrained optimization (knapsack)
-- Research-backed placement
-- Full explainability (inclusion reasons, exclusion reasons, scores, dry-run)
+### D-01: Serde Feature Flag
 
-LangChain trims. LlamaIndex reranks. Semantic Kernel reduces. Nobody optimizes.
+**What it means**: All public types gain `#[derive(serde::Serialize, serde::Deserialize)]`
+behind a `features = ["serde"]` gate. Consumers who want serialization opt in; the core crate
+stays serde-free for consumers who don't need it.
 
-### Explainability is the Killer Feature
+**Motivation**: The .NET implementation has full JSON serialization support. Rust consumers
+building CLI tools, web services, or policy storage will want to serialize `ContextItem`,
+`ContextBudget`, `ContextKind`, and `OverflowStrategy`. Without this, they must implement
+custom serialization or maintain parallel types.
 
-Every competitor operates as a black box. Context goes in, trimmed context comes out, and nobody can tell you why. Cupel's SelectionReport/DryRun with ExclusionReason enum is genuinely novel and addresses the #1 debugging pain point (65% of enterprise AI failures attributed to context drift/memory loss).
+**Design constraints**:
+- `ContextKind` and `ContextSource` are newtypes around `String` with case-insensitive equality.
+  Serde's default derive will serialize the inner string, which is correct. Deserialization
+  preserves the original casing (as the .NET spec does).
+- `ContextBudget` uses a private constructor for validation. A custom `Deserialize` impl (or
+  `#[serde(try_from = "ContextBudgetRaw")]` pattern) must call `ContextBudget::new()` to
+  enforce validation. Blind field deserialization that bypasses the constructor is not acceptable.
+- `HashMap<String, String>` metadata serializes naturally.
+- `DateTime<Utc>` from chrono: use `chrono`'s serde feature (`chrono = { features = ["serde"] }`).
+- Scorers, Slicers, Placers are trait objects (`Box<dyn Scorer>`) — these cannot be made
+  serde-serializable in a general way. The serde feature applies only to data types, not
+  pipeline component types.
 
-### The .NET Ecosystem is Wide Open
+**Cargo.toml changes**:
+```toml
+[features]
+default = []
+serde = ["dep:serde", "chrono/serde"]
 
-Zero competition. First-mover advantage. The only risk is that Microsoft adds context management to Semantic Kernel — but their architectural coupling to chat completion makes a standalone library unlikely.
+[dependencies]
+chrono = { version = "...", features = ["std"] }
+serde = { version = "1", features = ["derive"], optional = true }
+```
 
-### KnapsackSlice Needs Discretization
+**Complexity**: Medium. Data types are straightforward; ContextBudget deserializer needs care.
 
-The 0-1 DP knapsack is O(N * W) where W is token count. For large budgets (100K+ tokens), this is impractical without discretization. Bucket tokens into coarser units (e.g., 100-token blocks). Document this trade-off. GreedySlice should be the default; KnapsackSlice is for when users need provably better optimization and accept the cost.
+### D-02: Documentation on docs.rs
 
-### Named Policies Are the Adoption Lever
+**What it means**: `cargo doc` produces documentation with no missing items, no broken links,
+and module-level examples. docs.rs auto-builds from crates.io; no extra configuration beyond
+what's in Cargo.toml, but doc quality requires explicit effort.
 
-Both the brainstorm tracks and ecosystem analysis converge: pre-configured policies lower the floor for adoption. `ChatSession()`, `CodeReview()`, `AgentLoop()` with `[Experimental]` are how users discover the library and learn its concepts.
+**What needs writing**:
+- Crate-level doc comment in `lib.rs` — quickstart example showing Pipeline construction
+  and `run()` call. This is the "landing page" on docs.rs.
+- Module-level doc comments for each public module: `model`, `scorer`, `slicer`, `placer`, `pipeline`.
+- `/// # Examples` blocks on the highest-traffic entry points: `ContextItemBuilder::new()`,
+  `PipelineBuilder`, `ContextBudget::new()`.
 
-### The Anti-Features List is Correct
+**Cargo.toml changes for docs.rs**:
+```toml
+[package.metadata.docs.rs]
+features = ["serde"]           # build docs with all features enabled
+all-features = false
+rustdoc-args = ["--cfg", "docsrs"]
+```
 
-The out-of-scope decisions align with ecosystem reality. Every solution that tried to be both context manager AND retriever AND compressor ended up coupled to a specific framework. Cupel's discipline here is a feature.
+**Current state**: The existing code has good `///` doc comments on all public items. Module-level
+docs and the crate-level quickstart are the gaps. No example files (`examples/`) exist.
+
+**Complexity**: Low-Medium. Writing docs and one or two `examples/*.rs` files.
+
+### D-03: Examples in the Crate
+
+**What it means**: `crates/cupel/examples/` contains at minimum one runnable example demonstrating
+the typical use case. Examples appear on docs.rs and are executable with `cargo run --example`.
+
+**Proposed examples**:
+1. `basic_pipeline.rs` — Build a pipeline with `RecencyScorer`, `GreedySlice`, `UShapedPlacer`,
+   run it on 5 items with a 1000-token budget, print the result. 30-40 lines. Self-contained.
+2. `composite_scoring.rs` — Demonstrate `CompositeScorer` with `RecencyScorer` + `PriorityScorer`,
+   show score-based selection. Optional but valuable as documentation.
+
+**Why this matters for migration**: crates.io users discover crates through docs.rs. A working
+example in the first 5 seconds of reading is the single largest factor in "try it" conversion.
+The assay repo is private or specialized — cupel-rs is a general-purpose library that needs
+to stand on its own.
+
+**Complexity**: Low. Examples use the existing public API; no new features needed.
+
+### D-04: Builder Pattern Improvements
+
+**What it means**: Minor ergonomic improvements to `ContextItemBuilder` and `PipelineBuilder`
+that reduce friction for new consumers. Not API-breaking changes, and not new features.
+
+**Current gaps identified**:
+- `ContextItemBuilder::tags()` takes `Vec<String>` — callers must construct the vec. A
+  `tag(impl Into<String>)` method that appends a single tag would be more ergonomic for
+  the common case.
+- `ContextBudget::new()` has 5 positional arguments including the `HashMap<ContextKind, i64>`.
+  A `ContextBudgetBuilder` would be more discoverable, though the current constructor is
+  fine for initial release.
+- `PipelineBuilder` already uses the builder pattern correctly — no changes needed.
+
+**Recommendation**: Add `ContextItemBuilder::tag(impl Into<String>)` for single-tag append.
+Defer `ContextBudgetBuilder` to a future release (it's a convenience, not a necessity).
+
+**Complexity**: Low (single method addition, fully backward-compatible).
+
+---
+
+## Anti-Features (Explicitly Not Built During Migration)
+
+These are features that will be asked for, have obvious implementation paths, and would delay
+the migration if accepted. The decision to exclude them is deliberate.
+
+### AF-01: Feature Parity with .NET
+
+**Why not**: The .NET implementation has features the Rust crate does not:
+- `SelectionReport` / `DryRun()` with `ExclusionReason` per item
+- `ITraceCollector` / `DiagnosticTraceCollector` for pipeline tracing
+- `ContextTrace` with gated event construction
+- Named policy presets (CupelPresets)
+- `CupelPolicy` declarative config
+- JSON policy serialization
+
+None of these block the migration. They block `assay-cupel` → `cupel-rs` not at all — assay
+uses `Pipeline::run()` directly. Adding these features during migration inflates scope and
+introduces new design decisions that belong in their own phase.
+
+**Decision**: Rust feature parity is a post-v1.1 milestone. The Rust crate ships what it has.
+The spec defines the features; the .NET implementation demonstrates one full realization.
+
+### AF-02: Async Support / Tokio Integration
+
+**Why not**: The current Rust pipeline is synchronous. `Pipeline::run()` returns `Result<Vec<ContextItem>, CupelError>`.
+Adding `async fn run()` requires choosing a runtime (tokio vs async-std vs smol) or keeping the
+crate runtime-agnostic (which is significantly more complex). The `StreamSlice` async slicer
+from the .NET implementation has no Rust counterpart, and there is no demand signal from assay.
+
+**Decision**: No async. Synchronous pipeline only. Consumers who need async wrap `run()` in
+`tokio::task::spawn_blocking` at their call site.
+
+### AF-03: WASM Target Support
+
+**Why not**: Assay is a CLI tool and does not target WASM. Adding WASM support means auditing
+every dependency for WASM compatibility (`chrono`, `thiserror`), replacing or gating dependencies
+that don't compile to WASM, and adding a CI job to verify the target. This is a significant
+testing and maintenance burden with zero current demand.
+
+**Decision**: WASM is explicitly not a v1.1 target. Document this in the crate README.
+
+### AF-04: Optional Conformance Tests
+
+**Why not**: There are 9 optional TOML vectors in `conformance/optional/`. These cover edge cases
+(recency with all-null timestamps, greedy with empty input, composite nested, etc.). The Rust
+conformance test runner currently only runs required vectors. Importing optional vectors
+during migration adds complexity to the test runner and may reveal edge cases that require
+implementation changes — scope creep during what should be a structural migration.
+
+**Decision**: Optional conformance tests are a post-migration task, tracked separately.
+The migration ships with 28 required vectors passing, same as today.
+
+### AF-05: Policy System / Named Presets in Rust
+
+**Why not**: The .NET implementation has `CupelPolicy` (declarative config), `CupelPresets`
+(7 named presets), and `CupelOptions` (intent-based lookup). These require design decisions
+about how Rust consumers express policy (structs? macros? TOML?) that are non-trivial. There
+is no assay usage of this feature. Including it in v1.1 would double the design surface.
+
+**Decision**: No policy system in Rust for v1.1. Consumers use `PipelineBuilder` directly.
+
+---
+
+## Feature Dependency Map for v1.1
+
+```
+[TS-01] Compiles in new location
+    └── [TS-04] Conformance vectors shared (path change in load_vector())
+    └── [TS-02] Published to crates.io (standalone Cargo.toml with metadata)
+          └── [TS-03] Assay consumes from crates.io (import rename + delete)
+    └── [TS-05] CI runs Rust tests (GitHub Actions job)
+
+[D-02] docs.rs documentation
+    └── [TS-02] Published (docs.rs reads from crates.io)
+
+[D-03] Examples
+    └── [TS-01] Compiles (examples use public API)
+
+[D-01] Serde feature flag
+    └── [TS-01] Compiles (new feature gate, no changes to existing code)
+    └── [D-02] docs.rs (serde feature enabled in docs.rs metadata)
+
+[D-04] Builder ergonomics
+    └── [TS-01] Compiles (additive API change)
+```
+
+Critical path: TS-01 → TS-04 → TS-02 → TS-03 → TS-05.
+Differentiators can be done in parallel with or after TS-02.
+
+---
+
+## Key Findings and Recommendations
+
+### The Crate Is Production-Ready
+
+The existing `assay-cupel` code is not a sketch. It has 26 source files, complete trait hierarchies,
+working cycle detection in `CompositeScorer`, correct effective-budget computation in `slice.rs`,
+and 28 passing conformance tests. The migration is structural, not functional. No algorithm
+rewrites are needed.
+
+### The Name `cupel-rs` Is Correct
+
+`cupel` is taken on crates.io (checked implicitly — `cupel-rs` follows the Rust ecosystem
+convention for `<name>-rs` when the plain name is unavailable or reserved). The crates.io name
+matches the spec (`cupel-rs` = Rust implementation of the Cupel specification).
+
+### Conformance Vectors Are the Hardest Coupling to Break
+
+The existing conformance test runner hardcodes a path relative to `CARGO_MANIFEST_DIR` pointing
+into the vendored copy. Switching to repo-root-relative paths (Option A) requires verifying
+the relative path depth is correct after the directory move. This should be the first thing
+tested in the new location before CI setup.
+
+### Serde Is the Highest-Value Differentiator
+
+Most Rust consumers building LLM applications will need to serialize `ContextItem` lists for
+logging, storage, or API interchange. A `features = ["serde"]` gate is low-risk (no API changes),
+follows Rust ecosystem conventions (chrono, uuid, etc. all do this), and opens the crate to
+a wider audience. It should be prioritized over examples or builder ergonomics.
+
+### The Local Dev Workflow Needs Documentation
+
+After the migration, cupel-rs and assay are in separate repos. Developers working on both
+simultaneously need the `[patch.crates-io]` pattern documented. This is a one-paragraph note
+in the crate README and in the cupel repo's contributing guide, but without it the first
+developer to touch both repos after the migration will lose time.
+
+### CI Caching Pays Off Immediately
+
+The Rust toolchain and `~/.cargo/registry` download on cold cache takes 60-90 seconds.
+Add `actions/cache` for `~/.cargo` and `target/` on the first CI implementation.
+The cupel conformance test suite is fast (< 1s locally) — cache is for toolchain, not test time.
+
+---
+
+## Summary Table
+
+| ID | Feature | Category | Priority | Complexity | Blocks |
+|----|---------|----------|----------|------------|--------|
+| TS-01 | Compiles in new location | Table Stakes | P0 | Low | Everything |
+| TS-02 | Published to crates.io as cupel-rs | Table Stakes | P0 | Low-Med | TS-03 |
+| TS-03 | Assay consumes from crates.io | Table Stakes | P0 | Low | — |
+| TS-04 | Conformance vectors shared | Table Stakes | P0 | Low | TS-01 |
+| TS-05 | CI runs Rust tests | Table Stakes | P0 | Low | — |
+| D-01 | Serde feature flag | Differentiator | P1 | Medium | — |
+| D-02 | docs.rs documentation | Differentiator | P1 | Low-Med | TS-02 |
+| D-03 | Examples in crate | Differentiator | P2 | Low | TS-01 |
+| D-04 | Builder ergonomics | Differentiator | P3 | Low | TS-01 |
+| AF-01 | .NET feature parity | Anti-Feature | Never | High | — |
+| AF-02 | Async / Tokio | Anti-Feature | Never | High | — |
+| AF-03 | WASM target | Anti-Feature | Never | Medium | — |
+| AF-04 | Optional conformance tests | Anti-Feature | Post-v1.1 | Low | — |
+| AF-05 | Policy system in Rust | Anti-Feature | Post-v1.1 | High | — |

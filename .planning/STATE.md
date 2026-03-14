@@ -2,17 +2,17 @@
 
 ## Current Position
 
-Phase: 12 of 12 — Rust Crate (Assay)
+Phase: 13 of 15 — Budget Contract Implementation
 Milestone: v1.0 Core Library
-Plan: 3 of 3
+Plan: 2 of 2
 Status: Complete
-Last activity: 2026-03-14 — Completed 12-03-PLAN.md (Conformance Test Suite)
+Last activity: 2026-03-14 — Completed 13-02-PLAN.md (Spec Alignment for Budget Contract)
 
-Progress: ██████████████████████████████████████████ 100% (40/40 plans)
+Progress: ██████████████████████████████████████████░░░ 42/42 plans (100% through phase 13)
 
 ## Phase Overview
 
-NEXT_PHASE=none (milestone complete)
+NEXT_PHASE=14
 
 | Phase | Status |
 |-------|--------|
@@ -28,6 +28,9 @@ NEXT_PHASE=none (milestone complete)
 | 10. Companion Packages & Release | ● complete (3/3 plans) |
 | 11. Language-Agnostic Specification | ● complete (3/3 plans) |
 | 12. Rust Crate (Assay) | ● complete (3/3 plans) |
+| 13. Budget Contract Implementation | ● complete (2/2 plans) |
+| 14. Policy Type Completeness | ○ planned |
+| 15. Conformance Hardening | ○ planned |
 
 ## Accumulated Context
 
@@ -109,10 +112,15 @@ NEXT_PHASE=none (milestone complete)
 - Rust place stage looks up original scores by content match when re-associating sliced items with scores
 - Rust conformance test runner uses toml::Value for dynamic TOML parsing with factory functions for scorers/slicers/placers
 - All 28 required conformance tests pass — first non-C# implementation validated against the spec
+- Budget contract wiring: ReservedSlots subtracted first, then EstimationSafetyMarginPercent applied as multiplicative reduction
+- Safety margin uses int cast (truncation) for effective budget values, consistent with existing int budget semantics
+- Streaming path uses foreach over ReservedSlots (no pinnedTokens in streaming mode)
+- Spec effective budget formula updated: reservedTokens subtracted alongside outputReserve/pinnedTokens, safety margin applied as multiplicative floor after all subtractions
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
 - Phase 12 added: Rust Crate (Assay) — first non-C# implementation, validates spec's language-independence
+- v1.1 milestone defined: Rust crate migration to cupel repo + crates.io publishing (starts after v1.0 gap closure)
 
 ### Blockers
 (None)

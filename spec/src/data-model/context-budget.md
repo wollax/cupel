@@ -26,14 +26,27 @@ A conforming implementation MUST enforce these validation rules at construction 
 
 ## Effective Budget
 
-The pipeline computes an **effective budget** for the slicing stage by subtracting tokens already committed:
+The pipeline computes an **effective budget** for the slicing stage by subtracting tokens already committed and applying any configured safety margin:
 
 ```
-effectiveMax    = max(0, maxTokens - outputReserve - pinnedTokens)
-effectiveTarget = min(max(0, targetTokens - pinnedTokens), effectiveMax)
+reservedTokens  = sum of all values in reservedSlots
+effectiveMax    = max(0, maxTokens - outputReserve - pinnedTokens - reservedTokens)
+effectiveTarget = max(0, targetTokens - pinnedTokens - reservedTokens)
+effectiveTarget = min(effectiveTarget, effectiveMax)
+
+if estimationSafetyMarginPercent > 0:
+    multiplier      = 1.0 - estimationSafetyMarginPercent / 100.0
+    effectiveMax    = floor(effectiveMax * multiplier)
+    effectiveTarget = floor(effectiveTarget * multiplier)
+    effectiveTarget = min(effectiveTarget, effectiveMax)
 ```
 
-Where `pinnedTokens` is the sum of `tokens` for all [pinned](context-item.md) items. See [Stage 5: Slice](../pipeline/slice.md) for the full computation.
+Where:
+- `pinnedTokens` is the sum of `tokens` for all [pinned](context-item.md) items.
+- `reservedTokens` is the sum of all values in `reservedSlots`, subtracted alongside `outputReserve` and `pinnedTokens` to reserve capacity for per-kind guarantees.
+- The safety margin is applied after all subtractions as a multiplicative reduction. Both `effectiveMax` and `effectiveTarget` use `floor` (integer truncation toward zero) when converting from the floating-point product.
+
+See [Stage 5: Slice](../pipeline/slice.md) for the full pseudocode.
 
 ## Semantics
 
@@ -43,6 +56,6 @@ Where `pinnedTokens` is the sum of `tokens` for all [pinned](context-item.md) it
 
 - **`outputReserve`** carves out tokens for the model's response. It reduces the effective budget available for context items.
 
-- **`reservedSlots`** guarantees minimum representation per ContextKind. This is consumed by QuotaSlice; other slicers ignore it.
+- **`reservedSlots`** guarantees minimum representation per ContextKind. The sum of reserved slot values is subtracted from the effective budget during pipeline budget computation, reducing the token ceiling available for non-reserved items. Additionally, [QuotaSlice](../slicers/quota.md) uses reserved slots to guarantee minimum representation per kind.
 
-- **`estimationSafetyMarginPercent`** provides a buffer for callers whose token counts are estimates rather than exact. This field is available for caller use in budget computation but is not directly consumed by the core pipeline stages.
+- **`estimationSafetyMarginPercent`** provides a buffer for callers whose token counts are estimates rather than exact. It is applied as a multiplicative reduction to the effective budget after reserved slots and other subtractions. A value of 10.0 reduces the effective budget to 90% of its post-subtraction value.
