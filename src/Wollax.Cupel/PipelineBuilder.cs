@@ -185,6 +185,81 @@ public sealed class PipelineBuilder
     }
 
     /// <summary>
+    /// Applies a <see cref="CupelPolicy"/> to this builder, translating all policy properties
+    /// into equivalent builder calls. Uses the <see cref="AddScorer"/> path for scorers.
+    /// Subsequent builder calls override policy-set values (last-write-wins).
+    /// </summary>
+    /// <param name="policy">The policy to apply.</param>
+    /// <returns>This builder for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="policy"/> is <see langword="null"/>.</exception>
+    public PipelineBuilder WithPolicy(CupelPolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+
+        for (var i = 0; i < policy.Scorers.Count; i++)
+        {
+            var entry = policy.Scorers[i];
+            AddScorer(CreateScorer(entry), entry.Weight);
+        }
+
+        switch (policy.SlicerType)
+        {
+            case SlicerType.Greedy:
+                UseGreedySlice();
+                break;
+            case SlicerType.Knapsack:
+                UseKnapsackSlice(policy.KnapsackBucketSize ?? 100);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(policy), policy.SlicerType, "Unknown SlicerType.");
+        }
+
+        switch (policy.PlacerType)
+        {
+            case PlacerType.Chronological:
+                WithPlacer(new ChronologicalPlacer());
+                break;
+            case PlacerType.UShaped:
+                WithPlacer(new UShapedPlacer());
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(policy), policy.PlacerType, "Unknown PlacerType.");
+        }
+
+        WithDeduplication(policy.DeduplicationEnabled);
+        WithOverflowStrategy(policy.OverflowStrategy);
+
+        if (policy.Quotas is { Count: > 0 })
+        {
+            WithQuotas(qb =>
+            {
+                for (var i = 0; i < policy.Quotas.Count; i++)
+                {
+                    var q = policy.Quotas[i];
+                    if (q.MinPercent.HasValue) qb.Require(q.Kind, q.MinPercent.Value);
+                    if (q.MaxPercent.HasValue) qb.Cap(q.Kind, q.MaxPercent.Value);
+                }
+            });
+        }
+
+        return this;
+    }
+
+    private static IScorer CreateScorer(ScorerEntry entry)
+    {
+        return entry.Type switch
+        {
+            ScorerType.Recency => new RecencyScorer(),
+            ScorerType.Priority => new PriorityScorer(),
+            ScorerType.Kind => entry.KindWeights is not null ? new KindScorer(entry.KindWeights) : new KindScorer(),
+            ScorerType.Tag => new TagScorer(entry.TagWeights ?? throw new InvalidOperationException("TagWeights must be specified for Tag scorer type.")),
+            ScorerType.Frequency => new FrequencyScorer(),
+            ScorerType.Reflexive => new ReflexiveScorer(),
+            _ => throw new ArgumentOutOfRangeException(nameof(entry), entry.Type, "Unknown ScorerType.")
+        };
+    }
+
+    /// <summary>
     /// Validates configuration and creates a <see cref="CupelPipeline"/>.
     /// </summary>
     /// <exception cref="InvalidOperationException">

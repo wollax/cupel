@@ -220,6 +220,7 @@ Wollax.Cupel.PipelineBuilder.UseKnapsackSlice(int bucketSize = 100) -> Wollax.Cu
 Wollax.Cupel.PipelineBuilder.WithQuotas(System.Action<Wollax.Cupel.Slicing.QuotaBuilder!>! configure) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.WithAsyncSlicer(Wollax.Cupel.IAsyncSlicer! asyncSlicer) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.WithOverflowStrategy(Wollax.Cupel.Diagnostics.OverflowStrategy strategy, System.Action<Wollax.Cupel.Diagnostics.OverflowEvent!>? onOverflow = null) -> Wollax.Cupel.PipelineBuilder!
+Wollax.Cupel.PipelineBuilder.WithPolicy(Wollax.Cupel.CupelPolicy! policy) -> Wollax.Cupel.PipelineBuilder!
 Wollax.Cupel.PipelineBuilder.Build() -> Wollax.Cupel.CupelPipeline!
 Wollax.Cupel.IAsyncSlicer
 Wollax.Cupel.IAsyncSlicer.SliceAsync(System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!>!
@@ -275,3 +276,16 @@ Wollax.Cupel.CupelPolicy.KnapsackBucketSize.get -> int?
 Wollax.Cupel.CupelPolicy.Quotas.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaEntry!>?
 Wollax.Cupel.CupelPolicy.Name.get -> string?
 Wollax.Cupel.CupelPolicy.Description.get -> string?
+Wollax.Cupel.CupelPresets
+static Wollax.Cupel.CupelPresets.Chat() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.CodeReview() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.Rag() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.DocumentQa() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.ToolUse() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.LongRunning() -> Wollax.Cupel.CupelPolicy!
+static Wollax.Cupel.CupelPresets.Debugging() -> Wollax.Cupel.CupelPolicy!
+Wollax.Cupel.CupelOptions
+Wollax.Cupel.CupelOptions.CupelOptions() -> void
+Wollax.Cupel.CupelOptions.AddPolicy(string! intent, Wollax.Cupel.CupelPolicy! policy) -> Wollax.Cupel.CupelOptions!
+Wollax.Cupel.CupelOptions.GetPolicy(string! intent) -> Wollax.Cupel.CupelPolicy!
+Wollax.Cupel.CupelOptions.TryGetPolicy(string! intent, out Wollax.Cupel.CupelPolicy? policy) -> bool
