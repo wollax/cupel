@@ -238,6 +238,13 @@ Plans:
 4. All four packages publish to nuget.org with identical version, SourceLink enabled, NuGet Trusted Publishing via OIDC
 5. `PublicAPI.Shipped.txt` is finalized for v1.0.0
 
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [x] 10-01-PLAN.md — DI integration package (AddCupel, keyed services, lifetime tests)
+- [x] 10-02-PLAN.md — Tiktoken bridge package (TiktokenTokenCounter, WithTokenCount)
+- [x] 10-03-PLAN.md — CI/CD workflows, consumption tests, PublicAPI finalization
+
 ---
 
 #### Phase 11: Language-Agnostic Specification
@@ -295,6 +302,6 @@ Plans:
 | 7 | Explainability & Overflow Handling | TRACE-05, TRACE-06 | ● complete |
 | 8 | Policy System & Named Presets | API-01, API-03, POLICY-01, POLICY-02, POLICY-03 | ● complete |
 | 9 | Serialization & JSON Package | JSON-02, JSON-03, JSON-04, PKG-04 | ● complete |
-| 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ○ planned |
+| 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ● complete |
 | 11 | Language-Agnostic Specification | TBD | ○ planned |
 | 12 | Rust Crate (Assay) | TBD | ○ planned |

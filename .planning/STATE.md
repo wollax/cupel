@@ -2,17 +2,17 @@
 
 ## Current Position
 
-Phase: 9 of 12 — Serialization & JSON Package
+Phase: 10 of 12 — Companion Packages & Release
 Milestone: v1.0 Core Library
 Plan: 3 of 3
 Status: Complete
-Last activity: 2026-03-14 — Completed 09-03-PLAN.md (Path-Aware Validation Error Handling)
+Last activity: 2026-03-14 — Completed 10-03-PLAN.md (CI/CD, Consumption Tests & API Freeze)
 
-Progress: ██████████████████████████████████░░░░ 91% (31/34 plans)
+Progress: ██████████████████████████████████████ 100% (34/34 plans)
 
 ## Phase Overview
 
-NEXT_PHASE=10
+NEXT_PHASE=11
 
 | Phase | Status |
 |-------|--------|
@@ -25,7 +25,7 @@ NEXT_PHASE=10
 | 7. Explainability & Overflow Handling | ● complete (3/3 plans) |
 | 8. Policy System & Named Presets | ● complete (3/3 plans) |
 | 9. Serialization & JSON Package | ● complete (3/3 plans) |
-| 10. Companion Packages & Release | ○ planned |
+| 10. Companion Packages & Release | ● complete (3/3 plans) |
 | 11. Language-Agnostic Specification | ○ planned |
 | 12. Rust Crate (Assay) | ○ planned |
 
@@ -89,6 +89,14 @@ NEXT_PHASE=10
 - Built-in scorer type names hardcoded as string array matching [JsonStringEnumMemberName] values on ScorerType
 - .NET 10 STJ does NOT wrap JsonConstructor ArgumentException in JsonException — exceptions propagate unwrapped
 - CupelJsonSerializer facade catches ArgumentException from constructors and wraps in JsonException with `$:` path prefix
+- DI extension methods namespace: Microsoft.Extensions.DependencyInjection (standard .NET convention)
+- AddCupelTracing uses TryAddTransient to avoid overriding user-provided ITraceCollector
+- ContextBudget is a registration-time parameter on AddCupelPipeline, not part of CupelOptions
+- TiktokenTokenCounter wraps Tokenizer (base class) not TiktokenTokenizer for field type flexibility
+- Microsoft.ML.Tokenizers throws NotSupportedException for unrecognized model/encoding names
+- Tiktoken bridge has no hard dependency on data packages — consumers add O200kBase/Cl100kBase as needed
+- Consumption test project uses `*-*` version wildcard to match prerelease .nupkg from MinVer
+- Consumption test project needs `PackageReference Update` for SourceLink/MinVer inherited from Directory.Build.props when ManagePackageVersionsCentrally is disabled
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
