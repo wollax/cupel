@@ -1,0 +1,10 @@
+[test]
+name = "GreedySlice: empty input produces empty output"
+stage = "slicing"
+slicer = "greedy"
+
+[budget]
+target_tokens = 500
+
+[expected]
+selected_contents = []

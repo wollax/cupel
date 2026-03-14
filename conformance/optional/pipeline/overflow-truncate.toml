@@ -1,0 +1,107 @@
+[test]
+name = "Pipeline: overflow with Truncate strategy removes lowest-scored items"
+stage = "pipeline"
+
+# A pinned item plus sliced items exceed targetTokens, triggering Truncate.
+# Budget: target=300, max=1000, reserve=0.
+#
+# Items:
+#   "pinned-sys" (pinned, tokens=150)
+#   "msg-a" (tokens=100, timestamp=Dec → highest recency)
+#   "msg-b" (tokens=100, timestamp=Jun → mid recency)
+#   "msg-c" (tokens=100, timestamp=Jan → lowest recency)
+#
+# Classify:
+#   pinned: ["pinned-sys" (150 tokens)]
+#   scoreable: ["msg-a", "msg-b", "msg-c"]
+#
+# Effective budget for slicing: target(300) - pinned(150) = 150?
+# Actually, the Slice stage receives budget.targetTokens minus pinned tokens
+# per the pipeline. Let me re-read...
+# Actually looking at the pipeline spec: the Slice stage receives the
+# effective budget = targetTokens - pinnedTokens. But the Place stage
+# checks overflow against the original targetTokens.
+#
+# Let me reconsider. The effective target for slicing:
+# Looking at pipeline/slice.md... I need to check this.
+# From the pipeline overview, slice receives the budget and works with it.
+# The Place stage merges pinned + sliced and checks if total > targetTokens.
+#
+# Let me design this so overflow actually happens:
+# Budget: target=250, max=1000, reserve=0.
+# Pinned: "pinned-sys" (150 tokens)
+# Available for scoring/slicing: unclear exact mechanism, but let's say
+# the slicer uses targetTokens as-is and overflow happens at merge.
+#
+# Score (RecencyScorer, 3 items):
+#   countWithTimestamp=3, denom=2
+#   msg-c (Jan): rank 0 → 0.0
+#   msg-b (Jun): rank 1 → 0.5
+#   msg-a (Dec): rank 2 → 1.0
+#
+# Sort: msg-a(1.0), msg-b(0.5), msg-c(0.0)
+#
+# Slice (Greedy, target=250):
+#   All items: density = msg-a(1.0/100=0.01), msg-b(0.5/100=0.005), msg-c(0.0/100=0.0)
+#   Fill: msg-a(remaining=150), msg-b(remaining=50), msg-c(100>50 skip)
+#   Selected: msg-a, msg-b
+#
+# Place merge:
+#   merged = [pinned-sys(score=1.0), msg-a(score=1.0), msg-b(score=0.5)]
+#   total tokens = 150+100+100 = 350 > target(250) → overflow!
+#
+# Truncate:
+#   Iterate in order: pinned first, then sliced (score-descending).
+#   pinned-sys: pinned → always keep. current=150.
+#   msg-a: 150+100=250 <= 250 → keep. current=250.
+#   msg-b: 250+100=350 > 250 → skip.
+#   Kept: [pinned-sys, msg-a]
+#
+# Place (Chronological):
+#   msg-a (Dec timestamp), pinned-sys (no timestamp → last)
+#   Result: [msg-a, pinned-sys]
+
+[budget]
+max_tokens = 1000
+target_tokens = 250
+output_reserve = 0
+
+[config]
+slicer = "greedy"
+placer = "chronological"
+deduplication = true
+overflow_strategy = "truncate"
+
+[[config.scorers]]
+type = "recency"
+weight = 1.0
+
+[[items]]
+content = "pinned-sys"
+tokens = 150
+kind = "SystemPrompt"
+pinned = true
+
+[[items]]
+content = "msg-a"
+tokens = 100
+kind = "Message"
+timestamp = 2024-12-01T00:00:00Z
+
+[[items]]
+content = "msg-b"
+tokens = 100
+kind = "Message"
+timestamp = 2024-06-01T00:00:00Z
+
+[[items]]
+content = "msg-c"
+tokens = 100
+kind = "Message"
+timestamp = 2024-01-01T00:00:00Z
+
+[[expected_output]]
+content = "msg-a"
+
+[[expected_output]]
+content = "pinned-sys"

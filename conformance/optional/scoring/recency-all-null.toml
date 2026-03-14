@@ -1,0 +1,33 @@
+[test]
+name = "RecencyScorer: all null timestamps score 0.0"
+stage = "scoring"
+scorer = "recency"
+
+# When no items have timestamps, all return 0.0 (null check early return).
+
+[[items]]
+content = "a"
+tokens = 100
+
+[[items]]
+content = "b"
+tokens = 100
+
+[[items]]
+content = "c"
+tokens = 100
+
+[[expected]]
+content = "a"
+score_approx = 0.0
+
+[[expected]]
+content = "b"
+score_approx = 0.0
+
+[[expected]]
+content = "c"
+score_approx = 0.0
+
+[tolerance]
+score_epsilon = 1e-9

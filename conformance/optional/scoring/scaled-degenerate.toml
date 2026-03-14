@@ -1,0 +1,39 @@
+[test]
+name = "ScaledScorer: all equal inner scores produce 0.5"
+stage = "scoring"
+scorer = "scaled"
+
+# When all items have the same inner score, max = min, degenerate case → 0.5.
+
+[config]
+inner_scorer = "reflexive"
+
+[[items]]
+content = "a"
+tokens = 100
+futureRelevanceHint = 0.4
+
+[[items]]
+content = "b"
+tokens = 100
+futureRelevanceHint = 0.4
+
+[[items]]
+content = "c"
+tokens = 100
+futureRelevanceHint = 0.4
+
+[[expected]]
+content = "a"
+score_approx = 0.5
+
+[[expected]]
+content = "b"
+score_approx = 0.5
+
+[[expected]]
+content = "c"
+score_approx = 0.5
+
+[tolerance]
+score_epsilon = 1e-9

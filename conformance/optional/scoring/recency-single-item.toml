@@ -1,0 +1,18 @@
+[test]
+name = "RecencyScorer: single timestamped item scores 1.0"
+stage = "scoring"
+scorer = "recency"
+
+# When only one item has a timestamp, countWithTimestamp <= 1 → return 1.0.
+
+[[items]]
+content = "only"
+tokens = 100
+timestamp = 2024-06-15T00:00:00Z
+
+[[expected]]
+content = "only"
+score_approx = 1.0
+
+[tolerance]
+score_epsilon = 1e-9

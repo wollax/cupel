@@ -1,0 +1,68 @@
+[test]
+name = "Pipeline: duplicate content items are deduplicated"
+stage = "pipeline"
+
+# Two items with identical content. The Deduplicate stage keeps the higher-scored one.
+# Budget: target=300, max=1000, reserve=0.
+#
+# Items:
+#   "shared content" (tokens=100, timestamp=Jan) — earlier, lower recency
+#   "shared content" (tokens=100, timestamp=Dec) — later, higher recency
+#   "unique"         (tokens=100, timestamp=Jun) — unique
+#
+# Score (RecencyScorer):
+#   countWithTimestamp = 3, denominator = 2.
+#   "shared content" (Jan): rank 0 → 0.0
+#   "unique"         (Jun): rank 1 → 0.5
+#   "shared content" (Dec): rank 2 → 1.0
+#
+# Deduplicate:
+#   "shared content" appears twice with scores 0.0 and 1.0.
+#   Keep the one with score 1.0 (Dec instance).
+#   Survivors: "shared content"(Dec, 1.0), "unique"(Jun, 0.5)
+#
+# Sort: shared(1.0), unique(0.5)
+#
+# Slice (Greedy, target=300):
+#   Both fit (200 total).
+#
+# Place (Chronological):
+#   unique (Jun) before shared (Dec).
+
+[budget]
+max_tokens = 1000
+target_tokens = 300
+output_reserve = 0
+
+[config]
+slicer = "greedy"
+placer = "chronological"
+deduplication = true
+
+[[config.scorers]]
+type = "recency"
+weight = 1.0
+
+[[items]]
+content = "shared content"
+tokens = 100
+kind = "Message"
+timestamp = 2024-01-01T00:00:00Z
+
+[[items]]
+content = "shared content"
+tokens = 100
+kind = "Message"
+timestamp = 2024-12-01T00:00:00Z
+
+[[items]]
+content = "unique"
+tokens = 100
+kind = "Message"
+timestamp = 2024-06-01T00:00:00Z
+
+[[expected_output]]
+content = "unique"
+
+[[expected_output]]
+content = "shared content"

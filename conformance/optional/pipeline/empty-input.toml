@@ -1,0 +1,17 @@
+[test]
+name = "Pipeline: empty input produces empty output"
+stage = "pipeline"
+
+[budget]
+max_tokens = 1000
+target_tokens = 500
+output_reserve = 0
+
+[config]
+slicer = "greedy"
+placer = "chronological"
+deduplication = true
+
+[[config.scorers]]
+type = "recency"
+weight = 1.0
