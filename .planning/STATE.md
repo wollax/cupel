@@ -2,17 +2,15 @@
 
 ## Current Position
 
-Phase: 10 of 12 — Companion Packages & Release
+Phase: 11 of 12 — Language-Agnostic Specification
 Milestone: v1.0 Core Library
-Plan: 3 of 3
-Status: Complete
-Last activity: 2026-03-14 — Completed 10-03-PLAN.md (CI/CD, Consumption Tests & API Freeze)
+Plan: 1 of 5
+Status: In progress
+Last activity: 2026-03-14 — Completed 11-01-PLAN.md (mdBook Scaffold, Data Model & Pipeline Spec)
 
-Progress: ██████████████████████████████████████ 100% (34/34 plans)
+Progress: █████████████████████████████████████░░ 90% (35/39 plans)
 
 ## Phase Overview
-
-NEXT_PHASE=11
 
 | Phase | Status |
 |-------|--------|
@@ -26,7 +24,7 @@ NEXT_PHASE=11
 | 8. Policy System & Named Presets | ● complete (3/3 plans) |
 | 9. Serialization & JSON Package | ● complete (3/3 plans) |
 | 10. Companion Packages & Release | ● complete (3/3 plans) |
-| 11. Language-Agnostic Specification | ○ planned |
+| 11. Language-Agnostic Specification | ◐ in progress (1/5 plans) |
 | 12. Rust Crate (Assay) | ○ planned |
 
 ## Accumulated Context
