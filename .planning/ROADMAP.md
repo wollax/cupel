@@ -4,7 +4,7 @@
 
 | Milestone | Status | Phases |
 |-----------|--------|--------|
-| v1.0 Core Library | 🔄 current | 1–12 |
+| v1.0 Core Library | ✅ complete | 1–12 |
 
 ---
 
@@ -287,9 +287,9 @@ Plans:
 **Plans:** 3 plans in 3 waves
 
 Plans:
-- [ ] 12-01-PLAN.md — Crate scaffold, data model types, error enum, Scorer trait, and all 8 scorer implementations (wave 1)
-- [ ] 12-02-PLAN.md — Slicer trait, 3 slicers, Placer trait, 2 placers, pipeline stages, and Pipeline orchestrator (wave 2)
-- [ ] 12-03-PLAN.md — Conformance test suite: copy 28 TOML vectors, build test runner, pass all required tests (wave 3)
+- [x] 12-01-PLAN.md — Crate scaffold, data model types, error enum, Scorer trait, and all 8 scorer implementations (wave 1)
+- [x] 12-02-PLAN.md — Slicer trait, 3 slicers, Placer trait, 2 placers, pipeline stages, and Pipeline orchestrator (wave 2)
+- [x] 12-03-PLAN.md — Conformance test suite: copy 28 TOML vectors, build test runner, pass all required tests (wave 3)
 
 ---
 
@@ -308,4 +308,4 @@ Plans:
 | 9 | Serialization & JSON Package | JSON-02, JSON-03, JSON-04, PKG-04 | ● complete |
 | 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ● complete |
 | 11 | Language-Agnostic Specification | TBD | ● complete |
-| 12 | Rust Crate (Assay) | TBD | ○ planned |
+| 12 | Rust Crate (Assay) | TBD | ● complete |
