@@ -2,17 +2,17 @@
 
 ## Current Position
 
-Phase: 10 of 12 — Companion Packages & Release
+Phase: 11 of 12 — Language-Agnostic Specification
 Milestone: v1.0 Core Library
 Plan: 3 of 3
 Status: Complete
-Last activity: 2026-03-14 — Completed 10-03-PLAN.md (CI/CD, Consumption Tests & API Freeze)
+Last activity: 2026-03-14 — Completed 11-03-PLAN.md (Conformance Suite & GitHub Pages Workflow)
 
-Progress: ██████████████████████████████████████ 100% (34/34 plans)
+Progress: █████████████████████████████████████████ 100% (37/37 plans)
 
 ## Phase Overview
 
-NEXT_PHASE=11
+NEXT_PHASE=12
 
 | Phase | Status |
 |-------|--------|
@@ -26,7 +26,7 @@ NEXT_PHASE=11
 | 8. Policy System & Named Presets | ● complete (3/3 plans) |
 | 9. Serialization & JSON Package | ● complete (3/3 plans) |
 | 10. Companion Packages & Release | ● complete (3/3 plans) |
-| 11. Language-Agnostic Specification | ○ planned |
+| 11. Language-Agnostic Specification | ● complete (3/3 plans) |
 | 12. Rust Crate (Assay) | ○ planned |
 
 ## Accumulated Context
@@ -97,6 +97,9 @@ NEXT_PHASE=11
 - Tiktoken bridge has no hard dependency on data packages — consumers add O200kBase/Cl100kBase as needed
 - Consumption test project uses `*-*` version wildcard to match prerelease .nupkg from MinVer
 - Consumption test project needs `PackageReference Update` for SourceLink/MinVer inherited from Directory.Build.props when ManagePackageVersionsCentrally is disabled
+- Spec uses mdBook for publication, TOML for conformance test vectors, behavioral-equivalence conformance model
+- Spec mandates IEEE 754 64-bit doubles, stable sort with (Score, Index) tiebreaking, byte-exact ordinal deduplication
+- Conformance suite: 28 required + 9 optional TOML test vectors covering all scorers, slicers, placers, and pipeline
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations

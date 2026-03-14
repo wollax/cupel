@@ -1,0 +1,56 @@
+[test]
+name = "Pipeline: all items pinned bypass scoring, placer orders"
+stage = "pipeline"
+
+# All items are pinned → scoreable list is empty.
+# Place stage merges all pinned items with score 1.0.
+# ChronologicalPlacer sorts by timestamp ascending, null last.
+#
+# pinned items: sys(no timestamp), old(Jan), new(Dec)
+# merged as ScoredItem: sys(1.0), old(1.0), new(1.0)
+# merged tokens = 100+150+150 = 400 <= target(500) → no overflow
+#
+# Chronological: old(Jan), new(Dec), sys(no timestamp → last)
+
+[budget]
+max_tokens = 1000
+target_tokens = 500
+output_reserve = 0
+
+[config]
+slicer = "greedy"
+placer = "chronological"
+deduplication = true
+
+[[config.scorers]]
+type = "recency"
+weight = 1.0
+
+[[items]]
+content = "sys"
+tokens = 100
+kind = "SystemPrompt"
+pinned = true
+
+[[items]]
+content = "old"
+tokens = 150
+kind = "Message"
+timestamp = 2024-01-01T00:00:00Z
+pinned = true
+
+[[items]]
+content = "new"
+tokens = 150
+kind = "Message"
+timestamp = 2024-12-01T00:00:00Z
+pinned = true
+
+[[expected_output]]
+content = "old"
+
+[[expected_output]]
+content = "new"
+
+[[expected_output]]
+content = "sys"

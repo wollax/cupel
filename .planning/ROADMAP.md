@@ -261,10 +261,12 @@ Plans:
 3. Test vectors / conformance suite defined so implementations can validate correctness
 4. Specification versioned and published (e.g., as a standalone document or GitHub Pages)
 
-**Plans:** 0 plans
+**Plans:** 3 plans in 3 waves
 
 Plans:
-- [ ] TBD (run /kata-plan-phase 11 to break down)
+- [x] 11-01-PLAN.md — mdBook scaffold, introduction, data model, and pipeline stage chapters (wave 1)
+- [x] 11-02-PLAN.md — Scorer, slicer, and placer algorithm specification chapters (wave 2)
+- [x] 11-03-PLAN.md — Conformance test suite (TOML vectors), conformance chapters, and GitHub Pages workflow (wave 3)
 
 ---
 
@@ -303,5 +305,5 @@ Plans:
 | 8 | Policy System & Named Presets | API-01, API-03, POLICY-01, POLICY-02, POLICY-03 | ● complete |
 | 9 | Serialization & JSON Package | JSON-02, JSON-03, JSON-04, PKG-04 | ● complete |
 | 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ● complete |
-| 11 | Language-Agnostic Specification | TBD | ○ planned |
+| 11 | Language-Agnostic Specification | TBD | ● complete |
 | 12 | Rust Crate (Assay) | TBD | ○ planned |

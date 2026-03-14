@@ -1,0 +1,74 @@
+[test]
+name = "CompositeScorer: nested composite containing composite"
+stage = "scoring"
+scorer = "composite"
+
+# Outer composite: [inner_composite (weight 1.0), reflexive (weight 1.0)]
+# Inner composite: [recency (weight 1.0), priority (weight 1.0)]
+# Outer normalized: 0.5 each.
+# Inner normalized: 0.5 each.
+#
+# Items:
+#   "a": timestamp=Jan, priority=1, hint=0.8
+#   "b": timestamp=Dec, priority=5, hint=0.2
+#
+# Recency (countWithTimestamp=2, denom=1):
+#   a (Jan): rank 0 → 0.0
+#   b (Dec): rank 1 → 1.0
+#
+# Priority (countWithPriority=2, denom=1):
+#   a (1): rank 0 → 0.0
+#   b (5): rank 1 → 1.0
+#
+# Inner composite (0.5 * recency + 0.5 * priority):
+#   a: 0.5 * 0.0 + 0.5 * 0.0 = 0.0
+#   b: 0.5 * 1.0 + 0.5 * 1.0 = 1.0
+#
+# Reflexive:
+#   a: 0.8
+#   b: 0.2
+#
+# Outer composite (0.5 * inner + 0.5 * reflexive):
+#   a: 0.5 * 0.0 + 0.5 * 0.8 = 0.4
+#   b: 0.5 * 1.0 + 0.5 * 0.2 = 0.6
+
+[[config.scorers]]
+type = "composite"
+weight = 1.0
+
+[[config.scorers.children]]
+type = "recency"
+weight = 1.0
+
+[[config.scorers.children]]
+type = "priority"
+weight = 1.0
+
+[[config.scorers]]
+type = "reflexive"
+weight = 1.0
+
+[[items]]
+content = "a"
+tokens = 100
+timestamp = 2024-01-01T00:00:00Z
+priority = 1
+futureRelevanceHint = 0.8
+
+[[items]]
+content = "b"
+tokens = 100
+timestamp = 2024-12-01T00:00:00Z
+priority = 5
+futureRelevanceHint = 0.2
+
+[[expected]]
+content = "a"
+score_approx = 0.4
+
+[[expected]]
+content = "b"
+score_approx = 0.6
+
+[tolerance]
+score_epsilon = 1e-9
