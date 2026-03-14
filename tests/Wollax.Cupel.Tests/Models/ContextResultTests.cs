@@ -38,7 +38,11 @@ public class ContextResultTests
             Events = new List<TraceEvent>
             {
                 new() { Stage = PipelineStage.Score, Duration = TimeSpan.FromMilliseconds(5), ItemCount = 3 }
-            }
+            },
+            Included = [],
+            Excluded = [],
+            TotalCandidates = 0,
+            TotalTokensConsidered = 0
         };
 
         var result = new ContextResult
@@ -99,7 +103,11 @@ public class ContextResultTests
             Events = new List<TraceEvent>
             {
                 new() { Stage = PipelineStage.Slice, Duration = TimeSpan.FromMilliseconds(2), ItemCount = 1 }
-            }
+            },
+            Included = [],
+            Excluded = [],
+            TotalCandidates = 0,
+            TotalTokensConsidered = 0
         };
 
         var updated = original with { Report = report };
@@ -122,7 +130,14 @@ public class ContextResultTests
             new() { Stage = PipelineStage.Slice, Duration = TimeSpan.FromMilliseconds(3), ItemCount = 3 },
         };
 
-        var report = new SelectionReport { Events = events };
+        var report = new SelectionReport
+        {
+            Events = events,
+            Included = [],
+            Excluded = [],
+            TotalCandidates = 0,
+            TotalTokensConsidered = 0
+        };
 
         await Assert.That(report.Events).Count().IsEqualTo(2);
         await Assert.That(report.Events[0].Stage).IsEqualTo(PipelineStage.Score);

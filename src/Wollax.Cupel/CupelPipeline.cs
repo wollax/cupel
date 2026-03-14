@@ -21,6 +21,8 @@ public sealed class CupelPipeline
     private readonly ContextBudget _budget;
     private readonly bool _deduplicationEnabled;
     private readonly IAsyncSlicer? _asyncSlicer;
+    private readonly OverflowStrategy _overflowStrategy;
+    private readonly Action<OverflowEvent>? _overflowObserver;
 
     internal CupelPipeline(
         IScorer scorer,
@@ -28,7 +30,9 @@ public sealed class CupelPipeline
         IPlacer placer,
         ContextBudget budget,
         bool deduplicationEnabled,
-        IAsyncSlicer? asyncSlicer = null)
+        IAsyncSlicer? asyncSlicer = null,
+        OverflowStrategy overflowStrategy = OverflowStrategy.Throw,
+        Action<OverflowEvent>? overflowObserver = null)
     {
         _scorer = scorer;
         _slicer = slicer;
@@ -36,6 +40,8 @@ public sealed class CupelPipeline
         _budget = budget;
         _deduplicationEnabled = deduplicationEnabled;
         _asyncSlicer = asyncSlicer;
+        _overflowStrategy = overflowStrategy;
+        _overflowObserver = overflowObserver;
     }
 
     /// <summary>
@@ -51,25 +57,54 @@ public sealed class CupelPipeline
     /// <returns>The pipeline result containing selected and ordered items.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="items"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">Pinned items exceed available token budget.</exception>
+    /// <exception cref="OverflowException">The default <see cref="OverflowStrategy.Throw"/> is configured and selected items exceed <see cref="ContextBudget.TargetTokens"/> after merging with pinned items.</exception>
     public ContextResult Execute(
         IReadOnlyList<ContextItem> items,
         ITraceCollector? traceCollector = null)
     {
         ArgumentNullException.ThrowIfNull(items);
         var trace = traceCollector ?? NullTraceCollector.Instance;
+        return ExecuteCore(items, trace);
+    }
+
+    /// <summary>
+    /// Executes the pipeline in dry-run mode. Always produces a <see cref="SelectionReport"/>
+    /// regardless of whether a <see cref="DiagnosticTraceCollector"/> was provided externally.
+    /// The result is identical to <see cref="Execute"/> for the same input.
+    /// </summary>
+    /// <param name="items">The context items to process.</param>
+    /// <returns>The pipeline result with a fully populated <see cref="SelectionReport"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="items"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OverflowException">The default <see cref="OverflowStrategy.Throw"/> is configured and selected items exceed <see cref="ContextBudget.TargetTokens"/> after merging with pinned items.</exception>
+    public ContextResult DryRun(IReadOnlyList<ContextItem> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        var trace = new DiagnosticTraceCollector();
+        return ExecuteCore(items, trace);
+    }
+
+    private ContextResult ExecuteCore(
+        IReadOnlyList<ContextItem> items,
+        ITraceCollector trace)
+    {
         var sw = trace.IsEnabled ? Stopwatch.StartNew() : null;
+        ReportBuilder? reportBuilder = trace is DiagnosticTraceCollector ? new ReportBuilder() : null;
 
         // CLASSIFY: partition into pinned and scoreable, skip negative tokens
         var pinned = new List<ContextItem>();
         var scoreable = new List<ContextItem>();
+        var totalTokensConsidered = 0;
 
         for (var i = 0; i < items.Count; i++)
         {
             var item = items[i];
             if (item.Tokens < 0)
             {
+                reportBuilder?.AddExcluded(item, 0.0, ExclusionReason.NegativeTokens);
                 continue;
             }
+
+            totalTokensConsidered += item.Tokens;
 
             if (item.Pinned)
             {
@@ -80,6 +115,9 @@ public sealed class CupelPipeline
                 scoreable.Add(item);
             }
         }
+
+        reportBuilder?.SetTotalCandidates(items.Count);
+        reportBuilder?.SetTotalTokensConsidered(totalTokensConsidered);
 
         if (sw is not null)
         {
@@ -151,6 +189,16 @@ public sealed class CupelPipeline
                 if (bestByContent.TryGetValue(scored[i].Item.Content, out var bestIdx) && bestIdx == i)
                 {
                     deduped[dedupIdx++] = scored[i];
+                }
+                else if (reportBuilder is not null)
+                {
+                    // This item was deduplicated — find the surviving item
+                    var survivingIdx = bestByContent[scored[i].Item.Content];
+                    reportBuilder.AddExcluded(
+                        scored[i].Item,
+                        scored[i].Score,
+                        ExclusionReason.Deduplicated,
+                        deduplicatedAgainst: scored[survivingIdx].Item);
                 }
             }
         }
@@ -225,6 +273,11 @@ public sealed class CupelPipeline
             {
                 slicedScored.Add(sorted[i]);
             }
+            else if (reportBuilder is not null)
+            {
+                // Item was in sorted but excluded by slicer — budget exceeded
+                reportBuilder.AddExcluded(sorted[i].Item, sorted[i].Score, ExclusionReason.BudgetExceeded);
+            }
         }
 
         // MERGE PINNED: add pinned items with effective score 1.0 (highest possible ordinal ranking)
@@ -239,6 +292,8 @@ public sealed class CupelPipeline
         }
 
         // PINNED+QUOTA CONFLICT DETECTION
+        // Note: This path is only entered when QuotaSlice is configured — not the hot path.
+        // Dictionary foreach is acceptable here given the diagnostic-only context.
         if (pinned.Count > 0 && _slicer is QuotaSlice quotaSlicer)
         {
             var pinnedTokensByKind = new Dictionary<ContextKind, int>();
@@ -269,6 +324,96 @@ public sealed class CupelPipeline
             }
         }
 
+        // OVERFLOW DETECTION: check if merged tokens exceed TargetTokens
+        var mergedTokens = 0;
+        for (var i = 0; i < merged.Length; i++)
+            mergedTokens += merged[i].Item.Tokens;
+
+        if (mergedTokens > _budget.TargetTokens)
+        {
+            switch (_overflowStrategy)
+            {
+                case OverflowStrategy.Throw:
+                    throw new OverflowException(
+                        $"Selected items require {mergedTokens} tokens, exceeding the target budget of {_budget.TargetTokens} tokens ({mergedTokens - _budget.TargetTokens} tokens over budget).");
+
+                case OverflowStrategy.Truncate:
+                {
+                    var hasPinned = pinned.Count > 0;
+                    var truncateReason = hasPinned
+                        ? ExclusionReason.PinnedOverride
+                        : ExclusionReason.BudgetExceeded;
+
+                    // Single-pass: keep items from the front (highest-scored), skip from the back
+                    // merged = [pinned items (score 1.0)] + [sliced items (score desc)]
+                    // Walk forward, accumulate until budget exhausted, then exclude the rest
+                    var kept = new List<ScoredItem>(merged.Length);
+                    var currentTokens = 0;
+                    for (var i = 0; i < merged.Length; i++)
+                    {
+                        if (merged[i].Item.Pinned || currentTokens + merged[i].Item.Tokens <= _budget.TargetTokens)
+                        {
+                            kept.Add(merged[i]);
+                            currentTokens += merged[i].Item.Tokens;
+                        }
+                        else
+                        {
+                            reportBuilder?.AddExcluded(merged[i].Item, merged[i].Score, truncateReason);
+                        }
+                    }
+
+                    // Handle case where pinned items alone exceed target (best-effort)
+                    if (currentTokens > _budget.TargetTokens)
+                    {
+                        trace.RecordItemEvent(new TraceEvent
+                        {
+                            Stage = PipelineStage.Slice,
+                            Duration = TimeSpan.Zero,
+                            ItemCount = 0,
+                            Message = $"WARNING: After truncation, selected items still exceed TargetTokens ({currentTokens} > {_budget.TargetTokens}). Pinned items cannot be removed."
+                        });
+                    }
+
+                    merged = kept.ToArray();
+                    break;
+                }
+
+                case OverflowStrategy.Proceed:
+                {
+                    var overflowItems = new ContextItem[merged.Length];
+                    for (var i = 0; i < merged.Length; i++)
+                        overflowItems[i] = merged[i].Item;
+
+                    _overflowObserver?.Invoke(new OverflowEvent
+                    {
+                        TokensOverBudget = mergedTokens - _budget.TargetTokens,
+                        OverflowingItems = overflowItems,
+                        Budget = _budget
+                    });
+                    break;
+                }
+            }
+        }
+
+        // Record included items AFTER overflow handling (merged may have been modified by Truncate)
+        if (reportBuilder is not null)
+        {
+            for (var i = 0; i < merged.Length; i++)
+            {
+                if (merged[i].Item.Pinned)
+                {
+                    reportBuilder.AddIncluded(merged[i].Item, merged[i].Score, InclusionReason.Pinned);
+                }
+                else
+                {
+                    var reason = merged[i].Item.Tokens == 0
+                        ? InclusionReason.ZeroToken
+                        : InclusionReason.Scored;
+                    reportBuilder.AddIncluded(merged[i].Item, merged[i].Score, reason);
+                }
+            }
+        }
+
         // PLACE
         var placed = _placer.Place(merged, trace);
 
@@ -284,9 +429,9 @@ public sealed class CupelPipeline
 
         // BUILD RESULT
         SelectionReport? report = null;
-        if (traceCollector is DiagnosticTraceCollector diagnosticCollector)
+        if (trace is DiagnosticTraceCollector diagnosticCollector && reportBuilder is not null)
         {
-            report = new SelectionReport { Events = diagnosticCollector.Events };
+            report = reportBuilder.Build(diagnosticCollector.Events);
         }
 
         return new ContextResult { Items = placed, Report = report };
@@ -366,7 +511,14 @@ public sealed class CupelPipeline
         SelectionReport? report = null;
         if (traceCollector is DiagnosticTraceCollector diagnosticCollector)
         {
-            report = new SelectionReport { Events = diagnosticCollector.Events };
+            report = new SelectionReport
+            {
+                Events = diagnosticCollector.Events,
+                Included = [],
+                Excluded = [],
+                TotalCandidates = 0,
+                TotalTokensConsidered = 0
+            };
         }
 
         return new ContextResult { Items = placed, Report = report };

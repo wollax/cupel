@@ -1,21 +1,33 @@
 namespace Wollax.Cupel.Diagnostics;
 
 /// <summary>Reason an item was excluded from the final selection.</summary>
-/// <remarks>
-/// Referenced by <see cref="SelectionReport"/> in Phase 7, where each excluded item
-/// is annotated with its exclusion reason for diagnostic reporting.
-/// </remarks>
 public enum ExclusionReason
 {
-    /// <summary>Item scored below the selection threshold.</summary>
-    LowScore,
-
     /// <summary>Item did not fit within the token budget.</summary>
     BudgetExceeded,
 
-    /// <summary>Item was removed during deduplication.</summary>
-    Duplicate,
+    /// <summary>Item scored below the selection threshold.</summary>
+    /// <remarks>Reserved for future use. Not currently emitted by any built-in pipeline stage.</remarks>
+    ScoredTooLow,
 
-    /// <summary>Item was excluded by a quota constraint.</summary>
-    QuotaExceeded
+    /// <summary>Item was removed during deduplication in favor of a higher-scoring duplicate.</summary>
+    Deduplicated,
+
+    /// <summary>Item was excluded because its kind exceeded the quota cap.</summary>
+    /// <remarks>Reserved for future use. Not currently emitted by any built-in pipeline stage.</remarks>
+    QuotaCapExceeded,
+
+    /// <summary>Item was displaced to satisfy a quota require constraint for another kind.</summary>
+    /// <remarks>Reserved for future use. Not currently emitted by any built-in pipeline stage.</remarks>
+    QuotaRequireDisplaced,
+
+    /// <summary>Item was excluded because it has a negative token count.</summary>
+    NegativeTokens,
+
+    /// <summary>Item was excluded because a pinned item took priority.</summary>
+    PinnedOverride,
+
+    /// <summary>Item was excluded by a filter predicate.</summary>
+    /// <remarks>Reserved for future use. Not currently emitted by any built-in pipeline stage.</remarks>
+    Filtered
 }
