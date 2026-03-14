@@ -312,7 +312,11 @@ Plans:
 3. Existing tests continue to pass (default values are zero/empty, preserving backward compatibility)
 4. `REQUIREMENTS.md` checkboxes updated for PKG-02, PKG-03, PKG-05
 
-**Plans:** TBD
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [x] 13-01-PLAN.md — ReservedSlots & EstimationSafetyMarginPercent pipeline wiring (TDD)
+- [x] 13-02-PLAN.md — Spec documentation updates for budget contract
 
 ---
 
@@ -379,6 +383,6 @@ Plans:
 | 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ● complete |
 | 11 | Language-Agnostic Specification | TBD | ● complete |
 | 12 | Rust Crate (Assay) | TBD | ● complete |
-| 13 | Budget Contract Implementation | audit gap closure | ○ planned |
+| 13 | Budget Contract Implementation | audit gap closure | ● complete |
 | 14 | Policy Type Completeness | audit gap closure | ○ planned |
 | 15 | Conformance Hardening | audit gap closure | ○ planned |
