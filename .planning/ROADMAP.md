@@ -191,6 +191,13 @@ Plans:
 3. 7+ named presets exist (chat, code-review, rag, document-qa, tool-use, long-running, debugging) — each marked `[Experimental]`
 4. Named presets compile, produce valid pipelines, and serve as test fixtures — each preset has at least one integration test
 
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 08-01-PLAN.md — Enums (ScorerType, SlicerType, PlacerType), ScorerEntry, QuotaEntry, CupelPolicy sealed class (TDD) (wave 1)
+- [ ] 08-02-PLAN.md — CupelPresets (7 named presets with [Experimental]) and CupelOptions intent-based registry (TDD) (wave 2)
+- [ ] 08-03-PLAN.md — PipelineBuilder.WithPolicy() integration and end-to-end policy integration tests (wave 2)
+
 ---
 
 #### Phase 9: Serialization & JSON Package
