@@ -214,6 +214,13 @@ Plans:
 3. `CupelJsonContext` is a source-generated `JsonSerializerContext` with polymorphic `$type` discriminators
 4. No YAML or other format support exists — JSON is the only serialization format
 
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [x] 09-01-PLAN.md — JSON package scaffold, CupelJsonContext, CupelJsonSerializer, round-trip tests
+- [x] 09-02-PLAN.md — Custom scorer registration and unknown-type error handling
+- [x] 09-03-PLAN.md — Path-aware validation error handling
+
 ---
 
 #### Phase 10: Companion Packages & Release
@@ -287,7 +294,7 @@ Plans:
 | 6 | Advanced Slicers & Quota System | SLICE-03, SLICE-04, SLICE-05, SLICE-06 | ● complete |
 | 7 | Explainability & Overflow Handling | TRACE-05, TRACE-06 | ● complete |
 | 8 | Policy System & Named Presets | API-01, API-03, POLICY-01, POLICY-02, POLICY-03 | ● complete |
-| 9 | Serialization & JSON Package | JSON-02, JSON-03, JSON-04, PKG-04 | ○ planned |
+| 9 | Serialization & JSON Package | JSON-02, JSON-03, JSON-04, PKG-04 | ● complete |
 | 10 | Companion Packages & Release | PKG-02, PKG-03, PKG-05 | ○ planned |
 | 11 | Language-Agnostic Specification | TBD | ○ planned |
 | 12 | Rust Crate (Assay) | TBD | ○ planned |

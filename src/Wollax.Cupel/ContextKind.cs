@@ -42,7 +42,10 @@ public sealed class ContextKind : IEquatable<ContextKind>
         => !Equals(left, right);
 }
 
-internal sealed class ContextKindJsonConverter : JsonConverter<ContextKind>
+/// <summary>
+/// JSON converter for <see cref="ContextKind"/> that serializes/deserializes as a plain string value.
+/// </summary>
+public sealed class ContextKindJsonConverter : JsonConverter<ContextKind>
 {
     public override ContextKind Read(
         ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -56,5 +59,19 @@ internal sealed class ContextKindJsonConverter : JsonConverter<ContextKind>
         Utf8JsonWriter writer, ContextKind value, JsonSerializerOptions options)
     {
         writer.WriteStringValue(value.Value);
+    }
+
+    public override ContextKind ReadAsPropertyName(
+        ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var value = reader.GetString()
+            ?? throw new JsonException("ContextKind property name cannot be null.");
+        return new ContextKind(value);
+    }
+
+    public override void WriteAsPropertyName(
+        Utf8JsonWriter writer, ContextKind value, JsonSerializerOptions options)
+    {
+        writer.WritePropertyName(value.Value);
     }
 }

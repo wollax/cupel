@@ -2,15 +2,17 @@
 
 ## Current Position
 
-Phase: 8 of 12 — Policy System & Named Presets
+Phase: 9 of 12 — Serialization & JSON Package
 Milestone: v1.0 Core Library
 Plan: 3 of 3
 Status: Complete
-Last activity: 2026-03-14 — Completed 08-03-PLAN.md (PipelineBuilder.WithPolicy Integration)
+Last activity: 2026-03-14 — Completed 09-03-PLAN.md (Path-Aware Validation Error Handling)
+
+Progress: ██████████████████████████████████░░░░ 91% (31/34 plans)
 
 ## Phase Overview
 
-NEXT_PHASE=9
+NEXT_PHASE=10
 
 | Phase | Status |
 |-------|--------|
@@ -22,7 +24,7 @@ NEXT_PHASE=9
 | 6. Advanced Slicers & Quota System | ● complete (5/5 plans) |
 | 7. Explainability & Overflow Handling | ● complete (3/3 plans) |
 | 8. Policy System & Named Presets | ● complete (3/3 plans) |
-| 9. Serialization & JSON Package | ○ planned |
+| 9. Serialization & JSON Package | ● complete (3/3 plans) |
 | 10. Companion Packages & Release | ○ planned |
 | 11. Language-Agnostic Specification | ○ planned |
 | 12. Rust Crate (Assay) | ○ planned |
@@ -78,6 +80,15 @@ NEXT_PHASE=9
 - ReportBuilder uses (ExcludedItem, int Index) tuple array sort for stable descending score ordering
 - ScorerEntry uses IReadOnlyDictionary for KindWeights/TagWeights with defensive copies via new Dictionary(source)
 - CupelPolicy uses [..source] collection expression spread for defensive copies of Scorers and Quotas lists
+- ContextKindJsonConverter and ContextKindDictionaryConverter made public for cross-assembly source gen access
+- ContextKindJsonConverter needs ReadAsPropertyName/WriteAsPropertyName for Dictionary<ContextKind,T> key serialization
+- STJ source gen UseStringEnumConverter does not apply naming policy — use [JsonStringEnumMemberName] on each enum member
+- CupelJsonSerializer uses separate overloads (not optional params) to satisfy RS0026 backcompat analyzer
+- RegisterScorer stores all factories as Func<JsonElement?, IScorer> internally; parameterless overload wraps via _ => factory()
+- Unknown scorer type detection uses JsonDocument.Parse on raw JSON to extract type names and compare against built-in set
+- Built-in scorer type names hardcoded as string array matching [JsonStringEnumMemberName] values on ScorerType
+- .NET 10 STJ does NOT wrap JsonConstructor ArgumentException in JsonException — exceptions propagate unwrapped
+- CupelJsonSerializer facade catches ArgumentException from constructors and wraps in JsonException with `$:` path prefix
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
