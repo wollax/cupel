@@ -21,6 +21,8 @@ public sealed class CupelPipeline
     private readonly ContextBudget _budget;
     private readonly bool _deduplicationEnabled;
     private readonly IAsyncSlicer? _asyncSlicer;
+    private readonly OverflowStrategy _overflowStrategy;
+    private readonly Action<OverflowEvent>? _overflowObserver;
 
     internal CupelPipeline(
         IScorer scorer,
@@ -28,7 +30,9 @@ public sealed class CupelPipeline
         IPlacer placer,
         ContextBudget budget,
         bool deduplicationEnabled,
-        IAsyncSlicer? asyncSlicer = null)
+        IAsyncSlicer? asyncSlicer = null,
+        OverflowStrategy overflowStrategy = OverflowStrategy.Throw,
+        Action<OverflowEvent>? overflowObserver = null)
     {
         _scorer = scorer;
         _slicer = slicer;
@@ -36,6 +40,8 @@ public sealed class CupelPipeline
         _budget = budget;
         _deduplicationEnabled = deduplicationEnabled;
         _asyncSlicer = asyncSlicer;
+        _overflowStrategy = overflowStrategy;
+        _overflowObserver = overflowObserver;
     }
 
     /// <summary>
@@ -57,19 +63,47 @@ public sealed class CupelPipeline
     {
         ArgumentNullException.ThrowIfNull(items);
         var trace = traceCollector ?? NullTraceCollector.Instance;
+        return ExecuteCore(items, trace, isDryRun: false);
+    }
+
+    /// <summary>
+    /// Executes the pipeline in dry-run mode. Always produces a <see cref="SelectionReport"/>
+    /// regardless of whether a <see cref="DiagnosticTraceCollector"/> was provided externally.
+    /// The result is identical to <see cref="Execute"/> for the same input.
+    /// </summary>
+    /// <param name="items">The context items to process.</param>
+    /// <returns>The pipeline result with a fully populated <see cref="SelectionReport"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="items"/> is <see langword="null"/>.</exception>
+    public ContextResult DryRun(IReadOnlyList<ContextItem> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        var trace = new DiagnosticTraceCollector();
+        return ExecuteCore(items, trace, isDryRun: true);
+    }
+
+    private ContextResult ExecuteCore(
+        IReadOnlyList<ContextItem> items,
+        ITraceCollector trace,
+        bool isDryRun)
+    {
         var sw = trace.IsEnabled ? Stopwatch.StartNew() : null;
+        ReportBuilder? reportBuilder = trace is DiagnosticTraceCollector ? new ReportBuilder() : null;
 
         // CLASSIFY: partition into pinned and scoreable, skip negative tokens
         var pinned = new List<ContextItem>();
         var scoreable = new List<ContextItem>();
+        var totalTokensConsidered = 0;
 
         for (var i = 0; i < items.Count; i++)
         {
             var item = items[i];
             if (item.Tokens < 0)
             {
+                reportBuilder?.AddExcluded(item, 0.0, ExclusionReason.NegativeTokens);
                 continue;
             }
+
+            totalTokensConsidered += item.Tokens;
 
             if (item.Pinned)
             {
@@ -80,6 +114,9 @@ public sealed class CupelPipeline
                 scoreable.Add(item);
             }
         }
+
+        reportBuilder?.SetTotalCandidates(items.Count);
+        reportBuilder?.SetTotalTokensConsidered(totalTokensConsidered);
 
         if (sw is not null)
         {
@@ -151,6 +188,16 @@ public sealed class CupelPipeline
                 if (bestByContent.TryGetValue(scored[i].Item.Content, out var bestIdx) && bestIdx == i)
                 {
                     deduped[dedupIdx++] = scored[i];
+                }
+                else if (reportBuilder is not null)
+                {
+                    // This item was deduplicated — find the surviving item
+                    var survivingIdx = bestByContent[scored[i].Item.Content];
+                    reportBuilder.AddExcluded(
+                        scored[i].Item,
+                        scored[i].Score,
+                        ExclusionReason.Deduplicated,
+                        deduplicatedAgainst: scored[survivingIdx].Item);
                 }
             }
         }
@@ -225,6 +272,11 @@ public sealed class CupelPipeline
             {
                 slicedScored.Add(sorted[i]);
             }
+            else if (reportBuilder is not null)
+            {
+                // Item was in sorted but excluded by slicer — budget exceeded
+                reportBuilder.AddExcluded(sorted[i].Item, sorted[i].Score, ExclusionReason.BudgetExceeded);
+            }
         }
 
         // MERGE PINNED: add pinned items with effective score 1.0 (highest possible ordinal ranking)
@@ -232,10 +284,18 @@ public sealed class CupelPipeline
         for (var i = 0; i < pinned.Count; i++)
         {
             merged[i] = new ScoredItem(pinned[i], 1.0);
+            reportBuilder?.AddIncluded(pinned[i], 1.0, InclusionReason.Pinned);
         }
         for (var i = 0; i < slicedScored.Count; i++)
         {
             merged[pinned.Count + i] = slicedScored[i];
+            if (reportBuilder is not null)
+            {
+                var reason = slicedScored[i].Item.Tokens == 0
+                    ? InclusionReason.ZeroToken
+                    : InclusionReason.Scored;
+                reportBuilder.AddIncluded(slicedScored[i].Item, slicedScored[i].Score, reason);
+            }
         }
 
         // PINNED+QUOTA CONFLICT DETECTION
@@ -284,16 +344,9 @@ public sealed class CupelPipeline
 
         // BUILD RESULT
         SelectionReport? report = null;
-        if (traceCollector is DiagnosticTraceCollector diagnosticCollector)
+        if (trace is DiagnosticTraceCollector diagnosticCollector && reportBuilder is not null)
         {
-            report = new SelectionReport
-            {
-                Events = diagnosticCollector.Events,
-                Included = [],
-                Excluded = [],
-                TotalCandidates = 0,
-                TotalTokensConsidered = 0
-            };
+            report = reportBuilder.Build(diagnosticCollector.Events);
         }
 
         return new ContextResult { Items = placed, Report = report };

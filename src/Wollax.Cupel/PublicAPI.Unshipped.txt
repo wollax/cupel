@@ -203,6 +203,7 @@ Wollax.Cupel.ChronologicalPlacer
 Wollax.Cupel.ChronologicalPlacer.ChronologicalPlacer() -> void
 Wollax.Cupel.ChronologicalPlacer.Place(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! items, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
 Wollax.Cupel.CupelPipeline
+Wollax.Cupel.CupelPipeline.DryRun(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items) -> Wollax.Cupel.ContextResult!
 Wollax.Cupel.CupelPipeline.Execute(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null) -> Wollax.Cupel.ContextResult!
 Wollax.Cupel.CupelPipeline.ExecuteAsync(Wollax.Cupel.IContextSource! source, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wollax.Cupel.ContextResult!>!
 Wollax.Cupel.CupelPipeline.ExecuteStreamAsync(System.Collections.Generic.IAsyncEnumerable<Wollax.Cupel.ContextItem!>! source, Wollax.Cupel.Diagnostics.ITraceCollector? traceCollector = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wollax.Cupel.ContextResult!>!

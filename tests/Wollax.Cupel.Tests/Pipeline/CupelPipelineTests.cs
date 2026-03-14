@@ -608,6 +608,198 @@ public class CupelPipelineTests
         await Assert.That(result.TotalTokens).IsLessThanOrEqualTo(500);
     }
 
+    // Report population tests
+
+    [Test]
+    public async Task Report_WithDiagnosticTrace_IncludedContainsScoredItems()
+    {
+        var item1 = CreateItem("a", tokens: 10, futureRelevanceHint: 0.8);
+        var item2 = CreateItem("b", tokens: 10, futureRelevanceHint: 0.5);
+        var trace = new DiagnosticTraceCollector();
+
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute([item1, item2], trace);
+
+        await Assert.That(result.Report).IsNotNull();
+        await Assert.That(result.Report!.Included.Count).IsEqualTo(2);
+
+        // All scored items should have InclusionReason.Scored
+        for (var i = 0; i < result.Report.Included.Count; i++)
+            await Assert.That(result.Report.Included[i].Reason).IsEqualTo(InclusionReason.Scored);
+    }
+
+    [Test]
+    public async Task Report_WithPinnedItems_IncludedContainsPinnedReason()
+    {
+        var pinned = CreateItem("pinned", tokens: 10, pinned: true);
+        var normal = CreateItem("normal", tokens: 10, futureRelevanceHint: 0.5);
+        var trace = new DiagnosticTraceCollector();
+
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute([pinned, normal], trace);
+
+        await Assert.That(result.Report).IsNotNull();
+
+        var pinnedIncluded = default(IncludedItem);
+        for (var i = 0; i < result.Report!.Included.Count; i++)
+        {
+            if (ReferenceEquals(result.Report.Included[i].Item, pinned))
+            {
+                pinnedIncluded = result.Report.Included[i];
+                break;
+            }
+        }
+        await Assert.That(pinnedIncluded).IsNotNull();
+        await Assert.That(pinnedIncluded!.Reason).IsEqualTo(InclusionReason.Pinned);
+        await Assert.That(pinnedIncluded.Score).IsEqualTo(1.0);
+    }
+
+    [Test]
+    public async Task Report_SlicerExcludesItems_ExcludedContainsBudgetExceeded()
+    {
+        // Budget fits 2 items of 30 tokens (target=60), 3rd excluded
+        var item1 = CreateItem("a", tokens: 30, futureRelevanceHint: 0.9);
+        var item2 = CreateItem("b", tokens: 30, futureRelevanceHint: 0.8);
+        var item3 = CreateItem("c", tokens: 30, futureRelevanceHint: 0.1);
+        var trace = new DiagnosticTraceCollector();
+
+        var pipeline = BuildPipeline(maxTokens: 100, targetTokens: 60);
+        var result = pipeline.Execute([item1, item2, item3], trace);
+
+        await Assert.That(result.Report).IsNotNull();
+        await Assert.That(result.Report!.Excluded.Count).IsGreaterThanOrEqualTo(1);
+
+        var budgetExcluded = false;
+        for (var i = 0; i < result.Report.Excluded.Count; i++)
+        {
+            if (result.Report.Excluded[i].Reason == ExclusionReason.BudgetExceeded)
+            {
+                budgetExcluded = true;
+                break;
+            }
+        }
+        await Assert.That(budgetExcluded).IsTrue();
+    }
+
+    [Test]
+    public async Task Report_DedupExcludesItems_ExcludedContainsDeduplicated()
+    {
+        var winner = CreateItem("duplicate", tokens: 10, futureRelevanceHint: 0.9);
+        var loser = CreateItem("duplicate", tokens: 10, futureRelevanceHint: 0.3);
+        var trace = new DiagnosticTraceCollector();
+
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute([winner, loser], trace);
+
+        await Assert.That(result.Report).IsNotNull();
+        await Assert.That(result.Report!.Excluded.Count).IsEqualTo(1);
+        await Assert.That(result.Report.Excluded[0].Reason).IsEqualTo(ExclusionReason.Deduplicated);
+        await Assert.That(result.Report.Excluded[0].DeduplicatedAgainst).IsEqualTo(winner);
+    }
+
+    [Test]
+    public async Task Report_NegativeTokenItems_ExcludedWithNegativeTokensReason()
+    {
+        var negative = CreateItem("negative", tokens: -1, futureRelevanceHint: 1.0);
+        var valid = CreateItem("valid", tokens: 10, futureRelevanceHint: 0.5);
+        var trace = new DiagnosticTraceCollector();
+
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute([negative, valid], trace);
+
+        await Assert.That(result.Report).IsNotNull();
+        await Assert.That(result.Report!.Excluded.Count).IsEqualTo(1);
+        await Assert.That(result.Report.Excluded[0].Reason).IsEqualTo(ExclusionReason.NegativeTokens);
+        await Assert.That(result.Report.Excluded[0].Item).IsEqualTo(negative);
+    }
+
+    [Test]
+    public async Task Report_TotalCandidates_EqualsInputCount()
+    {
+        var items = new[]
+        {
+            CreateItem("a", tokens: 10, futureRelevanceHint: 0.8),
+            CreateItem("b", tokens: -1),
+            CreateItem("c", tokens: 10, futureRelevanceHint: 0.5)
+        };
+        var trace = new DiagnosticTraceCollector();
+
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute(items, trace);
+
+        await Assert.That(result.Report).IsNotNull();
+        await Assert.That(result.Report!.TotalCandidates).IsEqualTo(3);
+    }
+
+    [Test]
+    public async Task Report_TotalTokensConsidered_SumOfNonNegativeTokenItems()
+    {
+        var items = new[]
+        {
+            CreateItem("a", tokens: 10, futureRelevanceHint: 0.8),
+            CreateItem("b", tokens: -5),
+            CreateItem("c", tokens: 20, futureRelevanceHint: 0.5)
+        };
+        var trace = new DiagnosticTraceCollector();
+
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute(items, trace);
+
+        await Assert.That(result.Report).IsNotNull();
+        // Only a(10) and c(20) are non-negative = 30
+        await Assert.That(result.Report!.TotalTokensConsidered).IsEqualTo(30);
+    }
+
+    [Test]
+    public async Task Report_ExcludedOrderedByScoreDescending()
+    {
+        // Force multiple exclusions with different scores
+        var item1 = CreateItem("a", tokens: 40, futureRelevanceHint: 0.9);
+        var item2 = CreateItem("b", tokens: 40, futureRelevanceHint: 0.5);
+        var item3 = CreateItem("c", tokens: 40, futureRelevanceHint: 0.1);
+        var trace = new DiagnosticTraceCollector();
+
+        // Budget only fits 1 item (target=40)
+        var pipeline = BuildPipeline(maxTokens: 100, targetTokens: 40);
+        var result = pipeline.Execute([item1, item2, item3], trace);
+
+        await Assert.That(result.Report).IsNotNull();
+        if (result.Report!.Excluded.Count >= 2)
+        {
+            // Excluded should be sorted by score descending
+            for (var i = 0; i < result.Report.Excluded.Count - 1; i++)
+            {
+                await Assert.That(result.Report.Excluded[i].Score)
+                    .IsGreaterThanOrEqualTo(result.Report.Excluded[i + 1].Score);
+            }
+        }
+    }
+
+    [Test]
+    public async Task Report_WithoutDiagnosticTrace_ReportIsNull()
+    {
+        var item = CreateItem("test", tokens: 10, futureRelevanceHint: 0.5);
+
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute([item]);
+
+        await Assert.That(result.Report).IsNull();
+    }
+
+    [Test]
+    public async Task Report_ZeroTokenItem_IncludedWithZeroTokenReason()
+    {
+        var zeroToken = CreateItem("zero", tokens: 0, futureRelevanceHint: 0.5);
+        var trace = new DiagnosticTraceCollector();
+
+        var pipeline = BuildPipeline();
+        var result = pipeline.Execute([zeroToken], trace);
+
+        await Assert.That(result.Report).IsNotNull();
+        await Assert.That(result.Report!.Included.Count).IsEqualTo(1);
+        await Assert.That(result.Report.Included[0].Reason).IsEqualTo(InclusionReason.ZeroToken);
+    }
+
     // Stream helper
 
     private static async IAsyncEnumerable<ContextItem> CreateStreamSource(
