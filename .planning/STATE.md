@@ -31,6 +31,13 @@ NEXT_PHASE=14
 | 13. Budget Contract Implementation | ● complete (2/2 plans) |
 | 14. Policy Type Completeness | ○ planned |
 | 15. Conformance Hardening | ○ planned |
+| **v1.1 Rust Crate Migration & crates.io Publishing** | |
+| 16. Pre-flight & Crate Scaffold | ○ planned |
+| 17. Crate Migration & Conformance Verification | ○ planned |
+| 18. Dual-Language CI | ○ planned |
+| 19. First Publish & Assay Switchover | ○ planned |
+| 20. Serde Feature Flag | ○ planned |
+| 21. docs.rs Documentation & Examples | ○ planned |
 
 ## Accumulated Context
 
@@ -121,6 +128,7 @@ NEXT_PHASE=14
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
 - Phase 12 added: Rust Crate (Assay) — first non-C# implementation, validates spec's language-independence
 - v1.1 milestone defined: Rust crate migration to cupel repo + crates.io publishing (starts after v1.0 gap closure)
+- v1.1 roadmap created: 6 phases (16-21), 24 requirements across 5 categories (MIGRATE, CONFORM, CI, SWITCH, ENHANCE)
 
 ### Blockers
 (None)
