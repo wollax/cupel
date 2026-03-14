@@ -2,11 +2,11 @@
 
 ## Current Position
 
-Phase: 6 of 12 — Advanced Slicers & Quota System
+Phase: 7 of 12 — Explainability & Overflow Handling
 Milestone: v1.0 Core Library
-Plan: 5 of 5
-Status: Complete
-Last activity: 2026-03-13 — Completed 06-05-PLAN.md (Slicer benchmarks)
+Plan: 1 of 3
+Status: In progress
+Last activity: 2026-03-14 — Completed 07-01-PLAN.md (Explainability & Overflow Data Types)
 
 ## Phase Overview
 
@@ -20,7 +20,7 @@ NEXT_PHASE=7
 | 4. Composite Scoring | ● complete (3/3 plans) |
 | 5. Pipeline Assembly & Basic Execution | ● complete (3/3 plans) |
 | 6. Advanced Slicers & Quota System | ● complete (5/5 plans) |
-| 7. Explainability & Overflow Handling | ○ planned |
+| 7. Explainability & Overflow Handling | ◐ in progress (1/3 plans) |
 | 8. Policy System & Named Presets | ○ planned |
 | 9. Serialization & JSON Package | ○ planned |
 | 10. Companion Packages & Release | ○ planned |
@@ -72,6 +72,10 @@ NEXT_PHASE=7
 - WithQuotas wraps whatever slicer is currently set at call time — ordering matters
 - ExecuteStreamAsync checks cancellationToken.ThrowIfCancellationRequested() at entry before async work
 - ScoreStreamAsync uses micro-batch scoring aligned to StreamSlice.BatchSize for meaningful relative scorer context
+- ExclusionReason evolved from 4 to 8 values: BudgetExceeded, ScoredTooLow, Deduplicated, QuotaCapExceeded, QuotaRequireDisplaced, NegativeTokens, PinnedOverride, Filtered
+- SelectionReport.TotalCandidates and TotalTokensConsidered are `required` (not optional) to avoid ambiguous default-0 semantics
+- InternalsVisibleTo added to Wollax.Cupel.csproj for test access to internal ReportBuilder
+- ReportBuilder uses (ExcludedItem, int Index) tuple array sort for stable descending score ordering
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
