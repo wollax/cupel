@@ -4,13 +4,13 @@
 
 Phase: 8 of 12 — Policy System & Named Presets
 Milestone: v1.0 Core Library
-Plan: 1 of 3
-Status: In progress
-Last activity: 2026-03-14 — Completed 08-01-PLAN.md (Core Policy Data Types)
+Plan: 3 of 3
+Status: Complete
+Last activity: 2026-03-14 — Completed 08-03-PLAN.md (PipelineBuilder.WithPolicy Integration)
 
 ## Phase Overview
 
-NEXT_PHASE=8
+NEXT_PHASE=9
 
 | Phase | Status |
 |-------|--------|
@@ -21,7 +21,7 @@ NEXT_PHASE=8
 | 5. Pipeline Assembly & Basic Execution | ● complete (3/3 plans) |
 | 6. Advanced Slicers & Quota System | ● complete (5/5 plans) |
 | 7. Explainability & Overflow Handling | ● complete (3/3 plans) |
-| 8. Policy System & Named Presets | ◐ in progress (1/3 plans) |
+| 8. Policy System & Named Presets | ● complete (3/3 plans) |
 | 9. Serialization & JSON Package | ○ planned |
 | 10. Companion Packages & Release | ○ planned |
 | 11. Language-Agnostic Specification | ○ planned |
