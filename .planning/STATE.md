@@ -4,11 +4,11 @@
 
 Phase: 11 of 12 — Language-Agnostic Specification
 Milestone: v1.0 Core Library
-Plan: 1 of 5
+Plan: 2 of 5
 Status: In progress
-Last activity: 2026-03-14 — Completed 11-01-PLAN.md (mdBook Scaffold, Data Model & Pipeline Spec)
+Last activity: 2026-03-14 — Completed 11-02-PLAN.md (Algorithm Specification: Scorers, Slicers, Placers)
 
-Progress: █████████████████████████████████████░░ 90% (35/39 plans)
+Progress: █████████████████████████████████████░░ 92% (36/39 plans)
 
 ## Phase Overview
 
@@ -24,7 +24,7 @@ Progress: ███████████████████████�
 | 8. Policy System & Named Presets | ● complete (3/3 plans) |
 | 9. Serialization & JSON Package | ● complete (3/3 plans) |
 | 10. Companion Packages & Release | ● complete (3/3 plans) |
-| 11. Language-Agnostic Specification | ◐ in progress (1/5 plans) |
+| 11. Language-Agnostic Specification | ◐ in progress (2/5 plans) |
 | 12. Rust Crate (Assay) | ○ planned |
 
 ## Accumulated Context
