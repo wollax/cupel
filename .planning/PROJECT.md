@@ -6,9 +6,24 @@ Cupel is a .NET context management library for coding agents. Given a set of con
 
 Part of the Wollax agentic development stack: **Assay** (spec-driven development) → **Smelt** (orchestration) → **Cupel** (context management).
 
-## Current Milestone: v1.0 Core Library
+## Current Milestone: v1.0 Core Library (Gap Closure)
 
-**Goal:** Ship the complete Cupel context management library — pipeline engine, scoring, slicing, placement, explainability, fluent API, named policies, serialization support, and all NuGet packages.
+**Goal:** Ship the complete Cupel context management library — pipeline engine, scoring, slicing, placement, explainability, fluent API, named policies, serialization support, and all NuGet packages. Close remaining audit gaps (budget contract, policy type completeness, conformance hardening).
+
+## Next Milestone: v1.1 Rust Crate Migration & crates.io Publishing
+
+**Goal:** Pull the `assay-cupel` Rust crate from `wollax/assay` into the cupel monorepo, publish as `cupel-rs` on crates.io, and have assay reference it as a crates.io consumer.
+
+**Target features:**
+
+- Rust crate at `crates/cupel/` in the cupel repo (standalone, no Cargo workspace)
+- Published to crates.io as `cupel-rs` v1.0.0 (spec-aligned versioning)
+- Conformance test vectors: single source of truth at `conformance/`, vendored copy in crate with CI drift guard
+- Dual-language CI/CD (Rust jobs added to GitHub Actions)
+- `rust-toolchain.toml` at repo root, `.editorconfig` extended for Rust
+- Assay updated to consume `cupel-rs` from crates.io (not path dependency)
+- `crates/assay-cupel/` deleted from assay repo after migration verified
+- Local dev workflow documented (`[patch.crates-io]` pattern)
 
 **Target features:**
 
@@ -144,4 +159,4 @@ Given candidates and a budget, return the optimal context selection with full ex
 | No IContextSink | Cupel selects; consumers convert. Output adapters are scope creep. | — Pending |
 
 ---
-*Last updated: 2026-03-10 — milestone v1.0 started*
+*Last updated: 2026-03-14 — milestone v1.1 defined*

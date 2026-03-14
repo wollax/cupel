@@ -119,6 +119,7 @@ NEXT_PHASE=13
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
 - Phase 12 added: Rust Crate (Assay) — first non-C# implementation, validates spec's language-independence
+- v1.1 milestone defined: Rust crate migration to cupel repo + crates.io publishing (starts after v1.0 gap closure)
 
 ### Blockers
 (None)
