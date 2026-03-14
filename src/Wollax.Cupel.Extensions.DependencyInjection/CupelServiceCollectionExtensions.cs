@@ -12,6 +12,8 @@ public static class CupelServiceCollectionExtensions
 {
     /// <summary>
     /// Holds the pre-built pipeline components for singleton sharing across transient pipeline instances.
+    /// Components must be stateless and thread-safe. Do not use <see cref="IDisposable"/> implementations
+    /// as component types — the container will not dispose them when held as part of this record.
     /// </summary>
     internal sealed record PolicyComponents(
         IScorer Scorer,
@@ -94,6 +96,9 @@ public static class CupelServiceCollectionExtensions
         {
             var components = provider.GetRequiredKeyedService<PolicyComponents>(intent);
 
+            // OverflowObserver is intentionally null: CupelPolicy is a declarative data object
+            // and does not carry callback delegates. Observer-based overflow handling requires
+            // the builder API (WithOverflowStrategy with onOverflow callback).
             return new CupelPipeline(
                 components.Scorer,
                 components.Slicer,

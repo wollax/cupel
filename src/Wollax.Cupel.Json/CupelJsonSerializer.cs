@@ -13,11 +13,16 @@ public static class CupelJsonSerializer
 {
     // Derived from [JsonStringEnumMemberName] attributes on ScorerType members via reflection.
     // Runs once at class load — no per-call overhead.
+    // NOTE: Uses reflection intentionally despite the rest of the JSON layer being source-gen/AOT.
+    // This is a static initializer for the unknown-type detection set, not a serialization path.
+    // If NativeAOT compatibility is required, replace with a hand-maintained string array.
     internal static readonly string[] BuiltInScorerTypes = Enum.GetValues<ScorerType>()
         .Select(t => typeof(ScorerType)
             .GetField(t.ToString())!
-            .GetCustomAttribute<JsonStringEnumMemberNameAttribute>()!
-            .Name)
+            .GetCustomAttribute<JsonStringEnumMemberNameAttribute>()
+            ?? throw new InvalidOperationException(
+                $"ScorerType.{t} is missing [JsonStringEnumMemberName] attribute."))
+        .Select(attr => attr.Name)
         .ToArray();
 
     private static readonly HashSet<string> BuiltInScorerTypeSet =

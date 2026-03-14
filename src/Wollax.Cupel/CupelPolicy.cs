@@ -66,10 +66,10 @@ public sealed class CupelPolicy
     /// <param name="deduplicationEnabled">Whether deduplication is enabled. Defaults to true.</param>
     /// <param name="overflowStrategy">Overflow handling strategy. Defaults to <see cref="Diagnostics.OverflowStrategy.Throw"/>.</param>
     /// <param name="knapsackBucketSize">Bucket size for the knapsack slicer. Must be null unless slicer is Knapsack.</param>
+    /// <param name="streamBatchSize">Batch size for the stream slicer. Must be null unless slicer is Stream.</param>
     /// <param name="quotas">Optional per-kind quota constraints.</param>
     /// <param name="name">Optional policy name.</param>
     /// <param name="description">Optional policy description.</param>
-    /// <param name="streamBatchSize">Batch size for the stream slicer. Must be null unless slicer is Stream.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="scorers"/> is null.</exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="scorers"/> is empty, when <paramref name="knapsackBucketSize"/>
@@ -87,10 +87,10 @@ public sealed class CupelPolicy
         bool deduplicationEnabled = true,
         OverflowStrategy overflowStrategy = OverflowStrategy.Throw,
         int? knapsackBucketSize = null,
+        int? streamBatchSize = null,
         IReadOnlyList<QuotaEntry>? quotas = null,
         string? name = null,
-        string? description = null,
-        int? streamBatchSize = null)
+        string? description = null)
     {
         ArgumentNullException.ThrowIfNull(scorers);
 

@@ -267,8 +267,8 @@ public sealed class PipelineBuilder
             ScorerType.Tag => new TagScorer(entry.TagWeights!),
             ScorerType.Frequency => new FrequencyScorer(),
             ScorerType.Reflexive => new ReflexiveScorer(),
-            ScorerType.Scaled => new ScaledScorer(CreateScorer(entry.InnerScorer
-                ?? throw new InvalidOperationException("InnerScorer is required for Scaled type."))),
+            // ScorerEntry constructor guarantees InnerScorer is non-null for Scaled type
+            ScorerType.Scaled => new ScaledScorer(CreateScorer(entry.InnerScorer!)),
             _ => throw new ArgumentOutOfRangeException(nameof(entry), entry.Type, "Unknown ScorerType.")
         };
     }

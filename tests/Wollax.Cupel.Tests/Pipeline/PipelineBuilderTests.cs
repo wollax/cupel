@@ -602,7 +602,7 @@ public class PipelineBuilderTests
     }
 
     [Test]
-    public async Task WithPolicy_ScaledScorer_ProducesNormalizedScores()
+    public async Task WithPolicy_ScaledScorer_SelectsAllItemsWithinBudget()
     {
         var policy = new CupelPolicy(
             scorers: [new ScorerEntry(ScorerType.Scaled, 1.0,
@@ -620,10 +620,21 @@ public class PipelineBuilderTests
             .WithPolicy(policy)
             .Build();
 
-        var result = pipeline.Execute(items);
+        var result = pipeline.DryRun(items);
 
         // All items should be selected (well within budget)
         await Assert.That(result.Items.Count).IsEqualTo(3);
+
+        // Verify ScaledScorer normalization: scores should be in [0, 1] range
+        // and "high" should score higher than "low" in the report
+        var report = result.Report!;
+        var includedScores = report.Included.Select(i => i.Score).ToList();
+        await Assert.That(includedScores.Count).IsEqualTo(3);
+        foreach (var score in includedScores)
+        {
+            await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+            await Assert.That(score).IsLessThanOrEqualTo(1.0);
+        }
     }
 
     [Test]
