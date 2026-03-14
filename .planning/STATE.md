@@ -4,11 +4,11 @@
 
 Phase: 10 of 12 — Companion Packages & Release
 Milestone: v1.0 Core Library
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In progress
-Last activity: 2026-03-14 — Completed 10-01-PLAN.md (DI Integration Package)
+Last activity: 2026-03-14 — Completed 10-02-PLAN.md (Tiktoken Bridge Package)
 
-Progress: ███████████████████████████████████░░░ 94% (32/34 plans)
+Progress: ████████████████████████████████████░░ 97% (33/34 plans)
 
 ## Phase Overview
 
@@ -25,7 +25,7 @@ NEXT_PHASE=10
 | 7. Explainability & Overflow Handling | ● complete (3/3 plans) |
 | 8. Policy System & Named Presets | ● complete (3/3 plans) |
 | 9. Serialization & JSON Package | ● complete (3/3 plans) |
-| 10. Companion Packages & Release | ◐ in progress (1/3 plans) |
+| 10. Companion Packages & Release | ◐ in progress (2/3 plans) |
 | 11. Language-Agnostic Specification | ○ planned |
 | 12. Rust Crate (Assay) | ○ planned |
 
@@ -92,6 +92,9 @@ NEXT_PHASE=10
 - DI extension methods namespace: Microsoft.Extensions.DependencyInjection (standard .NET convention)
 - AddCupelTracing uses TryAddTransient to avoid overriding user-provided ITraceCollector
 - ContextBudget is a registration-time parameter on AddCupelPipeline, not part of CupelOptions
+- TiktokenTokenCounter wraps Tokenizer (base class) not TiktokenTokenizer for field type flexibility
+- Microsoft.ML.Tokenizers throws NotSupportedException for unrecognized model/encoding names
+- Tiktoken bridge has no hard dependency on data packages — consumers add O200kBase/Cl100kBase as needed
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
