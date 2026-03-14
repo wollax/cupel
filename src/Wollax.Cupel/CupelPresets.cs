@@ -6,6 +6,9 @@ namespace Wollax.Cupel;
 /// <summary>
 /// Provides opinionated preset policies for common LLM context management scenarios.
 /// Each preset configures scorers, slicer, and placer strategies tuned for a specific use case.
+/// All presets are marked <c>[Experimental]</c> with unique diagnostic IDs (CUPEL001–CUPEL007)
+/// because scorer weights are educated guesses, not empirically validated. Suppress the specific
+/// diagnostic ID to opt in: <c>#pragma warning disable CUPEL001</c>.
 /// </summary>
 public static class CupelPresets
 {

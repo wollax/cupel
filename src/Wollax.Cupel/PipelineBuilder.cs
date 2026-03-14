@@ -187,7 +187,10 @@ public sealed class PipelineBuilder
     /// <summary>
     /// Applies a <see cref="CupelPolicy"/> to this builder, translating all policy properties
     /// into equivalent builder calls. Uses the <see cref="AddScorer"/> path for scorers.
+    /// Clears any previously added scorers before applying the policy's scorers.
     /// Subsequent builder calls override policy-set values (last-write-wins).
+    /// Note: calling <see cref="UseGreedySlice"/> or <see cref="UseKnapsackSlice"/> after
+    /// <c>WithPolicy</c> will replace the slicer, including any quota wrapper set by the policy.
     /// </summary>
     /// <param name="policy">The policy to apply.</param>
     /// <returns>This builder for chaining.</returns>
@@ -195,6 +198,10 @@ public sealed class PipelineBuilder
     public PipelineBuilder WithPolicy(CupelPolicy policy)
     {
         ArgumentNullException.ThrowIfNull(policy);
+
+        // Clear previous scorer state so WithPolicy replaces rather than appends
+        _scorer = null;
+        _scorerEntries = null;
 
         for (var i = 0; i < policy.Scorers.Count; i++)
         {
@@ -252,7 +259,8 @@ public sealed class PipelineBuilder
             ScorerType.Recency => new RecencyScorer(),
             ScorerType.Priority => new PriorityScorer(),
             ScorerType.Kind => entry.KindWeights is not null ? new KindScorer(entry.KindWeights) : new KindScorer(),
-            ScorerType.Tag => new TagScorer(entry.TagWeights ?? throw new InvalidOperationException("TagWeights must be specified for Tag scorer type.")),
+            // ScorerEntry constructor guarantees TagWeights is non-null for Tag type
+            ScorerType.Tag => new TagScorer(entry.TagWeights!),
             ScorerType.Frequency => new FrequencyScorer(),
             ScorerType.Reflexive => new ReflexiveScorer(),
             _ => throw new ArgumentOutOfRangeException(nameof(entry), entry.Type, "Unknown ScorerType.")

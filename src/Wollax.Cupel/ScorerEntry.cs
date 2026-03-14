@@ -51,6 +51,9 @@ public sealed class ScorerEntry
         IReadOnlyDictionary<ContextKind, double>? kindWeights = null,
         IReadOnlyDictionary<string, double>? tagWeights = null)
     {
+        if (!Enum.IsDefined(type))
+            throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown ScorerType value.");
+
         if (!double.IsFinite(weight) || weight <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(weight),

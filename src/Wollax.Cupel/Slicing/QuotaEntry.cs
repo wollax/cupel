@@ -42,7 +42,8 @@ public sealed class QuotaEntry
         if (minPercent is null && maxPercent is null)
         {
             throw new ArgumentException(
-                "At least one of minPercent or maxPercent must be specified.");
+                "At least one of minPercent or maxPercent must be specified.",
+                nameof(minPercent));
         }
 
         if (minPercent is not null)

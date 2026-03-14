@@ -84,6 +84,11 @@ public sealed class CupelPolicy
     {
         ArgumentNullException.ThrowIfNull(scorers);
 
+        if (!Enum.IsDefined(slicerType))
+            throw new ArgumentOutOfRangeException(nameof(slicerType), slicerType, "Unknown SlicerType value.");
+        if (!Enum.IsDefined(placerType))
+            throw new ArgumentOutOfRangeException(nameof(placerType), placerType, "Unknown PlacerType value.");
+
         if (scorers.Count == 0)
         {
             throw new ArgumentException("Scorers must contain at least one entry.", nameof(scorers));

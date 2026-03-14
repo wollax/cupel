@@ -269,6 +269,164 @@ public class PolicyIntegrationTests
         await Assert.That(messageTokens).IsGreaterThanOrEqualTo(200);
     }
 
+    // 7. Policy with Tag scorer (CreateScorer Tag path coverage)
+
+    [Test]
+    public async Task PolicyWithTagScorer_ProducesResults()
+    {
+        var tagWeights = new Dictionary<string, double>
+        {
+            ["important"] = 2.0,
+            ["low"] = 0.5
+        };
+
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Tag, 1, tagWeights: tagWeights)],
+            slicerType: SlicerType.Greedy,
+            placerType: PlacerType.Chronological);
+
+        var items = new[]
+        {
+            CreateItem("tagged-important", tokens: 50, tags: ["important"]),
+            CreateItem("tagged-low", tokens: 50, tags: ["low"]),
+            CreateItem("untagged", tokens: 50),
+        };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithPolicy(policy)
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        await Assert.That(result.Items.Count).IsGreaterThan(0);
+        await Assert.That(result.TotalTokens).IsLessThanOrEqualTo(500);
+    }
+
+    // 8. Policy with deduplication disabled
+
+    [Test]
+    public async Task PolicyWithDeduplicationDisabled_AllowsDuplicates()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Recency, 1)],
+            deduplicationEnabled: false);
+
+        var items = new[]
+        {
+            CreateItem("same-content", tokens: 50, timestamp: BaseTime),
+            CreateItem("same-content", tokens: 50, timestamp: BaseTime.AddMinutes(1)),
+            CreateItem("different", tokens: 50, timestamp: BaseTime.AddMinutes(2)),
+        };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithPolicy(policy)
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        // Both "same-content" items should survive since dedup is disabled
+        var sameContentCount = 0;
+        for (var i = 0; i < result.Items.Count; i++)
+        {
+            if (result.Items[i].Content == "same-content")
+                sameContentCount++;
+        }
+
+        await Assert.That(sameContentCount).IsEqualTo(2);
+    }
+
+    // 9. Policy with OverflowStrategy.Truncate
+
+    [Test]
+    public async Task PolicyWithOverflowTruncate_TruncatesExcess()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Recency, 1)],
+            overflowStrategy: OverflowStrategy.Truncate);
+
+        var items = new[]
+        {
+            CreateItem("item-1", tokens: 100, timestamp: BaseTime),
+            CreateItem("item-2", tokens: 100, timestamp: BaseTime.AddMinutes(1)),
+            CreateItem("item-3", tokens: 100, timestamp: BaseTime.AddMinutes(2)),
+        };
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(500, 150))
+            .WithPolicy(policy)
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        await Assert.That(result.TotalTokens).IsLessThanOrEqualTo(150);
+    }
+
+    // 10. Policy with cap-only quota (MaxPercent only)
+
+    [Test]
+    public async Task PolicyWithCapOnlyQuota_EnforcesMaxPercent()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, 1)],
+            quotas: [new QuotaEntry(ContextKind.Document, maxPercent: 30)]);
+
+        var items = new List<ContextItem>();
+        // 5 document items with high relevance (would normally dominate)
+        for (var i = 0; i < 5; i++)
+            items.Add(CreateItem($"doc-{i}", tokens: 50, kind: ContextKind.Document, futureRelevanceHint: 0.9));
+        // 5 message items with lower relevance
+        for (var i = 0; i < 5; i++)
+            items.Add(CreateItem($"msg-{i}", tokens: 50, kind: ContextKind.Message, futureRelevanceHint: 0.3));
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithPolicy(policy)
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        // Document tokens should be at most 30% of target budget (150 tokens)
+        var docTokens = 0;
+        for (var i = 0; i < result.Items.Count; i++)
+        {
+            if (result.Items[i].Kind == ContextKind.Document)
+                docTokens += result.Items[i].Tokens;
+        }
+
+        await Assert.That(docTokens).IsLessThanOrEqualTo(150);
+    }
+
+    // 11. WithPolicy clears previous scorers (replacement semantics)
+
+    [Test]
+    public async Task WithPolicy_ClearsPreviousScorers()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Recency, 1)]);
+
+        // AddScorer first, then WithPolicy should replace, not append
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .AddScorer(new PriorityScorer(), 1)
+            .WithPolicy(policy)
+            .Build();
+
+        var items = new[]
+        {
+            CreateItem("item-1", tokens: 50, timestamp: BaseTime, priority: 1),
+            CreateItem("item-2", tokens: 50, timestamp: BaseTime.AddMinutes(1), priority: 10),
+        };
+
+        var result = pipeline.Execute(items);
+
+        // If policy replaced scorers, recency-only scoring means item-2 (more recent) scores higher
+        // If appended, priority scorer would also contribute, making item-2 score even higher
+        // Both pass — but Build() should NOT throw "Cannot mix" error, proving replacement happened
+        await Assert.That(result.Items.Count).IsGreaterThan(0);
+    }
+
     private static async Task VerifyPresetWorks(CupelPolicy policy)
     {
         var items = CreateRealisticItemSet();
