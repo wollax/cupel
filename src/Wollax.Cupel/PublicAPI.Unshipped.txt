@@ -289,3 +289,11 @@ Wollax.Cupel.CupelOptions.CupelOptions() -> void
 Wollax.Cupel.CupelOptions.AddPolicy(string! intent, Wollax.Cupel.CupelPolicy! policy) -> Wollax.Cupel.CupelOptions!
 Wollax.Cupel.CupelOptions.GetPolicy(string! intent) -> Wollax.Cupel.CupelPolicy!
 Wollax.Cupel.CupelOptions.TryGetPolicy(string! intent, out Wollax.Cupel.CupelPolicy? policy) -> bool
+Wollax.Cupel.ContextKindJsonConverter
+Wollax.Cupel.ContextKindJsonConverter.ContextKindJsonConverter() -> void
+override Wollax.Cupel.ContextKindJsonConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> Wollax.Cupel.ContextKind!
+override Wollax.Cupel.ContextKindJsonConverter.Write(System.Text.Json.Utf8JsonWriter! writer, Wollax.Cupel.ContextKind! value, System.Text.Json.JsonSerializerOptions! options) -> void
+Wollax.Cupel.ContextKindDictionaryConverter
+Wollax.Cupel.ContextKindDictionaryConverter.ContextKindDictionaryConverter() -> void
+override Wollax.Cupel.ContextKindDictionaryConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>!
+override Wollax.Cupel.ContextKindDictionaryConverter.Write(System.Text.Json.Utf8JsonWriter! writer, System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, int>! value, System.Text.Json.JsonSerializerOptions! options) -> void

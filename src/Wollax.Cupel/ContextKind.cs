@@ -42,7 +42,10 @@ public sealed class ContextKind : IEquatable<ContextKind>
         => !Equals(left, right);
 }
 
-internal sealed class ContextKindJsonConverter : JsonConverter<ContextKind>
+/// <summary>
+/// JSON converter for <see cref="ContextKind"/> that serializes/deserializes as a plain string value.
+/// </summary>
+public sealed class ContextKindJsonConverter : JsonConverter<ContextKind>
 {
     public override ContextKind Read(
         ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

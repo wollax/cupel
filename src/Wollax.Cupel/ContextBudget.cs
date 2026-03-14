@@ -111,7 +111,11 @@ public sealed class ContextBudget : IEquatable<ContextBudget>
     }
 }
 
-internal sealed class ContextKindDictionaryConverter : JsonConverter<IReadOnlyDictionary<ContextKind, int>>
+/// <summary>
+/// JSON converter for <see cref="IReadOnlyDictionary{ContextKind, Int32}"/> that serializes
+/// ContextKind keys as their string values.
+/// </summary>
+public sealed class ContextKindDictionaryConverter : JsonConverter<IReadOnlyDictionary<ContextKind, int>>
 {
     public override IReadOnlyDictionary<ContextKind, int> Read(
         ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
