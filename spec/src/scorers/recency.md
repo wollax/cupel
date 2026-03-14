@@ -60,9 +60,7 @@ When multiple items share the same timestamp, they receive the same rank (the co
 | `item.timestamp` is null | 0.0 |
 | All items have null timestamps | All score 0.0 |
 | Only one item has a timestamp | That item scores 1.0 |
-| All items share the same timestamp | All score 1.0 (countWithTimestamp > 1, but rank = 0 for each, so... see below) |
-
-**Correction for identical timestamps:** If all *N* timestamped items share the same timestamp, then for each item `rank = 0` (no item is strictly older), so `score = 0 / (N - 1) = 0.0`. This is correct — when all items are equally recent, none is "more recent" than any other.
+| All items share the same timestamp | All score 0.0 (rank = 0 for each, since no item is strictly older) |
 
 **Note:** The single-item case returns 1.0 (not 0.0) because a lone timestamped item is trivially the most recent.
 
