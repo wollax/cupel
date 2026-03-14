@@ -30,6 +30,10 @@ public sealed class ContextBudget : IEquatable<ContextBudget>
     [JsonPropertyName("estimationSafetyMarginPercent")]
     public double EstimationSafetyMarginPercent { get; }
 
+    /// <summary>Pre-computed sum of all <see cref="ReservedSlots"/> values. Avoids repeated iteration during pipeline execution.</summary>
+    [JsonIgnore]
+    internal int TotalReservedTokens { get; }
+
     [JsonConstructor]
     public ContextBudget(
         int maxTokens,
@@ -71,6 +75,11 @@ public sealed class ContextBudget : IEquatable<ContextBudget>
         OutputReserve = outputReserve;
         ReservedSlots = reservedSlots ?? new Dictionary<ContextKind, int>();
         EstimationSafetyMarginPercent = estimationSafetyMarginPercent;
+
+        var total = 0;
+        foreach (var kvp in ReservedSlots)
+            total += kvp.Value;
+        TotalReservedTokens = total;
     }
 
     public bool Equals(ContextBudget? other)

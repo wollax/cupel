@@ -821,6 +821,7 @@ public class CupelPipelineTests
         var pipelineWithReserved = CupelPipeline.CreateBuilder()
             .WithBudget(budgetWithReserved)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var resultWithReserved = pipelineWithReserved.Execute(items);
@@ -830,6 +831,7 @@ public class CupelPipelineTests
         var pipelineBaseline = CupelPipeline.CreateBuilder()
             .WithBudget(budgetBaseline)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var resultBaseline = pipelineBaseline.Execute(items);
@@ -862,11 +864,14 @@ public class CupelPipelineTests
         var pipeline = CupelPipeline.CreateBuilder()
             .WithBudget(budget)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var result = pipeline.Execute(items);
 
         await Assert.That(result.Items.Count).IsEqualTo(7);
+        // Verify TotalTokens is within effective budget
+        await Assert.That(result.TotalTokens).IsEqualTo(700);
     }
 
     [Test]
@@ -887,11 +892,13 @@ public class CupelPipelineTests
         var pipelineEmpty = CupelPipeline.CreateBuilder()
             .WithBudget(budgetExplicitEmpty)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var pipelineDefault = CupelPipeline.CreateBuilder()
             .WithBudget(budgetDefault)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var resultEmpty = pipelineEmpty.Execute(items);
@@ -921,15 +928,17 @@ public class CupelPipelineTests
         var pipelineWithMargin = CupelPipeline.CreateBuilder()
             .WithBudget(budgetWithMargin)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var resultWithMargin = pipelineWithMargin.Execute(items);
 
-        // Baseline without margin
+        // Baseline without margin — selects all 10 items (10 × 100 = 1000, exactly fitting target)
         var budgetBaseline = new ContextBudget(maxTokens: 1000, targetTokens: 1000);
         var pipelineBaseline = CupelPipeline.CreateBuilder()
             .WithBudget(budgetBaseline)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var resultBaseline = pipelineBaseline.Execute(items);
@@ -960,10 +969,13 @@ public class CupelPipelineTests
         var pipeline = CupelPipeline.CreateBuilder()
             .WithBudget(budget)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var result = pipeline.Execute(items);
 
+        // Correct order: (1000 - 200) * 0.75 = 600, fits 6
+        // Wrong order would give: (1000 * 0.75) - 200 = 550, fits 5
         await Assert.That(result.Items.Count).IsEqualTo(6);
     }
 
@@ -985,11 +997,13 @@ public class CupelPipelineTests
         var pipelineZero = CupelPipeline.CreateBuilder()
             .WithBudget(budgetZeroMargin)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var pipelineDefault = CupelPipeline.CreateBuilder()
             .WithBudget(budgetDefault)
             .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
             .Build();
 
         var resultZero = pipelineZero.Execute(items);
@@ -1026,7 +1040,7 @@ public class CupelPipelineTests
     }
 
     [Test]
-    public async Task ExecuteStreamAsync_WithSafetyMargin_ReducesEffectiveBudget()
+    public async Task ExecuteStreamAsync_WithEstimationSafetyMargin_ReducesEffectiveBudget()
     {
         // Streaming path should also apply safety margin
         var items = new ContextItem[10];
@@ -1074,6 +1088,89 @@ public class CupelPipelineTests
 
         // effectiveTarget = (1000 - 200) * 0.75 = 600, fits 6 items
         await Assert.That(result.Items.Count).IsEqualTo(6);
+    }
+
+    // Edge case: reserved slots exceed remaining budget → effectiveMax clamps to 0
+
+    [Test]
+    public async Task Execute_WithReservedSlotsExceedingBudget_SelectsNoItems()
+    {
+        // reservedSlots sum (800) > maxTokens - outputReserve (1000 - 0 = 1000),
+        // but effectiveMax = max(0, 1000 - 0 - 0 - 800) = 200, effectiveTarget = max(0, 500 - 0 - 800) = 0
+        // With effectiveTarget = 0, slicer selects no items
+        var items = new List<ContextItem>();
+        for (var i = 0; i < 5; i++)
+            items.Add(CreateItem($"item-{i}", tokens: 100, futureRelevanceHint: 0.5));
+
+        var budget = new ContextBudget(
+            maxTokens: 1000,
+            targetTokens: 500,
+            reservedSlots: new Dictionary<ContextKind, int> { [ContextKind.Message] = 800 });
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(budget)
+            .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        await Assert.That(result.Items.Count).IsEqualTo(0);
+        await Assert.That(result.TotalTokens).IsEqualTo(0);
+    }
+
+    // ReservedSlots subtracts total regardless of item kinds (kind-agnostic)
+
+    [Test]
+    public async Task Execute_WithReservedSlotsForDifferentKind_StillReducesBudget()
+    {
+        // Reserved slots are for "tool_result" kind, but all items are "message" kind.
+        // The pipeline subtracts ALL reserved values regardless of item kinds present.
+        var items = new List<ContextItem>();
+        for (var i = 0; i < 10; i++)
+            items.Add(CreateItem($"item-{i}", tokens: 100, futureRelevanceHint: 0.5, kind: ContextKind.Message));
+
+        var budget = new ContextBudget(
+            maxTokens: 1000,
+            targetTokens: 1000,
+            reservedSlots: new Dictionary<ContextKind, int> { [new ContextKind("tool_result")] = 300 });
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(budget)
+            .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        // effectiveTarget = 1000 - 300 = 700, fits 7 items even though no tool_result items exist
+        await Assert.That(result.Items.Count).IsEqualTo(7);
+    }
+
+    // Pinned validation accounts for reserved slots
+
+    [Test]
+    public async Task Execute_WithPinnedItemsExceedingBudgetAfterReservedSlots_Throws()
+    {
+        // maxTokens=1000, reservedSlots=600, pinnedTokens=500
+        // Available for pinned = 1000 - 0 - 600 = 400, but pinned needs 500 → should throw
+        var items = new List<ContextItem>
+        {
+            CreateItem("pinned-1", tokens: 500, pinned: true, futureRelevanceHint: 1.0)
+        };
+
+        var budget = new ContextBudget(
+            maxTokens: 1000,
+            targetTokens: 1000,
+            reservedSlots: new Dictionary<ContextKind, int> { [ContextKind.Message] = 600 });
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(budget)
+            .WithScorer(new ReflexiveScorer())
+            .UseGreedySlice()
+            .Build();
+
+        await Assert.That(() => pipeline.Execute(items)).Throws<InvalidOperationException>();
     }
 
     // Stream helper

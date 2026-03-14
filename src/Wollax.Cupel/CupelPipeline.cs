@@ -135,11 +135,11 @@ public sealed class CupelPipeline
         for (var i = 0; i < pinned.Count; i++)
             pinnedTokens += pinned[i].Tokens;
 
-        var availableForPinned = _budget.MaxTokens - _budget.OutputReserve;
+        var availableForPinned = _budget.MaxTokens - _budget.OutputReserve - _budget.TotalReservedTokens;
         if (pinnedTokens > availableForPinned)
         {
             throw new InvalidOperationException(
-                $"Pinned items require {pinnedTokens} tokens, but only {availableForPinned} tokens are available (MaxTokens={_budget.MaxTokens} - OutputReserve={_budget.OutputReserve}).");
+                $"Pinned items require {pinnedTokens} tokens, but only {availableForPinned} tokens are available (MaxTokens={_budget.MaxTokens} - OutputReserve={_budget.OutputReserve} - ReservedSlots={_budget.TotalReservedTokens}).");
         }
 
         // SCORE: score each scoreable item
@@ -238,20 +238,15 @@ public sealed class CupelPipeline
         }
 
         // SLICE: create adjusted budget and slice
-        var reservedTokens = 0;
-        foreach (var kvp in _budget.ReservedSlots)
-        {
-            reservedTokens += kvp.Value;
-        }
-
-        var effectiveMax = Math.Max(0, _budget.MaxTokens - _budget.OutputReserve - pinnedTokens - reservedTokens);
-        var effectiveTarget = Math.Max(0, _budget.TargetTokens - pinnedTokens - reservedTokens);
+        var effectiveMax = Math.Max(0, _budget.MaxTokens - _budget.OutputReserve - pinnedTokens - _budget.TotalReservedTokens);
+        var effectiveTarget = Math.Max(0, _budget.TargetTokens - pinnedTokens - _budget.TotalReservedTokens);
 
         if (_budget.EstimationSafetyMarginPercent > 0)
         {
             var multiplier = 1.0 - _budget.EstimationSafetyMarginPercent / 100.0;
             effectiveMax = (int)(effectiveMax * multiplier);
             effectiveTarget = (int)(effectiveTarget * multiplier);
+            effectiveTarget = Math.Min(effectiveTarget, effectiveMax);
         }
 
         effectiveTarget = Math.Min(effectiveTarget, effectiveMax);
@@ -502,20 +497,15 @@ public sealed class CupelPipeline
         var scoringBatchSize = _asyncSlicer is StreamSlice ss ? ss.BatchSize : 32;
         var scoredStream = ScoreStreamAsync(source, scoringBatchSize, cancellationToken);
 
-        var streamReservedTokens = 0;
-        foreach (var kvp in _budget.ReservedSlots)
-        {
-            streamReservedTokens += kvp.Value;
-        }
-
-        var effectiveMax = Math.Max(0, _budget.MaxTokens - _budget.OutputReserve - streamReservedTokens);
-        var effectiveTarget = Math.Max(0, _budget.TargetTokens - streamReservedTokens);
+        var effectiveMax = Math.Max(0, _budget.MaxTokens - _budget.OutputReserve - _budget.TotalReservedTokens);
+        var effectiveTarget = Math.Max(0, _budget.TargetTokens - _budget.TotalReservedTokens);
 
         if (_budget.EstimationSafetyMarginPercent > 0)
         {
             var multiplier = 1.0 - _budget.EstimationSafetyMarginPercent / 100.0;
             effectiveMax = (int)(effectiveMax * multiplier);
             effectiveTarget = (int)(effectiveTarget * multiplier);
+            effectiveTarget = Math.Min(effectiveTarget, effectiveMax);
         }
 
         effectiveTarget = Math.Min(effectiveTarget, effectiveMax);
