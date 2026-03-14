@@ -34,11 +34,15 @@ public class TraceEventTests
     {
         var values = Enum.GetValues<ExclusionReason>();
 
-        await Assert.That(values).Contains(ExclusionReason.LowScore);
         await Assert.That(values).Contains(ExclusionReason.BudgetExceeded);
-        await Assert.That(values).Contains(ExclusionReason.Duplicate);
-        await Assert.That(values).Contains(ExclusionReason.QuotaExceeded);
-        await Assert.That(values.Length).IsEqualTo(4);
+        await Assert.That(values).Contains(ExclusionReason.ScoredTooLow);
+        await Assert.That(values).Contains(ExclusionReason.Deduplicated);
+        await Assert.That(values).Contains(ExclusionReason.QuotaCapExceeded);
+        await Assert.That(values).Contains(ExclusionReason.QuotaRequireDisplaced);
+        await Assert.That(values).Contains(ExclusionReason.NegativeTokens);
+        await Assert.That(values).Contains(ExclusionReason.PinnedOverride);
+        await Assert.That(values).Contains(ExclusionReason.Filtered);
+        await Assert.That(values.Length).IsEqualTo(8);
     }
 
     [Test]

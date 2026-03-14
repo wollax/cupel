@@ -68,10 +68,29 @@ Wollax.Cupel.Diagnostics.TraceDetailLevel
 Wollax.Cupel.Diagnostics.TraceDetailLevel.Stage = 0 -> Wollax.Cupel.Diagnostics.TraceDetailLevel
 Wollax.Cupel.Diagnostics.TraceDetailLevel.Item = 1 -> Wollax.Cupel.Diagnostics.TraceDetailLevel
 Wollax.Cupel.Diagnostics.ExclusionReason
-Wollax.Cupel.Diagnostics.ExclusionReason.LowScore = 0 -> Wollax.Cupel.Diagnostics.ExclusionReason
-Wollax.Cupel.Diagnostics.ExclusionReason.BudgetExceeded = 1 -> Wollax.Cupel.Diagnostics.ExclusionReason
-Wollax.Cupel.Diagnostics.ExclusionReason.Duplicate = 2 -> Wollax.Cupel.Diagnostics.ExclusionReason
-Wollax.Cupel.Diagnostics.ExclusionReason.QuotaExceeded = 3 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.BudgetExceeded = 0 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.ScoredTooLow = 1 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.Deduplicated = 2 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.QuotaCapExceeded = 3 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.QuotaRequireDisplaced = 4 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.NegativeTokens = 5 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.PinnedOverride = 6 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.Filtered = 7 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.InclusionReason.Scored = 0 -> Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.InclusionReason.Pinned = 1 -> Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.InclusionReason.ZeroToken = 2 -> Wollax.Cupel.Diagnostics.InclusionReason
+Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.Diagnostics.OverflowStrategy.Throw = 0 -> Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.Diagnostics.OverflowStrategy.Truncate = 1 -> Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.Diagnostics.OverflowStrategy.Proceed = 2 -> Wollax.Cupel.Diagnostics.OverflowStrategy
+Wollax.Cupel.Diagnostics.OverflowEvent
+Wollax.Cupel.Diagnostics.OverflowEvent.TokensOverBudget.get -> int
+Wollax.Cupel.Diagnostics.OverflowEvent.TokensOverBudget.init -> void
+Wollax.Cupel.Diagnostics.OverflowEvent.OverflowingItems.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.Diagnostics.OverflowEvent.OverflowingItems.init -> void
+Wollax.Cupel.Diagnostics.OverflowEvent.Budget.get -> Wollax.Cupel.ContextBudget!
+Wollax.Cupel.Diagnostics.OverflowEvent.Budget.init -> void
 Wollax.Cupel.Diagnostics.TraceEvent
 Wollax.Cupel.Diagnostics.TraceEvent.TraceEvent() -> void
 Wollax.Cupel.Diagnostics.TraceEvent.Stage.get -> Wollax.Cupel.Diagnostics.PipelineStage
