@@ -2,17 +2,17 @@
 
 ## Current Position
 
-Phase: 12 of 12 — Rust Crate (Assay)
+Phase: 13 of 15 — Budget Contract Implementation
 Milestone: v1.0 Core Library
-Plan: 3 of 3
-Status: Complete
-Last activity: 2026-03-14 — Completed 12-03-PLAN.md (Conformance Test Suite)
+Plan: 0 of TBD
+Status: Planning
+Last activity: 2026-03-14 — Gap closure phases created from audit
 
-Progress: ██████████████████████████████████████████ 100% (40/40 plans)
+Progress: ██████████████████████████████████████████ 100% (40/40 plans) + 3 gap closure phases
 
 ## Phase Overview
 
-NEXT_PHASE=none (milestone complete)
+NEXT_PHASE=13
 
 | Phase | Status |
 |-------|--------|
@@ -28,6 +28,9 @@ NEXT_PHASE=none (milestone complete)
 | 10. Companion Packages & Release | ● complete (3/3 plans) |
 | 11. Language-Agnostic Specification | ● complete (3/3 plans) |
 | 12. Rust Crate (Assay) | ● complete (3/3 plans) |
+| 13. Budget Contract Implementation | ○ planned |
+| 14. Policy Type Completeness | ○ planned |
+| 15. Conformance Hardening | ○ planned |
 
 ## Accumulated Context
 
