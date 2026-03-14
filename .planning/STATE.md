@@ -2,17 +2,17 @@
 
 ## Current Position
 
-Phase: 11 of 12 — Language-Agnostic Specification
+Phase: 12 of 12 — Rust Crate (Assay)
 Milestone: v1.0 Core Library
 Plan: 3 of 3
 Status: Complete
-Last activity: 2026-03-14 — Completed 11-03-PLAN.md (Conformance Suite & GitHub Pages Workflow)
+Last activity: 2026-03-14 — Completed 12-03-PLAN.md (Conformance Test Suite)
 
-Progress: █████████████████████████████████████████ 100% (37/37 plans)
+Progress: ██████████████████████████████████████████ 100% (40/40 plans)
 
 ## Phase Overview
 
-NEXT_PHASE=12
+NEXT_PHASE=none (milestone complete)
 
 | Phase | Status |
 |-------|--------|
@@ -27,7 +27,7 @@ NEXT_PHASE=12
 | 9. Serialization & JSON Package | ● complete (3/3 plans) |
 | 10. Companion Packages & Release | ● complete (3/3 plans) |
 | 11. Language-Agnostic Specification | ● complete (3/3 plans) |
-| 12. Rust Crate (Assay) | ○ planned |
+| 12. Rust Crate (Assay) | ● complete (3/3 plans) |
 
 ## Accumulated Context
 
@@ -100,6 +100,15 @@ NEXT_PHASE=12
 - Spec uses mdBook for publication, TOML for conformance test vectors, behavioral-equivalence conformance model
 - Spec mandates IEEE 754 64-bit doubles, stable sort with (Score, Index) tiebreaking, byte-exact ordinal deduplication
 - Conformance suite: 28 required + 9 optional TOML test vectors covering all scorers, slicers, placers, and pipeline
+- Rust Scorer trait requires Any supertrait + as_any() method for CompositeScorer DFS cycle detection downcasting
+- Rust ContextItem metadata uses HashMap<String, String> instead of serde_json::Value to avoid public serde_json dependency
+- Rust cycle detection uses usize (data pointer cast) in HashSet to avoid lifetime issues with raw fat pointers
+- Rust Pipeline uses Box<dyn Scorer>, Box<dyn Slicer>, Box<dyn Placer> for trait object composition
+- Rust QuotaSlice sub-budget uses ContextBudget::new with maxTokens=cap, targetTokens=kindBudget (cap may be < kindBudget when proportional exceeds cap)
+- Rust UShapedPlacer uses Vec<Option<ContextItem>> for result array to avoid unsafe uninitialized memory
+- Rust place stage looks up original scores by content match when re-associating sliced items with scores
+- Rust conformance test runner uses toml::Value for dynamic TOML parsing with factory functions for scorers/slicers/placers
+- All 28 required conformance tests pass — first non-C# implementation validated against the spec
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
