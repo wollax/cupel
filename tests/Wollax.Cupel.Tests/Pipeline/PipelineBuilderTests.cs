@@ -1,3 +1,5 @@
+#pragma warning disable CUPEL001, CUPEL002, CUPEL003, CUPEL004, CUPEL005, CUPEL006, CUPEL007
+
 using TUnit.Core;
 using TUnit.Assertions;
 using TUnit.Assertions.Extensions;
@@ -440,6 +442,146 @@ public class PipelineBuilderTests
 
         await Assert.That(() => builder.WithAsyncSlicer(null!))
             .Throws<ArgumentNullException>();
+    }
+
+    // WithPolicy tests
+
+    [Test]
+    public async Task WithPolicy_NullPolicy_Throws()
+    {
+        var builder = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget());
+
+        await Assert.That(() => builder.WithPolicy(null!))
+            .Throws<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task WithPolicy_ValidPolicy_BuildsSuccessfully()
+    {
+        var policy = new CupelPolicy(
+            scorers: [
+                new ScorerEntry(ScorerType.Recency, 3),
+                new ScorerEntry(ScorerType.Kind, 1),
+            ]);
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        await Assert.That(pipeline).IsNotNull();
+    }
+
+    [Test]
+    public async Task WithPolicy_SetsSlicerFromPolicy()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Priority, 1)],
+            slicerType: SlicerType.Knapsack,
+            knapsackBucketSize: 50);
+
+        var item = new ContextItem { Content = "test", Tokens = 100, Priority = 5 };
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        var result = pipeline.Execute([item]);
+
+        await Assert.That(result.Items.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task WithPolicy_SetsPlacerFromPolicy()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, 1)],
+            placerType: PlacerType.UShaped);
+
+        var item = new ContextItem { Content = "test", Tokens = 10, FutureRelevanceHint = 0.8 };
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .Build();
+
+        var result = pipeline.Execute([item]);
+
+        await Assert.That(result.Items.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task WithPolicy_OverrideAfterPolicy()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, 1)],
+            placerType: PlacerType.Chronological);
+
+        var customPlacerUsed = false;
+        var placer = new DelegatePlacer((items, trace) =>
+        {
+            customPlacerUsed = true;
+            var result = new ContextItem[items.Count];
+            for (var i = 0; i < items.Count; i++)
+                result[i] = items[i].Item;
+            return result;
+        });
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(CreateBudget())
+            .WithPolicy(policy)
+            .WithPlacer(placer)
+            .Build();
+
+        pipeline.Execute([CreateItem()]);
+
+        await Assert.That(customPlacerUsed).IsTrue();
+    }
+
+    [Test]
+    public async Task WithPolicy_WithQuotas_AppliesQuotas()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, 1)],
+            quotas: [new QuotaEntry(ContextKind.Message, minPercent: 30)]);
+
+        var messages = new List<ContextItem>();
+        for (var i = 0; i < 5; i++)
+            messages.Add(new ContextItem { Content = $"msg-{i}", Tokens = 50, Kind = ContextKind.Message, FutureRelevanceHint = 0.8 });
+        var docs = new List<ContextItem>();
+        for (var i = 0; i < 5; i++)
+            docs.Add(new ContextItem { Content = $"doc-{i}", Tokens = 50, Kind = ContextKind.Document, FutureRelevanceHint = 0.8 });
+
+        var items = new List<ContextItem>();
+        items.AddRange(messages);
+        items.AddRange(docs);
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(new ContextBudget(1000, 500))
+            .WithPolicy(policy)
+            .Build();
+
+        var result = pipeline.Execute(items);
+
+        var messageTokens = 0;
+        for (var i = 0; i < result.Items.Count; i++)
+        {
+            if (result.Items[i].Kind == ContextKind.Message)
+                messageTokens += result.Items[i].Tokens;
+        }
+        await Assert.That(messageTokens).IsGreaterThanOrEqualTo(150);
+    }
+
+    [Test]
+    public async Task WithPolicy_StillRequiresBudget()
+    {
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Recency, 1)]);
+
+        var builder = CupelPipeline.CreateBuilder()
+            .WithPolicy(policy);
+
+        await Assert.That(() => builder.Build()).Throws<InvalidOperationException>();
     }
 
     // Test helpers
