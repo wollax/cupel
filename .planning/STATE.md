@@ -4,15 +4,15 @@
 
 Phase: 9 of 12 — Serialization & JSON Package
 Milestone: v1.0 Core Library
-Plan: 2 of 3
-Status: In progress
-Last activity: 2026-03-14 — Completed 09-02-PLAN.md (Custom Scorer Registration & Unknown-Type Errors)
+Plan: 3 of 3
+Status: Complete
+Last activity: 2026-03-14 — Completed 09-03-PLAN.md (Path-Aware Validation Error Handling)
 
-Progress: █████████████████████████████████░░░░░ 88% (30/34 plans)
+Progress: ██████████████████████████████████░░░░ 91% (31/34 plans)
 
 ## Phase Overview
 
-NEXT_PHASE=9
+NEXT_PHASE=10
 
 | Phase | Status |
 |-------|--------|
@@ -24,7 +24,7 @@ NEXT_PHASE=9
 | 6. Advanced Slicers & Quota System | ● complete (5/5 plans) |
 | 7. Explainability & Overflow Handling | ● complete (3/3 plans) |
 | 8. Policy System & Named Presets | ● complete (3/3 plans) |
-| 9. Serialization & JSON Package | ◐ in progress (2/3 plans) |
+| 9. Serialization & JSON Package | ● complete (3/3 plans) |
 | 10. Companion Packages & Release | ○ planned |
 | 11. Language-Agnostic Specification | ○ planned |
 | 12. Rust Crate (Assay) | ○ planned |
@@ -87,6 +87,8 @@ NEXT_PHASE=9
 - RegisterScorer stores all factories as Func<JsonElement?, IScorer> internally; parameterless overload wraps via _ => factory()
 - Unknown scorer type detection uses JsonDocument.Parse on raw JSON to extract type names and compare against built-in set
 - Built-in scorer type names hardcoded as string array matching [JsonStringEnumMemberName] values on ScorerType
+- .NET 10 STJ does NOT wrap JsonConstructor ArgumentException in JsonException — exceptions propagate unwrapped
+- CupelJsonSerializer facade catches ArgumentException from constructors and wraps in JsonException with `$:` path prefix
 
 ### Roadmap Evolution
 - Phase 11 added: Language-Agnostic Specification — formal spec for Cupel's algorithm, enabling multi-language implementations
