@@ -11,10 +11,10 @@ mod conformance {
     use toml::Value;
 
     use cupel::{
-        ChronologicalPlacer, CompositeScorer, ContextItem, ContextItemBuilder,
-        ContextKind, FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice, Placer,
-        PriorityScorer, QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer,
-        Scorer, ScoredItem, Slicer, TagScorer, UShapedPlacer,
+        ChronologicalPlacer, CompositeScorer, ContextItem, ContextItemBuilder, ContextKind,
+        FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice, Placer, PriorityScorer,
+        QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer, ScoredItem, Scorer,
+        Slicer, TagScorer, UShapedPlacer,
     };
 
     /// Load a TOML test vector from a path relative to the conformance/required/ directory.
@@ -155,8 +155,7 @@ mod conformance {
                         .expect("kind scorer needs config.weights");
                     let mut weights = HashMap::new();
                     for entry in weights_arr {
-                        let kind =
-                            entry["kind"].as_str().expect("weight entry missing kind");
+                        let kind = entry["kind"].as_str().expect("weight entry missing kind");
                         let weight = entry["weight"]
                             .as_float()
                             .or_else(|| entry["weight"].as_integer().map(|i| i as f64))
@@ -192,8 +191,7 @@ mod conformance {
                 let entries: Vec<(Box<dyn Scorer>, f64)> = scorers_arr
                     .iter()
                     .map(|entry| {
-                        let child_type =
-                            entry["type"].as_str().expect("scorer entry missing type");
+                        let child_type = entry["type"].as_str().expect("scorer entry missing type");
                         let weight = entry["weight"]
                             .as_float()
                             .or_else(|| entry["weight"].as_integer().map(|i| i as f64))
@@ -257,11 +255,7 @@ mod conformance {
                             .as_float()
                             .or_else(|| q["cap"].as_integer().map(|i| i as f64))
                             .expect("quota missing cap");
-                        QuotaEntry::new(
-                            ContextKind::new(kind).unwrap(),
-                            require,
-                            cap,
-                        ).unwrap()
+                        QuotaEntry::new(ContextKind::new(kind).unwrap(), require, cap).unwrap()
                     })
                     .collect();
 

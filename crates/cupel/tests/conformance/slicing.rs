@@ -23,7 +23,11 @@ fn run_slicing_test(vector_path: &str) {
         .as_array()
         .expect("missing expected.selected_contents")
         .iter()
-        .map(|v| v.as_str().expect("expected content must be string").to_owned())
+        .map(|v| {
+            v.as_str()
+                .expect("expected content must be string")
+                .to_owned()
+        })
         .collect();
 
     assert_set_eq(&expected_contents, &actual_contents);

@@ -1,5 +1,5 @@
-use cupel::{ContextItemBuilder, ScoredItem};
 use chrono::{DateTime, Utc};
+use cupel::{ContextItemBuilder, ScoredItem};
 
 use super::{assert_ordered_eq, build_placer, load_vector};
 
@@ -53,7 +53,11 @@ fn run_placing_test(vector_path: &str) {
         .as_array()
         .expect("missing expected.ordered_contents")
         .iter()
-        .map(|v| v.as_str().expect("expected content must be string").to_owned())
+        .map(|v| {
+            v.as_str()
+                .expect("expected content must be string")
+                .to_owned()
+        })
         .collect();
 
     assert_ordered_eq(&expected_contents, &actual_contents);

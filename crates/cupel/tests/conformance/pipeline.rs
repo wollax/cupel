@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use cupel::{ContextBudget, OverflowStrategy, Pipeline};
 
-use super::{assert_ordered_eq, build_items, build_placer_by_type, build_scorer_by_type, build_slicer_by_type, load_vector};
+use super::{
+    assert_ordered_eq, build_items, build_placer_by_type, build_scorer_by_type,
+    build_slicer_by_type, load_vector,
+};
 
 fn build_pipeline_from_config(vector: &toml::Value) -> Pipeline {
     let config = vector.get("config").expect("missing [config]");
@@ -85,9 +88,14 @@ fn run_pipeline_test(vector_path: &str) {
         .and_then(|v| v.as_integer())
         .unwrap_or(0);
 
-    let budget =
-        ContextBudget::new(max_tokens, target_tokens, output_reserve, HashMap::new(), 0.0)
-            .expect("budget should be valid");
+    let budget = ContextBudget::new(
+        max_tokens,
+        target_tokens,
+        output_reserve,
+        HashMap::new(),
+        0.0,
+    )
+    .expect("budget should be valid");
 
     let result = pipeline
         .run(&items, &budget)
