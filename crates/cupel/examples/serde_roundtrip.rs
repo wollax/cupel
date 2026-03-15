@@ -58,7 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         6000, // target_tokens
         2048, // output_reserve
         HashMap::new(),
-        5.0,  // estimation_safety_margin_percent
+        5.0, // estimation_safety_margin_percent
     )?;
 
     let budget_json = serde_json::to_string_pretty(&budget)?;
@@ -69,7 +69,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  max_tokens    = {}", restored_budget.max_tokens());
     println!("  target_tokens = {}", restored_budget.target_tokens());
     println!("  output_reserve = {}", restored_budget.output_reserve());
-    println!("  safety_margin  = {}%", restored_budget.estimation_safety_margin_percent());
+    println!(
+        "  safety_margin  = {}%",
+        restored_budget.estimation_safety_margin_percent()
+    );
     println!();
 
     // -- Part 3: Validation on deserialize ---------------------------------------------

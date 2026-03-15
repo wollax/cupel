@@ -36,11 +36,14 @@ fn main() -> Result<(), cupel::CupelError> {
         .pinned(true)
         .build()?,
         // User message: initial question
-        ContextItemBuilder::new("How do I implement the Iterator trait for a custom type?", 14)
-            .kind(ContextKind::new("Message")?)
-            .source(ContextSource::new("Chat")?)
-            .timestamp(now - chrono::Duration::minutes(4))
-            .build()?,
+        ContextItemBuilder::new(
+            "How do I implement the Iterator trait for a custom type?",
+            14,
+        )
+        .kind(ContextKind::new("Message")?)
+        .source(ContextSource::new("Chat")?)
+        .timestamp(now - chrono::Duration::minutes(4))
+        .build()?,
         // Assistant reply (a previous turn)
         ContextItemBuilder::new(
             "Implement `fn next(&mut self) -> Option<Self::Item>` on your type...",
@@ -61,14 +64,11 @@ fn main() -> Result<(), cupel::CupelError> {
         .tags(vec!["docs".to_string(), "stdlib".to_string()])
         .build()?,
         // Document: a relevant code file the user is working on
-        ContextItemBuilder::new(
-            "pub struct Fibonacci { curr: u64, next: u64 }",
-            350,
-        )
-        .kind(ContextKind::new("Document")?)
-        .source(ContextSource::new("Rag")?)
-        .timestamp(now - chrono::Duration::minutes(1))
-        .build()?,
+        ContextItemBuilder::new("pub struct Fibonacci { curr: u64, next: u64 }", 350)
+            .kind(ContextKind::new("Document")?)
+            .source(ContextSource::new("Rag")?)
+            .timestamp(now - chrono::Duration::minutes(1))
+            .build()?,
         // User follow-up: the most recent message
         ContextItemBuilder::new(
             "Can you show how to make Fibonacci implement Iterator with a stop condition?",
@@ -79,10 +79,13 @@ fn main() -> Result<(), cupel::CupelError> {
         .timestamp(now)
         .build()?,
         // Memory: a stored user preference
-        ContextItemBuilder::new("User prefers examples using iterators over manual loops", 10)
-            .kind(ContextKind::new("Memory")?)
-            .timestamp(now - chrono::Duration::hours(1))
-            .build()?,
+        ContextItemBuilder::new(
+            "User prefers examples using iterators over manual loops",
+            10,
+        )
+        .kind(ContextKind::new("Memory")?)
+        .timestamp(now - chrono::Duration::hours(1))
+        .build()?,
     ];
 
     println!("Created {} candidate context items\n", items.len());
@@ -148,7 +151,11 @@ fn main() -> Result<(), cupel::CupelError> {
         );
     }
 
-    println!("\nTotal tokens used: {} / {} target", total_tokens, budget.target_tokens());
+    println!(
+        "\nTotal tokens used: {} / {} target",
+        total_tokens,
+        budget.target_tokens()
+    );
 
     Ok(())
 }

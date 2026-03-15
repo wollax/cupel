@@ -170,9 +170,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — Write crate README with quickstart examples, wire lib.rs crate docs, configure docs.rs metadata
-- [ ] 21-02-PLAN.md — Add module-level doc comments and compilable doctests to all public modules, structs, and traits
-- [ ] 21-03-PLAN.md — Create three standalone runnable examples (basic_pipeline, serde_roundtrip, quota_slicing)
+- [x] 21-01-PLAN.md — Write crate README with quickstart examples, wire lib.rs crate docs, configure docs.rs metadata
+- [x] 21-02-PLAN.md — Add module-level doc comments and compilable doctests to all public modules, structs, and traits
+- [x] 21-03-PLAN.md — Create three standalone runnable examples (basic_pipeline, serde_roundtrip, quota_slicing)
 
 ---
 
@@ -186,4 +186,4 @@ Plans:
 | 18 | Dual-Language CI | CI-01-02, CI-04-05 | ● complete |
 | 19 | First Publish & Assay Switchover | CI-03, SWITCH-01-04 | ● complete |
 | 20 | Serde Feature Flag | ENHANCE-01-03 | ● complete |
-| 21 | docs.rs Documentation & Examples | ENHANCE-04-05 | ○ planned |
+| 21 | docs.rs Documentation & Examples | ENHANCE-04-05 | ● complete |
