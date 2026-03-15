@@ -69,4 +69,28 @@
 
 | REQ-ID | Phase |
 |--------|-------|
-| *(filled by roadmapper)* | |
+| RAPI-01 | 23 |
+| RAPI-02 | 23 |
+| RAPI-03 | 23 |
+| RAPI-04 | 23 |
+| RAPI-05 | 23 (Rust) + 31 (.NET) |
+| RAPI-06 | 32 (Rust) + 31 (.NET) |
+| SPEC-01 | 24 |
+| SPEC-02 | 25 |
+| DIAG-01 | 27 |
+| DIAG-02 | 27 |
+| DIAG-03 | 27 |
+| DIAG-04 | 26 |
+| DIAG-05 | 26 |
+| DIAG-06 | 26 |
+| DIAG-07 | 28 |
+| DIAG-08 | 28 |
+| DIAG-09 | 29 |
+| CONF-01 | 25 |
+| CONF-02 | 25 |
+| CI-01 | 30 |
+| CI-02 | 30 |
+| CI-03 | 25 + 30 |
+| QH-01 | 31 |
+| QH-02 | 32 |
+| QH-03 | 32 |
