@@ -62,7 +62,10 @@
   - [x] 23-01-PLAN.md — #[non_exhaustive] on enums + derives on slicer/placer structs
   - [x] 23-02-PLAN.md — ContextKind factory methods, TryFrom<&str>, ParseContextKindError
   - [x] 23-03-PLAN.md — ContextBudget computed properties (Rust + .NET)
-- [ ] Phase 24: Diagnostics Spec Chapter (~2 plans) — SPEC-01
+- [x] Phase 24: Diagnostics Spec Chapter (2/2 plans, 2026-03-15) — SPEC-01
+  Plans:
+  - [x] 24-01-PLAN.md — Diagnostics overview, TraceCollector contract, and Events sub-pages
+  - [x] 24-02-PLAN.md — Exclusion Reasons, SelectionReport sub-pages, and SUMMARY.md registration
 - [ ] Phase 25: Conformance Infrastructure & Drift Guard (~3 plans) — CONF-01, CONF-02, CI-03, SPEC-02
 - [ ] Phase 26: Diagnostics Data Types (~2 plans) — DIAG-04, 05, 06
 - [ ] Phase 27: TraceCollector Trait & Implementations (~2 plans) — DIAG-01, 02, 03

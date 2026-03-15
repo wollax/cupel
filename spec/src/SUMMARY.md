@@ -31,6 +31,11 @@
 - [Placers](placers.md)
   - [ChronologicalPlacer](placers/chronological.md)
   - [UShapedPlacer](placers/u-shaped.md)
+- [Diagnostics](diagnostics.md)
+  - [TraceCollector](diagnostics/trace-collector.md)
+  - [Events](diagnostics/events.md)
+  - [Exclusion Reasons](diagnostics/exclusion-reasons.md)
+  - [SelectionReport](diagnostics/selection-report.md)
 
 # Conformance
 
