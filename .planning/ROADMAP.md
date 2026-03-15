@@ -125,8 +125,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 19-01-PLAN.md — Fix release workflow for first publish (remove --locked, make_latest: true) and add OIDC support
-- [ ] 19-02-PLAN.md — First publish to crates.io, configure OIDC trusted publishing, switch assay to registry dependency
+- [x] 19-01-PLAN.md — Fix release workflow for first publish (remove --locked, make_latest: true) and add OIDC support
+- [x] 19-02-PLAN.md — First publish to crates.io, configure OIDC trusted publishing, switch assay to registry dependency
 
 ---
 
@@ -174,6 +174,6 @@ Plans:
 | 16 | Pre-flight & Crate Scaffold | MIGRATE-01-05 | ● complete |
 | 17 | Crate Migration & Conformance Verification | MIGRATE-06-07, CONFORM-01-03 | ● complete |
 | 18 | Dual-Language CI | CI-01-02, CI-04-05 | ● complete |
-| 19 | First Publish & Assay Switchover | CI-03, SWITCH-01-04 | ○ planned |
+| 19 | First Publish & Assay Switchover | CI-03, SWITCH-01-04 | ● complete |
 | 20 | Serde Feature Flag | ENHANCE-01-03 | ○ planned |
 | 21 | docs.rs Documentation & Examples | ENHANCE-04-05 | ○ planned |
