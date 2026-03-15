@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 Phase: 19 of 21 — First Publish & Assay Switchover
 Milestone: v1.1 Rust Crate Migration & crates.io Publishing
-Plan: 0 of 2 complete
-Status: Ready
-Last activity: 2026-03-15 — Completed 18-02-PLAN.md (Rust release workflow)
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-03-15 — Completed 19-01-PLAN.md (Release workflow OIDC & first publish fixes)
 
-Progress: ██████░░░░░░░░░░░░░░░░░░░ 6/24 plans (v1.1)
+Progress: ███████░░░░░░░░░░░░░░░░░░ 7/24 plans (v1.1)
 
 ## Phase Overview
 
@@ -28,7 +28,7 @@ NEXT_PHASE=19
 | 16. Pre-flight & Crate Scaffold | ● complete (2/2 plans) |
 | 17. Crate Migration & Conformance Verification | ● complete (2/2 plans) |
 | 18. Dual-Language CI | ● complete (2/2 plans) |
-| 19. First Publish & Assay Switchover | ○ planned |
+| 19. First Publish & Assay Switchover | ◐ in progress (1/2 plans) |
 | 20. Serde Feature Flag | ○ planned |
 | 21. docs.rs Documentation & Examples | ○ planned |
 
@@ -45,6 +45,7 @@ NEXT_PHASE=19
 | 17-01-D1 | Applied cargo fmt for edition 2024 formatting (source used edition 2021 style) | 17-01 |
 | 17-02-D1 | Added tests/**/*.rs to Cargo.toml include list for tarball round-trip verification | 17-02 |
 | 18-01-D1 | conformance/** excluded from ci-rust.yml paths — vendored copy covered by crates/** | 18-01 |
+| 19-01-D1 | OIDC auth with continue-on-error fallback to secret for first publish compatibility | 19-01 |
 
 ### Roadmap Evolution
 - v1.0 shipped 2026-03-14 — 15 phases, 48 plans, 44/44 requirements, 641 tests
