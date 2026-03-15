@@ -43,10 +43,10 @@ impl Slicer for KnapsackSlice {
         let mut candidates: Vec<&ScoredItem> = Vec::new();
 
         for si in sorted {
-            if si.item.tokens() == 0 {
-                zero_token_items.push(si.item.clone());
-            } else if si.item.tokens() > 0 {
-                candidates.push(si);
+            match si.item.tokens().cmp(&0) {
+                std::cmp::Ordering::Equal => zero_token_items.push(si.item.clone()),
+                std::cmp::Ordering::Greater => candidates.push(si),
+                std::cmp::Ordering::Less => {}
             }
         }
 
