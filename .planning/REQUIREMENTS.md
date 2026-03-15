@@ -14,7 +14,7 @@
 ### Rust Diagnostics — Specification
 
 - [ ] **SPEC-01**: Language-agnostic diagnostics spec chapter exists in `/spec/` covering TraceCollector contract, event types, exclusion reasons, report structure, and ownership model
-- [ ] **SPEC-02**: Diagnostics conformance vectors exist with `[expected.diagnostics]` schema for cross-language verification of exclusion reasons and counts
+- [x] **SPEC-02**: Diagnostics conformance vectors exist with `[expected.diagnostics]` schema for cross-language verification of exclusion reasons and counts
 
 ### Rust Diagnostics — Implementation
 
@@ -30,14 +30,14 @@
 
 ### Spec Conformance
 
-- [ ] **CONF-01**: Incorrect/misleading comments in 5 conformance vector TOML files are fixed (both spec/ and vendored copies)
-- [ ] **CONF-02**: CI drift guard exists that diffs `spec/conformance/` against `crates/cupel/tests/conformance/` and fails on divergence
+- [x] **CONF-01**: Incorrect/misleading comments in 5 conformance vector TOML files are fixed (both spec/ and vendored copies)
+- [x] **CONF-02**: CI drift guard exists that diffs `spec/conformance/` against `crates/cupel/conformance/` and fails on divergence
 
 ### Quality Hardening — CI
 
 - [ ] **CI-01**: Rust CI runs clippy with `--all-targets` flag
 - [ ] **CI-02**: `cargo-deny` checks include unmaintained advisory warnings
-- [ ] **CI-03**: Conformance vector drift guard runs in CI
+- [x] **CI-03**: Conformance vector drift guard runs in CI
 
 ### Quality Hardening — Codebase
 
