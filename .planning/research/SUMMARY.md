@@ -1,153 +1,202 @@
-# Research Summary: Cupel Context Management Library
+# Research Summary: Cupel v1.2 — Rust Parity & Quality Hardening
 
-**Date**: 2026-03-10
-**Synthesized from**: STACK.md, FEATURES.md, ARCHITECTURE.md, PITFALLS.md
+**Date**: 2026-03-15
+**Synthesized from**: STACK.md (Rust sections), FEATURES.md, ARCHITECTURE-RUST-DIAGNOSTICS.md, PITFALLS-RUST-DIAGNOSTICS.md
 **Consumer**: kata-roadmapper agent
+**Milestone**: v1.2 (Rust Diagnostics Parity + Quality Hardening)
 
 ---
 
 ## Executive Summary
 
-Cupel is positioned to be the first dedicated context management library in the .NET ecosystem — a genuine blue ocean. Every major AI framework (LangChain, Semantic Kernel, LlamaIndex) treats context management as incidental to their primary purpose: they trim, reduce, or rerank, but none optimize. Cupel's core value proposition is a budget-constrained scoring pipeline with full explainability — a combination that does not exist anywhere today. The `SelectionReport`/`DryRun()` with `ExclusionReason` enum is the killer feature: 65% of enterprise AI failures in 2025 are attributed to context drift or memory loss, yet no solution tells you what was dropped or why.
+The Rust `cupel` crate (published as v1.1.0 on 2026-03-15) is complete at the pipeline level — 6-stage pipeline, 8 scorers, 3 slicers, 2 placers, 28 conformance tests passing — but lacks the diagnostics system that is the primary production-debuggability differentiator of the .NET implementation. The v1.2 milestone closes that gap and batch-addresses 74+ open quality issues.
 
-The technical stack is well-researched and high-confidence. .NET 10/C# 14 with zero external dependencies in core is the right call. The fixed synchronous pipeline (Classify → Score → Deduplicate → Slice → Place) with async only at the `IContextSource` boundary is architecturally sound: it enables `Span<T>`, `stackalloc`, zero async state machine overhead, and stays under the <1ms target for <500 items. The companion package structure (DI, Tiktoken, Json) correctly externalizes optional dependencies. There are no significant unknowns in the stack — all technology decisions are HIGH confidence.
+The diagnostics gap is not superficial. The .NET crate exposes `ITraceCollector`, `DiagnosticTraceCollector`, `SelectionReport`, `IncludedItem`/`ExcludedItem`, `InclusionReason`/`ExclusionReason`, and `DryRun()`. Together these answer "what was dropped from context and why" — the question that 65% of enterprise AI context failures hinge on. Without this, the Rust crate cannot be used in production diagnostic workflows.
 
-The primary execution risk is not architectural but implementation discipline: hidden allocations in hot paths (LINQ in scoring loops, closure captures, boxing, ungated trace construction) can destroy the sub-millisecond performance target without BenchmarkDotNet catching it early. The second risk is API surface brittleness — nullable annotation consistency, read-only vs mutable collection types, and `[JsonPropertyName]` from day one are non-negotiable Phase 1 constraints. The roadmap must treat benchmark infrastructure and `Microsoft.CodeAnalysis.PublicApiAnalyzers` as Phase 1 deliverables, not afterthoughts.
+Three research dimensions are HIGH-confidence with clear, actionable conclusions. One meta-constraint is non-negotiable: **spec-first sequencing is mandatory**. The Rust lifetime system creates implementation pressure that will bias API shape toward ergonomic shortcuts rather than semantic correctness. Any API published on crates.io is a semver commitment. The spec chapter for Rust diagnostics must be reviewed and merged before any implementation PR opens.
+
+The single most consequential unresolved decision — requiring spec chapter resolution — is the ownership model: `&mut dyn TraceCollector` per-call injection vs. `Pipeline<T: TraceCollector = NullTraceCollector>` generic type parameter. Both are architecturally defensible. The choice determines whether the zero-overhead null path is guaranteed at compile time (generic) or relies on runtime branch prediction (dyn with `is_enabled()` gate). The research recommends the generic approach for the zero-cost guarantee, but acknowledges the API simplicity tradeoff. This is the single decision the roadmapper must flag as requiring spec-chapter resolution before issue assignment.
 
 ---
 
 ## Key Findings by Research Area
 
-### Stack (STACK.md)
-
-- **Runtime**: .NET 10 LTS, single TFM `net10.0`, C# 14. No multi-targeting. HIGH confidence, correct call.
-- **C# 14 features with direct payoff**: extension members (fluent API, `IServiceCollection`), `field` keyword (property validation without backing fields), implicit `Span<T>` conversions (zero-alloc hot paths).
-- **Testing**: xUnit v3 (3.2.2) — de facto standard, `ValueTask` lifecycle, parallel by default. Shouldly for assertions (MIT, FluentAssertions v8+ now requires commercial license). Verify.XunitV3 for snapshot testing `ContextResult`/`SelectionReport`/`ContextTrace`.
-- **Benchmarking**: BenchmarkDotNet 0.15.8 with `[MemoryDiagnoser]` and `[ThreadingDiagnoser]`. Sub-millisecond targets require careful configuration (`WithIterationTime(250ms)`, `WithMaxRelativeError(0.02)`).
-- **Tokenizer companion**: `Microsoft.ML.Tokenizers` v2.0.0 (Microsoft-owned, SharpToken README explicitly recommends migrating to it). Targets net8.0 but forward-compatible with .NET 10.
-- **Packaging**: Central Package Management (`Directory.Packages.props`), MinVer for git tag-based versioning, NuGet Trusted Publishing via OIDC (no stored API keys), SourceLink enabled.
-- **Verification gaps** (must check before implementation): Shouldly and MinVer versions may be stale; `Microsoft.ML.Tokenizers` net10.0 forward compat should be tested early; `[JsonPropertyName]` attribute availability in-box without NuGet reference.
-
 ### Features (FEATURES.md)
 
-- **Ecosystem gap is real**: No existing solution combines multi-signal composite scoring + budget-constrained optimization + research-backed placement + full explainability. LangChain trims, LlamaIndex reranks, Semantic Kernel reduces. Nobody optimizes.
-- **Table stakes** (must ship in v1): `ContextItem`, `ContextBudget`, fixed pipeline, `IScorer` + `RecencyScorer` + `PriorityScorer`, `ISlicer` + `GreedySlice`, `IPlacer` + `UShapedPlacer`, pinned items, `ContextResult`, zero-dependency core.
-- **Differentiators** (competitive advantage, should ship in v1): `CompositeScorer` with weighted aggregation, `KnapsackSlice` with discretization, `QuotaSlice`, `SelectionReport`/`DryRun()`, `ContextTrace` with gated construction, `ExclusionReason` enum, `CupelPolicy` as serializable config, named policy presets.
-- **Anti-features** (correct exclusions): No embeddings, no LLM reranking, no compression/summarization, no storage, no retrieval. These constraints are a feature of the architecture, not a limitation.
-- **UShapedPlacer** is validated by the "Lost in the Middle" Stanford paper (2024-2025 follow-ups). The effect is model-dependent, which validates `IPlacer` as pluggable.
-- **KnapsackSlice** requires token discretization (100-token buckets) to make W manageable (W'=1000 instead of W=100K). `GreedySlice` should be the default; `KnapsackSlice` is opt-in for provably optimal selection at accepted cost.
-- **Named policies** (`ChatSession()`, `CodeReview()`, `AgentLoop()`) are the primary adoption lever — they lower the floor and serve as living documentation.
+**Parity gap is precisely quantified.** Ten .NET types are absent from the Rust crate. They decompose into a strict dependency chain: Spec chapter (TS-05) → Trait (TS-01) → Data types (TS-02) → Buffered collector (TS-03) → SelectionReport (TS-04) → Pipeline integration (TS-06) → DryRun API (D-01). Nothing in this chain can be parallelized — each layer depends on the previous one.
 
-### Architecture (ARCHITECTURE.md)
+**Quick wins are genuinely quick.** Five API hardening items (D-04) — `#[non_exhaustive]` on `CupelError` and `OverflowStrategy`, `Debug`/`Clone`/`Copy` derives on concrete slicer/placer structs, `ContextKind` and `ContextSource` convenience constructors — have zero logic impact and can be implemented before the spec chapter is complete. These must be first because `#[non_exhaustive]` on `CupelError` is a prerequisite for adding `CupelError::TableTooLarge` (TS-QH-05, the KnapsackSlice OOM guard). Inverting this order makes the variant addition a semver-major break.
 
-- **Pipeline pattern**: Fixed stage pipeline with `PipelineExecutor` as internal orchestrator. Each stage has a narrow single-method interface. No middleware, no chain-of-responsibility.
-- **Sync/async boundary**: Pipeline is synchronous. `IContextSource` is async (`IAsyncEnumerable<ContextItem>`). `ApplyAsync` materializes the source then calls the synchronous `Apply`. This enables `Span<T>` and avoids ~360-600 bytes of async state machine allocation per pipeline run.
-- **Zero-allocation strategy**: `ArrayPool<T>.Shared` for temporary scored item arrays, `stackalloc` for small bounded buffers (CompositeScorer weights, typically <10), `ReadOnlySpan<char>` for string comparisons in classifiers, `ThreadStatic` scratch list pooling.
-- **`ScoredItem` as readonly struct**: Stored inline in arrays, no per-item heap allocation between Score and Place stages.
-- **`ContextItem` as sealed class**: Reference type fields (string Content, Tags, Metadata) make struct copying costly; sealed enables devirtualization.
-- **ITraceCollector**: Custom interface, not `Activity`/`ActivitySource` (wrong abstraction — that's for distributed cross-service tracing). `NullTraceCollector` as singleton, all trace construction gated behind `IsEnabled`. DiagnosticSource bridge optional, belongs in DI package.
-- **Builder pattern**: Hand-written `CupelPipelineBuilder`, not source-generated. Validation at `Build()` time, not runtime. Factory entry point: `CupelPipeline.CreateBuilder()`.
-- **DI integration**: `TryAddSingleton` pattern, `IOptions<CupelOptions>`, keyed services for named pipelines (.NET 8+, available in .NET 10). Extension method namespace should be `Wollax.Cupel.Extensions.DependencyInjection`, not `Microsoft.Extensions.DependencyInjection`.
-- **Build order**: Models → Interfaces → Diagnostics → Individual Scorers → CompositeScorer → Slicers → Placement + Classification → Pipeline Assembly → Policy + Presets → Companion Packages. This ordering is the natural phase structure.
+**DryRun is a thin wrapper, not a separate feature.** Once `SelectionReport` and `run_with_trace` exist (TS-04 + TS-06), `DryRun` is approximately 10 lines that discard the item result and return only the report. It should be planned and sized as a consequence of TS-06, not as a separate effort.
 
-### Pitfalls (PITFALLS.md)
+**Stage timing is a free differentiator.** Because `TraceEvent` includes `duration: std::time::Duration` (matching the .NET gold standard), per-stage wall-clock timing is produced automatically by the diagnostics implementation. No other Rust context library exposes this. No extra implementation effort required beyond correct `Instant::now()` capture in `run_traced`.
 
-- **Phase 1 scaffold non-negotiables**: `<Nullable>enable</Nullable>` project-wide (not file-level), `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`, `Microsoft.CodeAnalysis.PublicApiAnalyzers` with `PublicAPI.Shipped.txt` / `PublicAPI.Unshipped.txt`, single `<Version>` source in `Directory.Build.props`, CI zero-dependency assertion for core package, SourceLink from day one.
-- **Core model non-negotiables**: All result types use `IReadOnlyList<T>` (not `List<T>`), `ContextItem` is immutable (`{ get; init; }`), `[JsonPropertyName]` on every serializable public property, `ArgumentNullException.ThrowIfNull()` on all public entry points.
-- **Hot path discipline**: No LINQ in `IScorer.Score()`, `ISlicer.Slice()`, `IPlacer.Place()`. No closure captures in scoring lambdas. No boxing (especially `ContextItem.Metadata` must be `Dictionary<string, string>`, never `Dictionary<string, object>`). ALL trace construction gated behind `ITraceCollector.IsEnabled`.
-- **Scoring correctness**: `CompositeScorer` must normalize weights internally (relative, not absolute). `RecencyScorer` must use relative timestamp ranking within the input set, not absolute time distance from now (purity invariant). Never compare scores with `==`. Use stable sort; secondary tiebreaking key is timestamp or insertion index.
-- **DI pitfalls**: Pipeline/trace collector should be transient/scoped, not singleton. Scorers/slicers/placers are singleton (stateless). Enable `validateScopes: true` in development. Core must be fully usable without DI via `CupelPipeline.CreateBuilder()`.
-- **Testing pitfalls**: Test through public API, not internals. Assert ordinal relationships ("A scores higher than B"), not exact doubles. Consumption tests against packed `.nupkg` (not `<ProjectReference>`) must be in CI before first publish. Benchmarks alongside first pipeline implementation, not "later."
-- **JSON pitfalls**: Polymorphic serialization (`[JsonDerivedType]` with `$type` discriminator) belongs in the `Wollax.Cupel.Json` package, not core. AOT/trimming support with source generation is limited with polymorphism — document as unsupported in v1 and test in a trimmed app. `[JsonConstructor]` required on types with `init` properties.
+**Anti-features are load-bearing.** The decision not to integrate `tracing` crate into core, not to use `Arc<dyn TraceCollector>`, not to add `async fn run()`, and not to add `#[instrument]` on pipeline internals are all well-justified and should be held firmly. A `cupel-tracing` companion crate for OTEL/tracing bridge is the correct pattern for v1.3+.
+
+**Quality hardening is a batch, not a feature.** The 74+ open issues decompose into 7 categories (TS-QH-01 through TS-QH-07). Most are parallel — documentation gaps, `#[must_use]` audit, naming consistency, defensive copy audit, scorer test gaps, and CI drift guard. Only the KnapsackSlice DP table guard (TS-QH-05) has a sequencing dependency (requires `#[non_exhaustive]` on `CupelError` first).
+
+### Architecture (ARCHITECTURE-RUST-DIAGNOSTICS.md)
+
+**The recommended ownership model is `&mut dyn TraceCollector` passed to `run_traced`.** This was the conclusion after evaluating four options (shared ref, mutable ref, owned, Arc). Mutable reference per-call matches the .NET design intent (one collector per invocation), avoids `RefCell`, and enables straightforward `Vec<TraceEvent>` buffering in `DiagnosticTraceCollector`. The existing `Pipeline::run()` signature is unchanged — `run_traced` is additive.
+
+**The `TraceCollector` trait should use extended default methods for structured item accumulation.** Rather than limiting the trait to stage events and requiring downcasting to accumulate `IncludedItem`/`ExcludedItem` records, the trait should include `record_included`, `record_excluded`, `set_total_candidates`, and `set_total_tokens_considered` with default no-op implementations. `NullTraceCollector` gets all no-ops for free. `DiagnosticTraceCollector` overrides the accumulation methods. This avoids `Any` downcasting entirely and keeps the trait object-safe.
+
+**Pitfall note**: The PITFALLS research raises a conflict with this recommendation — if `TraceCollector` is stored on `Pipeline` as a `Box<dyn>` or `Arc<dyn>`, it must be `Send + Sync`, which forces `DiagnosticTraceCollector` to use `Mutex<Vec<TraceEvent>>`. However, ARCHITECTURE recommends per-call injection (not stored on Pipeline), which sidesteps this constraint. **The spec chapter must reconcile these two findings.** Per-call injection with `&mut dyn TraceCollector` does not require `Send + Sync` on the trait, because the reference is not stored.
+
+**Stage integration strategy is "pure helpers, diff in orchestrator".** The six private stage functions (`classify`, `score`, `deduplicate`, `sort`, `slice`, `place`) remain pure — they take inputs and return outputs without receiving a trace reference. Exclusion attribution (which items were deduplicated, which were budget-excluded) is computed by set-diff in `Pipeline::run_traced` between stage inputs and outputs. This is O(n) overhead only when `is_enabled()` is true, and keeps all helper functions unchanged.
+
+**Exception**: `place::place_items` overflow handling should be refactored into `run_traced`. The current overflow logic (`handle_overflow`) is inside `place_items` and discards truncated items without exposing them. Moving it to `run_traced` (~50 lines of private logic) enables `PinnedOverride` and `BudgetExceeded` exclusion reasons to be emitted without threading trace through the placer. This is an internal refactor with no public API impact.
+
+**New module: `crate::diagnostics`.** Five source files, all namespaced under `cupel::diagnostics` to avoid polluting the crate root with diagnostic types. `SelectionReport`, `TraceCollector`, and the two concrete collectors are the ergonomic re-export candidates at the crate root level; `TraceEvent` and reasons can stay under `diagnostics::`.
+
+**Build order is four independent phases**, each fully compilable and testable before the next begins: (1) data types (reasons, events, report structs), (2) trait + implementations (NullTraceCollector, DiagnosticTraceCollector), (3) pipeline integration (run_traced, overflow refactor), (4) polish (doc tests, serde gates, re-exports).
+
+**No new Cargo dependencies.** All timing infrastructure uses `std::time::Instant` + `Duration`. `SelectionReport` serde support uses the existing optional `serde` dep.
+
+### Stack / Infrastructure (STACK.md — Rust sections)
+
+The Rust infrastructure decisions from the v1.1 milestone are stable and carry forward unchanged: MSRV `1.85` (edition 2024 minimum), `rust-toolchain.toml` at repo root, `actions-rust-lang/setup-rust-toolchain@v1` with integrated `rust-cache`, separate `ci-rust.yml` workflow with path filters, crates.io Trusted Publishing via OIDC. No stack changes required for v1.2.
+
+The conformance vector path filter (`conformance/**` in `ci-rust.yml`) and the CI conformance drift guard (diff between `spec/conformance/required/` and `crates/cupel/tests/conformance/`) are infrastructure items that must be in place before diagnostics conformance vectors are written. The drift guard does not exist yet — it is a v1.2 CI deliverable, not a future-milestone item.
+
+### Pitfalls (PITFALLS-RUST-DIAGNOSTICS.md)
+
+**Five pitfalls require action before any diagnostics implementation code is written:**
+
+1. **Spec-first gate** (Critical): No implementation PR may open until the diagnostics spec chapter is merged and reviewed. This is the single most important process constraint identified in research.
+
+2. **`&dyn` vs generic type parameter** (Critical): The ownership model is the most load-bearing API decision. `&mut dyn TraceCollector` per-call injection avoids lifetime cascade into `Pipeline` struct. Storing `&dyn TraceCollector` on `Pipeline` adds a lifetime parameter to the struct that propagates into every container type — architecturally correct but ergonomically catastrophic.
+
+3. **`TraceCollector: Send + Sync` constraint** (High): If the collector is ever stored on `Pipeline` (not recommended), `Pipeline: Send + Sync` requires the trait to bound `Send + Sync`, which forces `DiagnosticTraceCollector` to use `Mutex<Vec<TraceEvent>>` internally. Per-call injection sidesteps this. The spec chapter must make this decision explicit.
+
+4. **`#[non_exhaustive]` on `CupelError` before any new variants** (High): Must be a v1.2.0 early-ship item. Adding `CupelError::TableTooLarge` (KnapsackSlice guard) before `#[non_exhaustive]` is applied is a semver-major break. The brainstorm explicitly identified this as a blocking dependency.
+
+5. **CI conformance drift guard must precede diagnostic conformance vectors** (High): New `trace-event-*` conformance vectors must live in `spec/conformance/` first and be copied to the test directory — never the reverse. Without the CI diff check, this discipline will not hold under implementation pressure.
+
+**Additional pitfalls requiring spec chapter specification (not implementation decisions):**
+
+- `ExclusionReason` should be a data-carrying enum (e.g., `BudgetExceeded { item_tokens: i64, available_tokens: i64 }`) rather than a fieldless port of the C# enum. Making it fieldless initially and adding fields later is a breaking change.
+- `SelectionReport` fields should be private with public accessors, following `ContextItem`'s pattern. Public fields prevent future field additions without breaking downstream struct-literal construction.
+- `unreserved_capacity()` return type must be `i64` (matching existing field types), not `u32`. Subtraction can underflow if reserved slots exceed max tokens — this should return the signed result or be guarded in the constructor.
+- `TraceEvent` and `ExclusionReason` enums must carry `#[non_exhaustive]` from their first crates.io publication. No exceptions for "we know the design is stable."
+- The `serde` wire format for `SelectionReport` must be specified in the spec chapter, not discovered during implementation. Retrofitting JSON field names after publication is a semver-breaking change.
+
+**Pitfalls that do NOT require action (for reference):**
+
+- Orphan rule concerns — not applicable; all types are defined in the same crate.
+- Adding `Copy` to `GreedySlice`, `KnapsackSlice`, `UShapedPlacer`, `ChronologicalPlacer` — non-breaking additions.
+- Adding `Debug`/`Clone` to concrete scorers with `Box<dyn Scorer>` fields — these cannot derive `Clone` without `dyn-clone` (external dep). Do not attempt. Only the concrete non-boxing slicer/placer structs get these derives.
 
 ---
 
 ## Roadmap Implications
 
-### Suggested Phase Structure
+### Recommended Phase Structure for v1.2
 
-**Phase 1: Foundation and Infrastructure** (highest risk, must be right)
+**Phase A — Quick Wins & Infrastructure Prerequisites** (parallel-capable, no spec chapter dependency)
 
-Everything in this phase is load-bearing. Getting it wrong creates breaking changes.
+These items have no sequencing dependencies on the spec chapter and address the highest-priority CI and API hardening concerns. They can begin immediately.
 
-- Project scaffold: solution structure, `Directory.Build.props`, `Directory.Packages.props`, `global.json`, `TreatWarningsAsErrors`, `Nullable`, SourceLink, `Microsoft.CodeAnalysis.PublicApiAnalyzers`.
-- CI pipeline: build, test, pack, zero-dependency assertion (`dotnet list Wollax.Cupel package` = 0), consumption test project against local NuGet feed.
-- Core models: `ContextItem` (immutable, sealed, `[JsonPropertyName]`), `ContextBudget`, `ScoredItem` (readonly struct), `OverflowStrategy` enum, `ExclusionReason` enum.
-- All public interfaces: `IScorer`, `ISlicer`, `IPlacer`, `IClassifier`, `IContextSource`, `ITraceCollector`.
-- Diagnostics infrastructure: `NullTraceCollector` (singleton), `DiagnosticTraceCollector`, `ContextTrace`, `ContextResult`.
-- BenchmarkDotNet project with baseline benchmarks (empty pipeline, 500 items). Establish the sub-millisecond baseline before writing any real scorer.
+- A1: `#[non_exhaustive]` on `CupelError` and `OverflowStrategy` — must ship before any new error variants or diagnostic enum publication. Audit spec book and README for exhaustive `match` patterns; add wildcard arms before merging.
+- A2: `Debug`/`Clone`/`Copy` derives on `GreedySlice`, `KnapsackSlice`, `UShapedPlacer`, `ChronologicalPlacer`. Do NOT add to `CompositeScorer` or `ScaledScorer` (hold `Box<dyn Scorer>`, not `Clone`-able without external dep).
+- A3: `ContextKind` convenience constructors (`ContextKind::message()`, `ContextKind::system_prompt()`, etc.) + `TryFrom<&str>` delegating to `ContextKind::new()`.
+- A4: `ContextSource` convenience constructors (`ContextSource::chat()`, `ContextSource::rag()`, `ContextSource::tool()`).
+- A5: `ContextBudget::unreserved_capacity() -> i64` — trivial implementation (~5 lines), return type must be `i64` not `u32`.
+- A6: CI conformance drift guard — diff step between `spec/conformance/required/` and `crates/cupel/tests/conformance/`, fails CI on divergence. Required before Phase C begins.
+- A7: `#[must_use]` audit — all `Result`-returning public functions and builder methods.
 
-**Phase 2: Scoring and Basic Pipeline**
+**Phase B — Spec Chapter: Rust Diagnostics API Contract** (blocking all Phase C work)
 
-- Individual scorers: `RecencyScorer`, `PriorityScorer`, `KindScorer`, `TagScorer`, `FrequencyScorer`, `ReflexiveScorer`. Each scorer tested in isolation with ordinal relationship assertions. Pure functions, no internal mutable state.
-- `CompositeScorer` with weight normalization and clamping. `ScaledScorer` wrapper.
-- `DefaultClassifier`.
-- `GreedySlicer` (default). `UShapedPlacer` (default).
-- `PipelineExecutor` (internal), `CupelPipelineBuilder`, `CupelPipeline` facade.
-- `ContextResult.Apply()` (sync) and `ApplyAsync()` (materializes `IContextSource`, then calls sync).
-- Full pipeline integration tests: realistic item sets, pinned item behavior, empty input edge cases, zero budget, all-pinned scenarios.
-- Benchmark validation: full pipeline with 100/250/500 items, with/without tracing. Assert zero Gen0 for tracing-disabled path.
+A single spec chapter in `/spec/` that resolves all load-bearing API decisions before implementation begins. Content requirements (non-negotiable from research):
 
-**Phase 3: Advanced Optimization and Explainability**
+1. Ownership model decision with rationale: `&mut dyn TraceCollector` per-call injection vs. `Pipeline<T: TraceCollector = NullTraceCollector>` generic
+2. Trait receiver mutability decision: `&mut self` (direct buffer) vs. `&self` + `Mutex` interior mutability
+3. Whether `TraceCollector` requires `Send + Sync`
+4. `PipelineStage` enum: confirm Sort is excluded (consistent with .NET; Sort is internal, not a diagnostic boundary)
+5. `ExclusionReason` variant designs — data-carrying or fieldless, with rationale
+6. `SelectionReport` field access pattern — private fields + accessors (follow `ContextItem`) vs. public fields
+7. `serde` wire format for all diagnostic types (field names, enum variant casing)
+8. Module placement: `cupel::diagnostics` namespace, what re-exports at crate root
+9. `Pipeline::run()` compatibility guarantee — must remain unchanged; `run_traced` is additive
 
-- `KnapsackSlicer` with token discretization (100-token buckets). Document the greedy-vs-optimal trade-off explicitly.
-- `QuotaSlicer` with `QuotaSpec` (Require/Cap by Kind percentage).
-- `StreamSlicer` for unbounded `IAsyncEnumerable` sources.
-- `SelectionReport` and `DryRun()` capability. `ExclusionReason` enum fully populated.
-- `CupelPolicy` as declarative, serializable config. `CupelPolicies` named presets: `ChatSession()`, `CodeReview()`, `AgentLoop()`, `RagRetrieval()`. Mark with `[Experimental]`.
-- Overflow behavior: `OverflowStrategy.Throw`, `Truncate`, `Proceed` with observer callback.
+**Phase C — Diagnostics Implementation** (strict sequential within phase, cannot be parallelized)
 
-**Phase 4: Companion Packages**
+- C1: Data types — `diagnostics/reasons.rs` (`ExclusionReason`, `InclusionReason`), `diagnostics/events.rs` (`PipelineStage`, `TraceDetailLevel`, `TraceEvent`), `diagnostics/report.rs` (`IncludedItem`, `ExcludedItem`, `SelectionReport`), `diagnostics/mod.rs` re-exports, `lib.rs` module declaration. Unit tests for report construction (no pipeline needed yet).
+- C2: Trait and implementations — `TraceCollector` trait with extended default accumulation methods, `NullTraceCollector` (ZST, verify `size_of() == 0` in test), `DiagnosticTraceCollector` with `Vec<TraceEvent>` buffer and `build_report(self) -> SelectionReport`.
+- C3: Pipeline integration — refactor `place::place_items` overflow handling into `run_traced`; implement `Pipeline::run_traced`; modify `Pipeline::run` to delegate to `run_traced(&mut NullTraceCollector)`. Integration tests asserting `SelectionReport` contains correct included/excluded items with accurate reasons.
+- C4: Polish — `lib.rs` re-exports, doc tests for `run_traced` usage, `serde` feature gates on all diagnostic data types, serde roundtrip tests for `SelectionReport`, `cargo test --all-features` clean pass.
 
-- `Wollax.Cupel.Extensions.DependencyInjection`: `AddCupel()`, `CupelOptions`, `IOptions<T>`, keyed services for named pipelines, `DiagnosticSource` bridge. Lifetime correctness: transient pipeline/trace, singleton scorers/slicers/placers.
-- `Wollax.Cupel.Tiktoken`: `TiktokenCountProvider` bridging `Microsoft.ML.Tokenizers`. Test `Microsoft.ML.Tokenizers` on .NET 10 forward compat early.
-- `Wollax.Cupel.Json`: `PolicySerializer`/`PolicyLoader`, `CupelJsonContext` source-generated `JsonSerializerContext`, polymorphic `$type` discriminators for scorer/slicer/placer configs. Document AOT support as v1-unsupported, provide smoke test in trimmed app.
+**Phase D — DryRun + Budget Simulation**
 
-**Phase 5: Documentation and Release**
+- D1: `Pipeline::dry_run()` — thin wrapper over `run_traced` discarding the item list, returning `SelectionReport`. ~10 lines.
+- D2: `Pipeline::marginal_items()` — two `dry_run()` calls diffed against each other. Medium complexity; plan separately from D1.
 
-- README with quick-start, concept explanations, policy examples.
-- XML doc comments on all public interfaces and types.
-- Samples projects: basic usage, DI integration.
-- `PublicAPI.Shipped.txt` finalized for v1.0.0.
-- NuGet Trusted Publishing configured (OIDC, no stored API keys).
-- Tag `v1.0.0-alpha.1` to trigger first publish workflow.
+**Phase E — Quality Hardening Batch** (parallel-capable once Phase A is complete)
+
+- E1: Rustdoc documentation gaps — `#[warn(missing_docs)]` enabled, `cargo doc --no-deps` produces zero warnings. `# Errors`, `# Panics`, `# Examples` sections on all public entry points.
+- E2: `KnapsackSlice` DP table size guard — `CupelError::TableTooLarge` variant (requires Phase A1 `#[non_exhaustive]` already shipped), pre-flight check with threshold ~50M cells.
+- E3: Naming consistency audit — document decisions; limit renames to clearly wrong pre-adoption-traction items only.
+- E4: Defensive copy audit for `ContextItem` collection fields (`Vec<String>` tags, `HashMap<String, String>` metadata).
+- E5: Scorer test gap fills — `RecencyScorer` with all-null timestamps, `TagScorer` with empty tag set, `FrequencyScorer` with uniform-frequency items.
+- E6: Conformance drift guard (already Phase A6 — cross-reference only).
+
+### Critical Path
+
+The minimum path to diagnostics parity on crates.io:
+
+```
+Phase A (A1 only) → Phase B → C1 → C2 → C3 → C4 → publish v1.2.0
+```
+
+D1 (DryRun) can be bundled into v1.2.0 if Phase C completes with time to spare — it is genuinely thin. D2 (marginal items) is v1.3 material.
+
+All of Phase E is parallelizable against Phase C and can merge incrementally as PRs complete. Phase A items (A2-A7) are all parallelizable with each other and with Phase B/C work.
 
 ---
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|-----------|-------|
-| .NET 10 / C# 14 stack | HIGH | All key features verified against official docs |
-| xUnit v3 / Shouldly / Verify | HIGH (xUnit), MEDIUM (Shouldly version) | Verify Shouldly latest version before pinning |
-| BenchmarkDotNet configuration | HIGH | Verified, sub-ms config is correct |
-| Microsoft.ML.Tokenizers | HIGH | Correct choice; verify .NET 10 forward compat in Phase 4 |
-| Fixed sync pipeline architecture | HIGH | Sound reasoning, no counterarguments |
-| ArrayPool / Span<T> zero-alloc patterns | HIGH | Verified from .NET runtime docs |
-| ITraceCollector custom design | HIGH | Activity/ActivitySource explicitly wrong abstraction |
-| Scoring algorithm correctness | HIGH | Greedy as default, knapsack with discretization for optimal |
-| UShapedPlacer justification | HIGH | Stanford "Lost in the Middle" paper, multiple 2024-2025 follow-ups |
-| Ecosystem gap analysis | HIGH | NuGet search confirms no .NET prior art |
-| KnapsackSlice discretization bucket size | MEDIUM | 100-token blocks is reasonable but should be benchmarked |
-| Named policy presets design | MEDIUM | Chat/RAG/AgentLoop are intuitive but needs user testing for actual defaults |
-| ScoredItem struct vs class performance | MEDIUM | Heuristically correct, but benchmark to confirm for real workloads |
-| MinVer versioning | MEDIUM | Community standard, verify latest version and .NET 10 compat |
-| STJ polymorphic source gen + AOT | LOW-MEDIUM | Known limitation, documented as v1-unsupported is the right call |
+| Finding | Confidence | Basis |
+|---------|------------|-------|
+| `&mut dyn TraceCollector` per-call injection as ownership model | HIGH | Both ARCHITECTURE and PITFALLS converge on this recommendation |
+| Generic `T: TraceCollector` as the zero-cost alternative | HIGH | PITFALLS §2.3; monomorphization eliminates null path entirely |
+| `#[non_exhaustive]` on enums required before new variants | HIGH | Rust Reference; PITFALLS §1.2, §5.3; brainstorm explicit dependency |
+| `tracing` integration belongs in companion crate | HIGH | FEATURES §AF-01; Rust ecosystem convention |
+| Spec-first gate is non-negotiable | HIGH | PITFALLS §4.1; brainstorm explicit process constraint |
+| Extended trait with default accumulation methods | HIGH | ARCHITECTURE §6; avoids downcasting, object-safe |
+| Stage helper functions remain pure (diff in orchestrator) | HIGH | ARCHITECTURE §5; minimal helper signature changes |
+| `place::place_items` overflow refactor required | HIGH | ARCHITECTURE §5 (Stage 6); only way to emit truncation exclusion reasons |
+| CI conformance drift guard precedes diagnostic vectors | HIGH | PITFALLS §4.2; process constraint |
+| `ExclusionReason` should be data-carrying | HIGH | PITFALLS §3.2; fieldless port loses diagnostic value |
+| `SelectionReport` private fields + accessors | MEDIUM | PITFALLS §3.3; consistent with `ContextItem` but inconsistent with `ScoredItem` — spec must standardize |
+| DP table guard threshold (50M cells) | MEDIUM | FEATURES §TS-QH-05; heuristic, should be benchmarked |
+| `TraceCollector: Send + Sync` not required with per-call injection | MEDIUM | PITFALLS §1.4; depends on ownership model chosen in spec chapter |
+| DryRun as ~10-line wrapper over run_traced | MEDIUM | FEATURES §D-01; thin only if SelectionReport extraction is caller-side |
+| `unreserved_capacity()` return type `i64` | MEDIUM | PITFALLS §6.3; constructor validation gap may allow underflow |
+
+### Open Questions Requiring Spec Chapter Resolution
+
+These are not gaps in research confidence — they are decisions that research correctly identifies as requiring explicit resolution before implementation. The research has bounded the option space and assessed trade-offs; the spec chapter must choose.
+
+1. **Ownership model**: `&mut dyn TraceCollector` per-call vs. `Pipeline<T: TraceCollector>` generic. Both are well-understood. Both are viable. The choice is a semver commitment.
+2. **Trait receiver mutability**: `&mut self` + direct `Vec` buffer vs. `&self` + `Mutex<Vec>` for `Send + Sync`. Depends on ownership model choice (per-call injection makes `Send + Sync` a non-issue).
+3. **`ExclusionReason` variant payload design**: Fieldless (simple port) vs. data-carrying (`BudgetExceeded { item_tokens, available_tokens }`). Data-carrying is richer but must be specced before implementation.
+4. **`SelectionReport` field visibility**: Private + accessors (follow `ContextItem`) vs. public (follow `ScoredItem`). Mixed pattern in current codebase; v1.2 should standardize.
 
 ---
 
-## Critical Decisions for Roadmapper
+## Non-Goals for v1.2 (Confirmed Anti-Features)
 
-The roadmapper must treat these as **hard constraints**, not options:
+The following are explicitly out of scope and should not appear in the milestone backlog:
 
-1. **Phase 1 must include BenchmarkDotNet and PublicApiAnalyzers.** Deferring either creates technical debt that is expensive to pay later (regressions already shipped, breaking changes already made).
+- `tracing` crate integration in `cupel` core
+- `Arc<dyn TraceCollector>` shared ownership
+- `async fn run()` / async pipeline
+- `#[instrument]` on pipeline internals (measurable span allocation overhead at item-level granularity)
+- Serializable pipeline configuration (`CupelPolicy` Rust port — requires `typetag` or equivalent, contradicts zero-dep constraint)
+- Per-item callback on `DiagnosticTraceCollector` (defer to v1.3; use case not yet established)
+- OpenTelemetry integration (companion crate `cupel-tracing`, post-v1.2)
 
-2. **`ContextItem` must be immutable from day one.** `{ get; init; }` on all properties. Changing this after v1 is a source-breaking change.
+---
 
-3. **`GreedySlicer` is the default.** `KnapsackSlicer` is explicitly opt-in. Never reverse this default — greedy is faster, knapsack trades time for optimality, and users should understand the trade-off.
-
-4. **`SelectionReport`/`DryRun()` belongs in Phase 3, not later.** It depends on the full pipeline being assembled, but it is a v1 feature. Moving it to v2 would be a significant regression from the stated differentiators.
-
-5. **Named policies are `[Experimental]` at launch.** This is the correct posture — they represent opinionated defaults that will evolve. The `[Experimental]` attribute gives freedom to iterate without breaking changes.
-
-6. **Companion packages ship together with core, versioned identically.** Never publish core alone. The DI and Tiktoken packages are how most users will actually consume the library.
+*Research synthesized 2026-03-15. Sources: FEATURES.md (2026-03-15), ARCHITECTURE-RUST-DIAGNOSTICS.md (2026-03-15), PITFALLS-RUST-DIAGNOSTICS.md (2026-03-15), STACK.md §§12-16 (2026-03-14). Brainstorm context: 2026-03-15T12-23 session decisions incorporated via research files.*

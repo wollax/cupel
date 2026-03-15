@@ -1014,3 +1014,512 @@ Per the publishing brainstorm, versions are independent per language but anchore
 - [MSRV Policy Discussion (Rust API Guidelines)](https://github.com/rust-lang/api-guidelines/discussions/231)
 - [Rust releases](https://releases.rs/)
 - [Swatinem/rust-cache](https://github.com/Swatinem/rust-cache)
+
+---
+
+## 20. Rust Diagnostics System — Patterns and Implementation Strategy
+
+**Date**: 2026-03-15
+**Scope**: Rust-specific research for adding diagnostics/tracing/reporting to the Cupel crate, mirroring the .NET `ITraceCollector` pattern. Zero external deps in core remains hard constraint.
+
+---
+
+### 20.1 Core Pattern: Trait-Based Internal Observer
+
+The idiomatic Rust approach for internal pipeline diagnostics in a library crate — where the library author, not the distributed tracing ecosystem, owns the event model — is a **sealed trait with two implementations**: a no-op null implementation and a collecting implementation.
+
+This mirrors the .NET `ITraceCollector` / `NullTraceCollector` / `DiagnosticTraceCollector` split exactly, with Rust-native idioms applied.
+
+**Confidence**: HIGH — this pattern is used by `serde` (visitor), `tokio` (runtime hooks), `sqlx` (logger), and the Rust standard library itself (via `fmt::Write`). It avoids the overhead of `tokio-tracing`, which targets distributed observability rather than pipeline introspection.
+
+#### Why NOT the `tracing` crate
+
+The `tracing` crate is the correct choice for distributed observability (spans, structured events routed to subscribers). It is the wrong choice here because:
+
+1. It introduces an optional dependency with its own subscriber model that callers must configure.
+2. `tracing` events are structurally opaque to callers who want to inspect them (e.g., to build a dry-run report).
+3. Cupel diagnostics are **synchronous, pipeline-scoped, return-value-accessible** — the caller asks the pipeline to run and gets back a report. This is not an observability problem; it is an explainability problem.
+
+#### Recommended Trait Shape
+
+```rust
+/// Collects diagnostic events during a pipeline run.
+///
+/// The trait is sealed: only implementations within this crate
+/// are permitted. This allows adding new event methods without
+/// breaking downstream code.
+pub trait TraceCollector: private::Sealed {
+    fn on_classify(&mut self, pinned: usize, scoreable: usize);
+    fn on_score(&mut self, item_content_hash: u64, score: f64);
+    fn on_deduplicate(&mut self, removed: usize);
+    fn on_slice(&mut self, selected: usize, budget_used: i64);
+    fn on_exclude(&mut self, item_content_hash: u64, reason: ExclusionReason);
+}
+
+mod private {
+    pub trait Sealed {}
+}
+```
+
+**Why `&mut self`**: Collecting implementations need to accumulate state. The `&mut self` receiver on a trait object does not preclude `Box<dyn TraceCollector>`; it just means the caller holds the boxed value mutably. This is correct — a diagnostics collector is stateful by design.
+
+**Seal reasoning**: New pipeline stages or new exclusion reasons will require new methods on the trait. Without sealing, adding a method is a breaking change. With sealing, only the crate can implement the trait, so new methods are non-breaking additions.
+
+---
+
+### 20.2 `ExclusionReason` — the Central Enum
+
+The .NET `ExclusionReason` enum is the key vocabulary of the diagnostics system. In Rust, this maps to a `#[non_exhaustive]` enum.
+
+```rust
+/// Reason an item was excluded from the final context window.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub enum ExclusionReason {
+    /// Item was deduplicated (lower-scored duplicate of another item).
+    Deduplicated,
+    /// Item did not fit within the token budget.
+    BudgetExceeded,
+    /// Item was excluded by quota slicer (kind cap reached).
+    QuotaCapReached,
+    /// Item was excluded by quota slicer (kind was not in quota configuration).
+    QuotaKindUnknown,
+}
+```
+
+**Why `#[non_exhaustive]`**: Adding new exclusion reasons in future milestones (e.g., a filter stage, a classifier extension) must not break downstream code that `match`es this enum. `#[non_exhaustive]` forces a wildcard arm in downstream crates while allowing exhaustive matching within the library.
+
+**Confidence**: HIGH — this is the official Rust API Guidelines recommendation (C-STRUCT-PRIVATE, future-proofing section) and verified against the Rust Reference `#[non_exhaustive]` documentation.
+
+**Interaction with pattern matching**: Within the library, `match reason { ExclusionReason::Deduplicated => ... }` compiles without a wildcard arm. Downstream users must write `_ => {}`. This is intentional.
+
+---
+
+### 20.3 Null Collector — Zero-Overhead Guarantee
+
+The null implementation must compile to no-op branches that LLVM eliminates entirely. Two approaches:
+
+**Option A: Unit struct implementing the trait**
+
+```rust
+/// A no-op trace collector. All methods are empty and compile to nothing.
+pub struct NullTraceCollector;
+impl private::Sealed for NullTraceCollector {}
+impl TraceCollector for NullTraceCollector {
+    #[inline(always)]
+    fn on_classify(&mut self, _: usize, _: usize) {}
+    // ...
+}
+```
+
+`#[inline(always)]` on every method ensures LLVM sees through the trait dispatch when the concrete type is `NullTraceCollector`. When `Pipeline::run` calls `collector.on_classify(...)` with a `&mut NullTraceCollector`, the call disappears after inlining.
+
+**Option B: Generic over the collector type** (higher-performance, zero dispatch cost)
+
+```rust
+pub struct Pipeline<C: TraceCollector = NullTraceCollector> {
+    collector: C,
+    // ...
+}
+```
+
+This is the approach used by `serde`'s visitor pattern and `hashbrown`'s allocator abstraction. When `C = NullTraceCollector`, the compiler monomorphizes a version of the pipeline with all collector calls fully eliminated. No vtable, no indirect call.
+
+**Recommendation**: Start with Option A (simpler, one `Pipeline` type, Box-friendly). Upgrade to Option B only if profiling shows measurable overhead at the call sites. For typical pipeline sizes (<500 items), the difference is negligible.
+
+**Why not `Option<&mut dyn TraceCollector>`**: Passing an optional reference into `pipeline.run_with_trace(items, budget, Some(&mut collector))` is ergonomically awkward and requires the null case to be spelled out at every call site. A dedicated `NullTraceCollector` keeps the null path ergonomic and explicit.
+
+---
+
+### 20.4 `SelectionReport` / `ContextTrace` — the Report Types
+
+Mirror the .NET report types as plain data structs.
+
+```rust
+/// A record of a single item's fate in the pipeline.
+#[derive(Debug, Clone)]
+pub struct ItemTrace {
+    /// First 32 characters of the item's content (for readability without cloning full content).
+    pub content_preview: String,
+    pub tokens: i64,
+    pub score: Option<f64>,
+    pub included: bool,
+    pub exclusion_reason: Option<ExclusionReason>,
+}
+
+/// A full diagnostic report from one pipeline run.
+#[derive(Debug, Clone, Default)]
+pub struct SelectionReport {
+    pub pinned_count: usize,
+    pub scoreable_count: usize,
+    pub deduplication_removed: usize,
+    pub selected_count: usize,
+    pub budget_used: i64,
+    pub items: Vec<ItemTrace>,
+}
+```
+
+**API guidelines applied**:
+- `#[derive(Debug, Clone, Default)]` — required by C-COMMON-TRAITS. `Default` is valuable for incremental construction in the collecting implementation.
+- Fields are `pub` because this is a report/DTO type — consumers need to read them. Private fields would add getter boilerplate with no safety benefit.
+- Do NOT mark `SelectionReport` with `#[non_exhaustive]` — it is purely an output type, not a discriminant. Adding fields to it later is fine; callers do not construct it.
+- DO mark `ItemTrace` with `#[non_exhaustive]` — callers may pattern-match on it in future. This is debatable; prefer deciding at the time a downstream consumer pattern emerges.
+
+---
+
+### 20.5 `DiagnosticTraceCollector` — the Collecting Implementation
+
+```rust
+/// A trace collector that accumulates a full [`SelectionReport`].
+#[derive(Debug, Default)]
+pub struct DiagnosticTraceCollector {
+    report: SelectionReport,
+}
+
+impl DiagnosticTraceCollector {
+    pub fn new() -> Self { Self::default() }
+
+    /// Consumes the collector and returns the accumulated report.
+    #[must_use]
+    pub fn into_report(self) -> SelectionReport {
+        self.report
+    }
+}
+```
+
+`#[must_use]` on `into_report` (and on `SelectionReport` itself via `#[must_use]` on the struct) ensures callers who call `pipeline.run_with_trace(...)` and create a `DiagnosticTraceCollector` do not silently discard the report.
+
+---
+
+### 20.6 Pipeline Integration — Two API Surface Options
+
+**Option A: Separate `run_with_trace` method**
+
+```rust
+impl Pipeline {
+    pub fn run(&self, items: &[ContextItem], budget: &ContextBudget)
+        -> Result<Vec<ContextItem>, CupelError> { ... }
+
+    pub fn run_with_trace(
+        &self,
+        items: &[ContextItem],
+        budget: &ContextBudget,
+        collector: &mut impl TraceCollector,
+    ) -> Result<Vec<ContextItem>, CupelError> { ... }
+}
+```
+
+Pros: Clean separation. No API change to the existing `run` signature.
+Cons: Code duplication between `run` and `run_with_trace`, or an internal forwarding indirection.
+
+**Option B: Internal trait routing (preferred)**
+
+Both `run` and `run_with_trace` delegate to an internal `run_inner<C: TraceCollector>` that is generic. `run` passes `&mut NullTraceCollector`. This keeps zero-overhead for the no-trace path at no maintenance cost.
+
+```rust
+impl Pipeline {
+    pub fn run(&self, items: &[ContextItem], budget: &ContextBudget)
+        -> Result<Vec<ContextItem>, CupelError> {
+        self.run_inner(items, budget, &mut NullTraceCollector)
+    }
+
+    pub fn run_with_trace(
+        &self,
+        items: &[ContextItem],
+        budget: &ContextBudget,
+        collector: &mut impl TraceCollector,
+    ) -> Result<Vec<ContextItem>, CupelError> {
+        self.run_inner(items, budget, collector)
+    }
+
+    fn run_inner<C: TraceCollector>(
+        &self,
+        items: &[ContextItem],
+        budget: &ContextBudget,
+        collector: &mut C,
+    ) -> Result<Vec<ContextItem>, CupelError> { ... }
+}
+```
+
+**Recommendation**: Option B. Zero duplication, zero overhead for existing callers, clean upgrade path.
+
+**Confidence**: HIGH — this is the same pattern used by `hashbrown` for allocator abstraction and by `bytes` for buffer customization.
+
+---
+
+### 20.7 Dry-Run Support
+
+The .NET `DryRun` capability (run the pipeline for diagnostic purposes without returning a result) maps cleanly to:
+
+```rust
+pub fn dry_run(
+    &self,
+    items: &[ContextItem],
+    budget: &ContextBudget,
+) -> Result<SelectionReport, CupelError> {
+    let mut collector = DiagnosticTraceCollector::new();
+    let _ = self.run_with_trace(items, budget, &mut collector)?;
+    Ok(collector.into_report())
+}
+```
+
+This is a thin convenience wrapper — no separate pipeline code path needed. The `?` propagates errors; on success, the caller gets the full report. The items result is discarded.
+
+---
+
+### 20.8 API Design Conventions — `#[must_use]`, `#[non_exhaustive]`, Derives
+
+Verified against the Rust API Guidelines (C-COMMON-TRAITS, C-STRUCT-PRIVATE, future-proofing section):
+
+| Convention | Where to Apply | Rationale |
+|---|---|---|
+| `#[must_use]` on `into_report()` | `DiagnosticTraceCollector::into_report` | Calling it and discarding the report is always a bug. Clippy `must_use_candidate` lint will flag omissions. |
+| `#[must_use]` on `SelectionReport` struct | On the type itself | Propagates to all methods returning `SelectionReport`. |
+| `#[non_exhaustive]` | `ExclusionReason` enum | New reasons will be added in future milestones. |
+| `#[derive(Debug, Clone, PartialEq, Eq, Hash)]` | `ExclusionReason` | C-COMMON-TRAITS. `Hash` enables using reasons as map keys in reports. |
+| `#[derive(Debug, Clone, Default)]` | `SelectionReport`, `DiagnosticTraceCollector` | C-COMMON-TRAITS. `Default` allows incremental construction. |
+| No `Copy` on report types | `SelectionReport`, `ItemTrace` | Contains `Vec<ItemTrace>` / `String` — not `Copy`. Correct. |
+| Sealed `TraceCollector` | `mod private` pattern | Allows non-breaking method additions. Verified: this is C-SEALED in API guidelines. |
+| `#[inline(always)]` | All `NullTraceCollector` methods | Guarantees LLVM eliminates no-op calls. |
+
+**Derive strategy — prefer derivation, avoid manual bounds**:
+
+Per API Guidelines C-STRUCT-BOUNDS: Do NOT write `#[derive(Clone)] struct SelectionReport<T: Clone>`. Instead write `#[derive(Clone)] struct SelectionReport`. The derive macro adds bounds only where needed, not reflexively to the struct definition. This codebase has no generic report types so this constraint does not apply immediately, but is noted for future extension.
+
+---
+
+### 20.9 Testing Patterns for Rust Library Crates
+
+The existing conformance test suite (TOML vector-driven, `tests/conformance/`) is the correct pattern for cross-language invariant verification. For diagnostics-specific tests:
+
+#### Unit tests for trait implementations
+
+Use inline `#[cfg(test)]` modules in the same file as the implementation:
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn null_collector_accepts_all_events() {
+        let mut c = NullTraceCollector;
+        c.on_classify(3, 5);
+        c.on_exclude(0, ExclusionReason::BudgetExceeded);
+        // Just verifying no panic. Zero assertions needed.
+    }
+
+    #[test]
+    fn diagnostic_collector_counts_deduplicated() {
+        let mut c = DiagnosticTraceCollector::new();
+        c.on_classify(2, 8);
+        c.on_deduplicate(3);
+        let report = c.into_report();
+        assert_eq!(report.deduplication_removed, 3);
+        assert_eq!(report.pinned_count, 2);
+    }
+}
+```
+
+#### Integration tests — `pipeline.dry_run` roundtrip
+
+Add to `tests/` (integration test crate):
+
+```rust
+#[test]
+fn dry_run_reports_budget_exceeded_exclusions() {
+    let pipeline = Pipeline::builder()
+        .scorer(Box::new(RecencyScorer))
+        .slicer(Box::new(GreedySlice))
+        .placer(Box::new(ChronologicalPlacer))
+        .build()
+        .unwrap();
+
+    let items = vec![...]; // items summing to more than budget
+    let budget = ContextBudget::new(100, 50, 0, HashMap::new(), 0.0).unwrap();
+    let report = pipeline.dry_run(&items, &budget).unwrap();
+
+    assert!(report.items.iter().any(|i|
+        i.exclusion_reason == Some(ExclusionReason::BudgetExceeded)
+    ));
+}
+```
+
+#### Property testing with `proptest`
+
+`proptest` is appropriate for diagnostics testing to verify invariants such as:
+- `report.selected_count + excluded_count == scoreable_count + pinned_count`
+- `report.budget_used <= budget.target_tokens()`
+- Every excluded item has a non-None `exclusion_reason`
+
+**Is `proptest` justified under the zero-dep constraint?** `proptest` is a **dev-dependency only** — it never appears in the compiled library artifact. This is not a dependency constraint violation. Consuming crates never see it. Using it for diagnostic invariant testing is appropriate.
+
+```toml
+[dev-dependencies]
+proptest = "1"
+proptest-derive = "0.5"
+```
+
+**Confidence**: HIGH — `proptest` is a stable, high-reputation crate (Medium source reputation in Context7 but widely used by Rust stdlib, rustc, and major crates).
+
+#### Doc tests
+
+Every public type and method in the diagnostics API requires a `# Examples` doc test. Pattern per API Guidelines (C-EXAMPLE, documentation chapter):
+
+```rust
+/// Runs the pipeline and returns a full selection report without returning items.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use cupel::{Pipeline, ContextItemBuilder, ContextBudget,
+///              RecencyScorer, GreedySlice, ChronologicalPlacer};
+///
+/// let pipeline = Pipeline::builder()
+///     .scorer(Box::new(RecencyScorer))
+///     .slicer(Box::new(GreedySlice))
+///     .placer(Box::new(ChronologicalPlacer))
+///     .build()?;
+///
+/// let items = vec![ContextItemBuilder::new("msg", 10).build()?];
+/// let budget = ContextBudget::new(100, 50, 0, HashMap::new(), 0.0)?;
+///
+/// let report = pipeline.dry_run(&items, &budget)?;
+/// assert_eq!(report.selected_count, 1);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
+```
+
+The `# Ok::<(), cupel::CupelError>(())` tail is required to make the `?` operator work in doc tests (API Guidelines documentation chapter pattern). Lines starting with `#` are compiled but hidden in rendered docs.
+
+---
+
+### 20.10 Quality Tooling — Clippy, cargo-deny, rustdoc
+
+#### Clippy configuration
+
+Per Clippy docs (stable): Use `[lints.clippy]` in `Cargo.toml` with priority control to avoid blanket `clippy::restriction` (which conflicts with idioms):
+
+```toml
+[lints.rust]
+missing_docs = "warn"
+unsafe_code = "deny"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# Selective overrides (where pedantic disagrees with this codebase's idioms):
+module_name_repetitions = "allow"   # cupel::scorer::RecencyScorer is intentional
+missing_errors_doc = "warn"
+missing_panics_doc = "warn"
+must_use_candidate = "warn"
+# Restriction lints worth enabling individually:
+unwrap_used = "warn"
+expect_used = "warn"                # In library code (not tests)
+```
+
+**Why `missing_docs = "warn"`**: The existing codebase has comprehensive doc comments. Enforcing this at the lint level prevents regressions when adding diagnostics types.
+
+**Why `must_use_candidate = "warn"`**: Clippy will flag methods returning `SelectionReport` or `DiagnosticTraceCollector` that are missing `#[must_use]`, catching omissions automatically.
+
+**Why `module_name_repetitions = "allow"`**: `CupelError`, `ContextItem`, `ContextBudget` would all trigger this lint. The existing API surface already uses this naming convention consistently; changing it would be a breaking change. Allow globally.
+
+#### cargo-deny
+
+`cargo-deny` (version: current stable, `embarkstudios/cargo-deny`) is recommended for supply chain hygiene. For a crate with minimal dependencies (only `chrono`, `thiserror`, optional `serde`), the primary value is:
+
+1. **License compliance**: Verify transitive deps remain MIT/Apache-2.0.
+2. **Advisories**: Block publication if a dep has a known CVE.
+3. **Ban duplicate versions**: Keep the dependency tree minimal.
+
+```toml
+# deny.toml
+[advisories]
+unmaintained = "warn"
+
+[bans]
+multiple-versions = "deny"
+wildcards = "deny"
+
+[licenses]
+confidence-threshold = 0.93
+allow = ["MIT", "Apache-2.0", "Apache-2.0 WITH LLVM-exception", "Unicode-3.0"]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+```
+
+`cargo-deny` is a **dev/CI tool** only — it runs in CI, never compiled into the crate. Zero-dep constraint unaffected.
+
+#### rustdoc quality
+
+- `#![cfg_attr(docsrs, feature(doc_auto_cfg))]` — already present in `lib.rs`. This enables automatic feature flag badges on docs.rs for the `serde` and future `diagnostics` feature.
+- `#![deny(rustdoc::broken_intra_doc_links)]` — add to `lib.rs` to catch broken `[TypeName]` links at compile time.
+- All public diagnostics types must have module-level doc comments explaining the overall system.
+
+---
+
+### 20.11 Feature Flag Strategy for Diagnostics
+
+The diagnostics system itself should be unconditionally available (no feature flag). Rationale:
+
+1. The `TraceCollector` trait and `NullTraceCollector` compile to zero overhead — there is no cost to including them unconditionally.
+2. `DiagnosticTraceCollector` and `SelectionReport` are plain data types with no heavy deps — no reason to gate them.
+3. Feature flags on diagnostics types create a split API surface where some call sites compile differently than others, complicating docs and user understanding.
+4. Contrast with `serde`: serde integration requires pulling in the `serde` crate, which justifies a feature flag. Diagnostics adds no deps.
+
+**Confidence**: HIGH — consistent with the zero-dep constraint and how the existing `serde` feature is justified.
+
+If `SelectionReport` should optionally implement `Serialize`/`Deserialize` (for structured logging by consumers), that serialization impl belongs under the existing `serde` feature gate, not a new `diagnostics` feature.
+
+---
+
+### 20.12 Zero-Dep Constraint Compliance — Decision Table
+
+| Item | Type | Justifies new dep? | Decision |
+|---|---|---|---|
+| `TraceCollector` trait | Library code | N/A | Pure Rust trait, no dep |
+| `NullTraceCollector` | Library code | N/A | Unit struct, no dep |
+| `DiagnosticTraceCollector` | Library code | N/A | Uses `std::collections::Vec`, no dep |
+| `ExclusionReason` | Library code | N/A | Enum, no dep |
+| `SelectionReport` | Library code | N/A | Plain struct, no dep |
+| `proptest` | Dev dep only | Yes (dev) | Add to `[dev-dependencies]` |
+| `proptest-derive` | Dev dep only | Yes (dev) | Add to `[dev-dependencies]` if `Arbitrary` needed |
+| `cargo-deny` | CI tool | N/A | No Cargo dep, install in CI |
+
+The diagnostics system in its entirety adds **zero new runtime dependencies**. This is the strongest possible outcome under the zero-dep constraint.
+
+---
+
+### 20.13 Conformance Vector Extension
+
+The existing conformance vector format (TOML files under `conformance/required/`) should be extended with diagnostics assertions. This enables cross-language verification that the Rust and .NET diagnostics systems report identical outcomes.
+
+Proposed extension to vector schema:
+
+```toml
+[expected.diagnostics]
+deduplication_removed = 1
+selected_count = 3
+excluded = [
+    { content = "duplicate message", reason = "Deduplicated" },
+    { content = "too large doc", reason = "BudgetExceeded" },
+]
+```
+
+The .NET suite would read the same vector and assert against `SelectionReport`. The Rust suite would assert against `DiagnosticTraceCollector::into_report()`. Discrepancy = cross-language bug.
+
+**This is the primary quality gate for the diagnostics milestone.**
+
+---
+
+### Sources
+
+- [Rust API Guidelines — Checklist](https://rust-lang.github.io/api-guidelines/checklist.html) — C-COMMON-TRAITS, C-SEALED, C-STRUCT-PRIVATE, C-BUILDER, future-proofing
+- [Rust Reference — `#[non_exhaustive]`](https://doc.rust-lang.org/reference/attributes/type_system.html#the-non_exhaustive-attribute)
+- [Rust Clippy — `[lints.clippy]` configuration](https://rust-lang.github.io/rust-clippy/stable/index.html)
+- [cargo-deny — Configuration](https://embarkstudios.github.io/cargo-deny/)
+- [proptest — Getting Started](https://altsysrq.github.io/proptest-book/proptest/getting-started.html)
+- [proptest-derive — Arbitrary](https://altsysrq.github.io/proptest-book/proptest-derive/getting-started.html)
+- [Rust API Guidelines — Documentation](https://rust-lang.github.io/api-guidelines/documentation.html) — doc tests, `# Errors`, `# Panics` sections
