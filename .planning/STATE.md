@@ -9,28 +9,29 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Current Position
 
-Phase: 21 of 21 — docs.rs Documentation & Examples
+Phase: 22 of 22 — CI Feature Coverage
 Milestone: v1.1 Rust Crate Migration & crates.io Publishing
-Plan: 3 of 3 complete
-Status: Complete
-Last activity: 2026-03-15 — Completed 21-03-PLAN.md (Standalone runnable examples)
+Plan: 1 of 1
+Status: Phase complete
+Last activity: 2026-03-15 — Completed 22-01-PLAN.md
 
-Progress: ██████████████████████████ 14/14 plans (v1.1)
+Progress: █████████████████████████████ 15/15 plans (v1.1)
 
 ## Phase Overview
 
-NEXT_PHASE=21
+NEXT_PHASE=none
 
 | Phase | Status |
 |-------|--------|
 | **v1.0 Core Library** | SHIPPED 2026-03-14 (15 phases, 48 plans) |
-| **v1.1 Rust Crate Migration & crates.io Publishing** | |
+| **v1.1 Rust Crate Migration & crates.io Publishing** | SHIPPED 2026-03-15 |
 | 16. Pre-flight & Crate Scaffold | ● complete (2/2 plans) |
 | 17. Crate Migration & Conformance Verification | ● complete (2/2 plans) |
 | 18. Dual-Language CI | ● complete (2/2 plans) |
 | 19. First Publish & Assay Switchover | ● complete (2/2 plans) |
 | 20. Serde Feature Flag | ● complete (3/3 plans) |
 | 21. docs.rs Documentation & Examples | ● complete (3/3 plans) |
+| 22. CI Feature Coverage | ● complete (1/1 plans) |
 
 ## Accumulated Context
 
@@ -49,7 +50,7 @@ NEXT_PHASE=21
 
 ### Roadmap Evolution
 - v1.0 shipped 2026-03-14 — 15 phases, 48 plans, 44/44 requirements, 641 tests
-- v1.1 active: Rust crate migration to cupel repo + crates.io publishing (6 phases, 24 requirements)
+- v1.1 shipped 2026-03-15 — 7 phases, 15 plans, 24 requirements
 
 ### Blockers
 (None)
