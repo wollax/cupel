@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 
 Phase: 25 — Conformance Infrastructure & Drift Guard
 Milestone: v1.2 Rust Parity & Quality Hardening
-Plan: 2 of 3
-Status: In progress — Plans 25-01 and 25-02 complete
-Last activity: 2026-03-15 — Plan 25-01 SUMMARY.md created (comment fixes in 5 TOML vectors, 78 tests pass)
+Plan: 3 of 3
+Status: Phase 25 complete — All 3 plans shipped
+Last activity: 2026-03-15 — Plan 25-03 complete (diagnostics vector schema documented, example vector created)
 
 Progress: █████████████████████████████████░░░░░░░ 24/32 phases shipped
 
