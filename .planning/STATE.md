@@ -11,15 +11,15 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 Phase: 19 of 21 — First Publish & Assay Switchover
 Milestone: v1.1 Rust Crate Migration & crates.io Publishing
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-03-15 — Completed 19-01-PLAN.md (Release workflow OIDC & first publish fixes)
+Plan: 2 of 2 complete
+Status: Phase complete
+Last activity: 2026-03-15 — Completed 19-02-PLAN.md (First publish, OIDC, assay switchover)
 
-Progress: ███████░░░░░░░░░░░░░░░░░░ 7/24 plans (v1.1)
+Progress: ████████░░░░░░░░░░░░░░░░░ 8/24 plans (v1.1)
 
 ## Phase Overview
 
-NEXT_PHASE=19
+NEXT_PHASE=20
 
 | Phase | Status |
 |-------|--------|
@@ -28,7 +28,7 @@ NEXT_PHASE=19
 | 16. Pre-flight & Crate Scaffold | ● complete (2/2 plans) |
 | 17. Crate Migration & Conformance Verification | ● complete (2/2 plans) |
 | 18. Dual-Language CI | ● complete (2/2 plans) |
-| 19. First Publish & Assay Switchover | ◐ in progress (1/2 plans) |
+| 19. First Publish & Assay Switchover | ● complete (2/2 plans) |
 | 20. Serde Feature Flag | ○ planned |
 | 21. docs.rs Documentation & Examples | ○ planned |
 
