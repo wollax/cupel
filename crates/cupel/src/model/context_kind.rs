@@ -1,6 +1,9 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 use crate::CupelError;
 
 /// An extensible string enumeration classifying the type of a context item.
@@ -69,5 +72,20 @@ impl Hash for ContextKind {
 impl fmt::Display for ContextKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.0)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for ContextKind {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.0)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for ContextKind {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let s = String::deserialize(deserializer)?;
+        ContextKind::new(s).map_err(serde::de::Error::custom)
     }
 }
