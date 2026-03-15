@@ -1,0 +1,13 @@
+# Rust
+target/
+Cargo.lock
+
+# .NET
+**/bin/
+**/obj/
+TestResults/
+BenchmarkDotNet.Artifacts/
+
+# IDE
+.vs/
+*.user
