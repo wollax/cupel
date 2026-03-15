@@ -79,8 +79,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — Copy 26 source files and 28 conformance vectors into crate, update Cargo.toml include, verify build/clippy/fmt
-- [ ] 17-02-PLAN.md — Migrate 5 test files with import updates, set up pre-commit diff guard hook, verify tests/packaging/tarball round-trip
+- [x] 17-01-PLAN.md — Copy 26 source files and 28 conformance vectors into crate, update Cargo.toml include, verify build/clippy/fmt
+- [x] 17-02-PLAN.md — Migrate 5 test files with import updates, set up pre-commit diff guard hook, verify tests/packaging/tarball round-trip
 
 ---
 
@@ -164,7 +164,7 @@ Plans:
 |-------|------|-------------|--------|
 | 1-15 | v1.0 Core Library | 44/44 requirements | SHIPPED |
 | 16 | Pre-flight & Crate Scaffold | MIGRATE-01-05 | ● complete |
-| 17 | Crate Migration & Conformance Verification | MIGRATE-06-07, CONFORM-01-03 | ○ planned |
+| 17 | Crate Migration & Conformance Verification | MIGRATE-06-07, CONFORM-01-03 | ● complete |
 | 18 | Dual-Language CI | CI-01-02, CI-04-05 | ○ planned |
 | 19 | First Publish & Assay Switchover | CI-03, SWITCH-01-04 | ○ planned |
 | 20 | Serde Feature Flag | ENHANCE-01-03 | ○ planned |
