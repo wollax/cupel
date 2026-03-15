@@ -11,6 +11,7 @@ categories = ["algorithms", "text-processing"]
 keywords = ["llm", "context-window", "pipeline", "token-budget"]
 include = [
     "src/**/*.rs",
+    "tests/**/*.rs",
     "conformance/**/*.toml",
     "Cargo.toml",
     "LICENSE",
