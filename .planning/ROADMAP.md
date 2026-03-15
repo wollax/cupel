@@ -76,7 +76,11 @@ Plans:
 4. `cargo package --list` confirms all `.toml` conformance vectors appear in the tarball
 5. Unpacked tarball verification: `tar xvf *.crate && cargo test` passes inside the unpacked directory
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — Copy 26 source files and 28 conformance vectors into crate, update Cargo.toml include, verify build/clippy/fmt
+- [ ] 17-02-PLAN.md — Migrate 5 test files with import updates, set up pre-commit diff guard hook, verify tests/packaging/tarball round-trip
 
 ---
 
