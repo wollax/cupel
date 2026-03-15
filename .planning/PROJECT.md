@@ -6,11 +6,16 @@ Cupel is a .NET context management library for coding agents. Given a set of con
 
 Part of the Wollax agentic development stack: **Assay** (spec-driven development) → **Smelt** (orchestration) → **Cupel** (context management).
 
-## Current Milestone: v1.0 Core Library (Gap Closure)
+## Current State
 
-**Goal:** Ship the complete Cupel context management library — pipeline engine, scoring, slicing, placement, explainability, fluent API, named policies, serialization support, and all NuGet packages. Close remaining audit gaps (budget contract, policy type completeness, conformance hardening).
+**Shipped:** v1.0 Core Library (2026-03-14)
+- 4,303 lines of C# across 56 source files
+- 11,175 lines of test code across 49 test files (641 tests)
+- 4 NuGet packages: Core, DI Extensions, Tiktoken, Json
+- Language-agnostic specification with 28 conformance test vectors
+- Rust crate implementation (assay-cupel) passing all conformance vectors
 
-## Next Milestone: v1.1 Rust Crate Migration & crates.io Publishing
+## Current Milestone: v1.1 Rust Crate Migration & crates.io Publishing
 
 **Goal:** Pull the `assay-cupel` Rust crate from `wollax/assay` into the cupel monorepo, publish as `cupel-rs` on crates.io, and have assay reference it as a crates.io consumer.
 
@@ -25,18 +30,6 @@ Part of the Wollax agentic development stack: **Assay** (spec-driven development
 - `crates/assay-cupel/` deleted from assay repo after migration verified
 - Local dev workflow documented (`[patch.crates-io]` pattern)
 
-**Target features:**
-
-- Pipeline engine with fixed Classify → Score → Deduplicate → Slice → Place stages
-- Full scorer suite (Recency, Priority, Kind, Tag, Frequency, Reflexive) with CompositeScorer
-- All slicers (Greedy, Knapsack, Quota, Stream) with semantic quotas
-- Pluggable placement (IPlacer) with U-shaped default
-- Explainability from day 1 (ContextResult, ContextTrace, SelectionReport, DryRun)
-- Fluent builder API with declarative CupelPolicy
-- 7+ named policy presets (chat, code-review, rag, document-qa, tool-use, long-running, debugging)
-- JSON serialization with [JsonPropertyName] on all public types
-- 4 NuGet packages: Core, DI Extensions, Tiktoken, Json
-
 ## Core Value
 
 Given candidates and a budget, return the optimal context selection with full explainability — every inclusion and exclusion has a traceable reason.
@@ -45,65 +38,24 @@ Given candidates and a budget, return the optimal context selection with full ex
 
 ### Validated
 
-(None yet — ship to validate)
+- ContextItem model with Content, Kind, Tokens, Timestamp, Source, Tags, Priority, Pinned, OriginalTokens, FutureRelevanceHint, Metadata — v1.0
+- ContextBudget model with MaxTokens, TargetTokens, ReservedSlots, OutputReserve, EstimationSafetyMarginPercent — v1.0
+- Fixed pipeline: Classify → Score → Deduplicate → Slice → Place — v1.0
+- Ordinal-only scoring invariant — v1.0
+- Pinned items bypass scoring — v1.0
+- IScorer interface with 6 built-in scorers + CompositeScorer + ScaledScorer — v1.0
+- ISlicer interface with GreedySlice, KnapsackSlice, QuotaSlice, StreamSlice — v1.0
+- IPlacer interface with UShapedPlacer and ChronologicalPlacer — v1.0
+- ContextResult, SelectionReport, DryRun, OverflowStrategy explainability — v1.0
+- CupelPolicy declarative config + 7 named presets + CupelOptions intent-based lookup — v1.0
+- Fluent builder API via CupelPipeline.CreateBuilder() — v1.0
+- IContextSource interface (IAsyncEnumerable<ContextItem>) — v1.0
+- JSON serialization with source-generated JsonSerializerContext — v1.0
+- 4 NuGet packages (Core, DI, Tiktoken, Json) published to nuget.org — v1.0
 
 ### Active
 
-**Pipeline Engine**
-- [ ] ContextItem model with Content (non-nullable string), Kind, Tokens, Timestamp, Source, Tags, Priority, Pinned, OriginalTokens, FutureRelevanceHint, and extensible Metadata
-- [ ] ContextBudget model with MaxTokens, TargetTokens, ReservedSlots, OutputReserve, EstimationSafetyMarginPercent
-- [ ] Fixed pipeline: Classify → Score → Deduplicate → Slice → Place
-- [ ] Ordinal-only scoring invariant: scorers rank, slicers drop, placers position — no component crosses this boundary
-- [ ] Pinned items bypass scoring, enter pipeline at Placer stage
-
-**Scorers**
-- [ ] IScorer interface (output conventionally 0.0–1.0, documented not enforced by type)
-- [ ] Built-in scorers: RecencyScorer, PriorityScorer, KindScorer, TagScorer, FrequencyScorer, ReflexiveScorer (FutureRelevanceHint)
-- [ ] CompositeScorer with configurable aggregation (WeightedAverage, nested composites)
-- [ ] ScaledScorer wrapper for scorers that don't naturally produce 0–1 output
-
-**Slicers**
-- [ ] ISlicer interface
-- [ ] Built-in slicers: GreedySlice, KnapsackSlice, QuotaSlice, StreamSlice
-- [ ] Semantic quotas: percentage-based Require(Kind, minPercent) / Cap(Kind, maxPercent)
-- [ ] Pinned item + quota interaction is specified behavior with clear errors on conflict
-
-**Placement**
-- [ ] IPlacer interface (pluggable, not hardcoded)
-- [ ] UShapedPlacer as default implementation (primacy + recency attention curve)
-
-**Explainability**
-- [ ] ContextResult return type from day 1: Items + optional ContextTrace
-- [ ] ITraceCollector with NullTraceCollector (no-op default) and DiagnosticTraceCollector
-- [ ] Trace event construction gated (IsEnabled check before allocation)
-- [ ] Explicit trace propagation (no AsyncLocal)
-- [ ] SelectionReport / DryRun() — included items with scores, excluded items with ExclusionReason enum
-- [ ] OverflowStrategy enum (Throw | Truncate | Proceed) + optional observer callback
-
-**API Surface**
-- [ ] CupelPolicy: declarative, serializable config tying pipeline together
-- [ ] Fluent builder: CupelPipeline.CreateBuilder() over fixed pipeline (no call-next middleware)
-- [ ] Both explicit policy and intent-based lookup (CupelOptions.AddPolicy("intent", policy))
-- [ ] IContextSource interface (IAsyncEnumerable<ContextItem>) in core
-- [ ] Token counting is caller's responsibility: ContextItem.Tokens is required non-nullable int
-
-**Named Policies**
-- [ ] 7+ built-in policies: chat, code-review, rag, document-qa, tool-use, long-running, debugging
-- [ ] [Experimental] attribute on preset methods
-- [ ] Policy presets serve as living documentation and test fixtures
-
-**Serialization**
-- [ ] [JsonPropertyName] on all public types from day 1
-- [ ] Incremental serialization: ContextBudget + SlicerConfig first, scorer config after CompositeScorer stabilizes
-- [ ] RegisterScorer(string name, Func<IScorer> factory) hook designed in v1 for future serialization
-- [ ] JSON only (no YAML — minimal dependencies)
-
-**Packaging**
-- [ ] Wollax.Cupel — core library, zero external dependencies
-- [ ] Wollax.Cupel.Extensions.DependencyInjection — Microsoft.Extensions.DI integration (separate package)
-- [ ] Wollax.Cupel.Tiktoken — optional token counting companion
-- [ ] Wollax.Cupel.Json — JSON policy serialization companion
-- [ ] Published to nuget.org as public packages
+(See REQUIREMENTS.md for v1.1 requirements)
 
 ### Out of Scope
 
@@ -119,15 +71,12 @@ Given candidates and a budget, return the optimal context selection with full ex
 - **Hot reload / PolicyWatcher** — Complex threading concerns. Phase 3+ at earliest.
 - **YAML policy serialization** — Contradicts minimal-dependencies constraint.
 - **AdaptiveScorer / ML-based scoring** — Gradient-boosted on small N is worse than tuned heuristics. Named policies + tuning guide instead.
-- **Cross-language SDK / CLI** — Document algorithm as spec in README. CLI when demand evidence exists.
 
 ## Context
 
 **Ecosystem position**: Third tool in the Wollax agentic development stack. Assay (specs) and Smelt (orchestration) are existing public GitHub repos. Cupel completes the trilogy — the metallurgical assaying metaphor (test the ore → extract the metal → refine the output).
 
 **Problem**: Context windows are finite, degrading resources. LLM performance degrades before theoretical limits (Anthropic data: 17-point MRCR drop at 1M context). "Lost in the middle" phenomenon means placement matters. Tool outputs consume 80%+ of tokens in typical agent trajectories. Multi-agent orchestration multiplies the problem. No standalone, framework-agnostic layer treats context selection as a policy/optimization problem.
-
-**Prior art**: Kata Context (product-form, not library), LangChain context_engineering (Python/LangGraph locked), Cursor workspace indexer (closed-source, IDE-locked), Claude Code compaction (model-specific, opaque), manual prompt engineering (doesn't scale).
 
 **Design philosophy**: Heuristics over magic. No hidden ML models. Transparent, configurable, inspectable scoring. Composable pipeline stages. Every item in the returned window carries its score and inclusion/exclusion reason.
 
@@ -137,26 +86,28 @@ Given candidates and a budget, return the optimal context selection with full ex
 
 ## Constraints
 
-- **Tech stack**: C# / .NET 10. Core library has zero external dependencies beyond BCL.
+- **Tech stack**: C# / .NET 10 + Rust. Core library has zero external dependencies beyond BCL.
 - **Performance**: Full pipeline < 1ms for < 500 items. No allocations on hot paths when tracing disabled.
-- **API stability**: [JsonPropertyName] on all public types from day 1. ContextResult return type from day 1. Breaking changes only before v1.0.
+- **API stability**: [JsonPropertyName] on all public types. ContextResult return type. Breaking changes only before v1.0 (now shipped).
 - **Dependencies**: Core package must remain zero-dependency. Optional features via companion NuGet packages.
-- **Distribution**: Public nuget.org. Semantic versioning. Open source.
+- **Distribution**: Public nuget.org + crates.io. Semantic versioning. Open source.
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 | --- | --- | --- |
-| Content is non-nullable string on ContextItem | Simplifies API, maximizes debuggability for dry-run/trace. Memory is caller's problem at <500 items. | — Pending |
-| Token counting is caller's responsibility | Keeps pipeline dependency-free. Works with any tokenizer (tiktoken, cl100k, Llama encoders) at zero coupling cost. | — Pending |
-| CompositeScorer over scorer DAG | Nested composites achieve any DAG-like composition without cycle detection, topological sort, or parallel scheduling overhead. ~30 lines vs hundreds. | — Pending |
-| Fixed pipeline over middleware | Call-next middleware silent-drop failure mode is worse than fixed pipeline's predictable behavior. Users substitute implementations, not reorder stages. | — Pending |
-| Ordinal-only scoring invariant | Scorers that eliminate items bias the Slicer's input. KnapsackSlice is provably correct only on complete candidate sets. | — Pending |
-| IPlacer interface (not hardcoded U-shape) | U-shaped attention curve is model-dependent and actively contested. Every other component is composable — Placer should be too. | — Pending |
-| Both explicit policy and intent-based lookup | Explicit for orchestrator-level control (Smelt). Intent-based for quick integration and adoption. | — Pending |
-| Separate DI package | Keeps core zero-dependency. Wollax.Cupel.Extensions.DependencyInjection for MS.Extensions.DI users. | — Pending |
-| Public nuget.org from day 1 | Forces API discipline. Assay is already public. No proprietary logic to protect — value is in design quality. | — Pending |
-| No IContextSink | Cupel selects; consumers convert. Output adapters are scope creep. | — Pending |
+| Content is non-nullable string on ContextItem | Simplifies API, maximizes debuggability for dry-run/trace. Memory is caller's problem at <500 items. | Good |
+| Token counting is caller's responsibility | Keeps pipeline dependency-free. Works with any tokenizer (tiktoken, cl100k, Llama encoders) at zero coupling cost. | Good |
+| CompositeScorer over scorer DAG | Nested composites achieve any DAG-like composition without cycle detection, topological sort, or parallel scheduling overhead. ~30 lines vs hundreds. | Good |
+| Fixed pipeline over middleware | Call-next middleware silent-drop failure mode is worse than fixed pipeline's predictable behavior. Users substitute implementations, not reorder stages. | Good |
+| Ordinal-only scoring invariant | Scorers that eliminate items bias the Slicer's input. KnapsackSlice is provably correct only on complete candidate sets. | Good |
+| IPlacer interface (not hardcoded U-shape) | U-shaped attention curve is model-dependent and actively contested. Every other component is composable — Placer should be too. | Good |
+| Both explicit policy and intent-based lookup | Explicit for orchestrator-level control (Smelt). Intent-based for quick integration and adoption. | Good |
+| Separate DI package | Keeps core zero-dependency. Wollax.Cupel.Extensions.DependencyInjection for MS.Extensions.DI users. | Good |
+| Public nuget.org from day 1 | Forces API discipline. Assay is already public. No proprietary logic to protect — value is in design quality. | Good |
+| No IContextSink | Cupel selects; consumers convert. Output adapters are scope creep. | Good |
+| ContextBudget as sealed class (not record) | Prevents with-expressions bypassing constructor validation | Good |
+| Language-agnostic specification | Enables multi-language implementations with conformance guarantee | Good |
 
 ---
-*Last updated: 2026-03-14 — milestone v1.1 defined*
+*Last updated: 2026-03-14 — v1.0 shipped, v1.1 active*

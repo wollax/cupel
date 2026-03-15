@@ -1,0 +1,26 @@
+[package]
+name = "cupel"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/wollax/cupel"
+description = "Context window management pipeline for LLM applications"
+readme = "README.md"
+categories = ["algorithms", "text-processing"]
+keywords = ["llm", "context-window", "pipeline", "token-budget"]
+include = [
+    "src/**/*.rs",
+    "Cargo.toml",
+    "LICENSE",
+    "README.md",
+]
+
+[dependencies]
+chrono = "0.4"
+thiserror = "2"
+
+[dev-dependencies]
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

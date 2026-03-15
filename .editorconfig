@@ -16,3 +16,11 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+[*.rs]
+indent_style = space
+indent_size = 4
+
+[*.toml]
+indent_style = space
+indent_size = 2
