@@ -5,7 +5,7 @@
 | Milestone | Status | Phases |
 |-----------|--------|--------|
 | v1.0 Core Library | SHIPPED 2026-03-14 | 1-15 |
-| v1.1 Rust Crate Migration & crates.io Publishing | ○ planned | 16-21 |
+| v1.1 Rust Crate Migration & crates.io Publishing | ○ planned | 16-22 |
 
 ---
 
@@ -176,6 +176,26 @@ Plans:
 
 ---
 
+#### Phase 22: CI Feature Coverage
+
+**Goal:** Ensure all Cargo features (specifically `serde`) are tested in CI and the release pipeline, closing the audit gap where 40+ serde tests are silently skipped on every CI run.
+
+**Dependencies:** Phase 20 (serde feature exists), Phase 18 (CI workflows exist)
+
+**Gap Closure:** Closes integration gap and flow gap from v1.1 milestone audit
+
+**Success Criteria:**
+1. `ci-rust.yml` runs `cargo test --all-features` in addition to default `cargo test` — serde tests execute on every PR
+2. `release-rust.yml` test job runs `cargo test --all-features` before publish — serde regressions block release
+3. Both default-features and all-features test runs pass in CI
+
+**Plans:** 1 plan
+
+Plans:
+- [ ] 22-01-PLAN.md — Add --all-features test steps to ci-rust.yml and release-rust.yml
+
+---
+
 ## Progress Summary
 
 | Phase | Name | Requirements | Status |
@@ -187,3 +207,4 @@ Plans:
 | 19 | First Publish & Assay Switchover | CI-03, SWITCH-01-04 | ● complete |
 | 20 | Serde Feature Flag | ENHANCE-01-03 | ● complete |
 | 21 | docs.rs Documentation & Examples | ENHANCE-04-05 | ● complete |
+| 22 | CI Feature Coverage | Audit gap closure | ○ planned |
