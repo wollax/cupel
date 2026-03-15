@@ -6,6 +6,7 @@
 //! (e.g. overflow, pinned items exceeding the budget).
 
 /// Errors that can occur during Cupel pipeline construction and execution.
+#[non_exhaustive]
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum CupelError {
     #[error("content must be non-empty")]

@@ -13,6 +13,7 @@
 /// let _ = OverflowStrategy::Truncate;  // drop lowest-scored items
 /// let _ = OverflowStrategy::Proceed;   // accept the overflow
 /// ```
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(deny_unknown_fields))]

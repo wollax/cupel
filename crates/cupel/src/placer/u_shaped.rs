@@ -24,6 +24,7 @@ use crate::placer::Placer;
 /// assert_eq!(placed[2].content(), "C"); // second-highest at end
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct UShapedPlacer;
 
 impl Placer for UShapedPlacer {

@@ -33,6 +33,7 @@ use crate::placer::Placer;
 /// assert_eq!(placed[1].content(), "later");
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct ChronologicalPlacer;
 
 impl Placer for ChronologicalPlacer {

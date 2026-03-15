@@ -33,6 +33,7 @@ use crate::slicer::Slicer;
 /// assert_eq!(selected.len(), 1);
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct KnapsackSlice {
     bucket_size: i64,
 }
