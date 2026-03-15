@@ -28,8 +28,10 @@ The report is extracted from the collector after the pipeline run completes. Thi
 | `events` | list of TraceEvent | Yes | — | All recorded events in insertion (stage) order. See [Events](events.md). |
 | `included` | list of IncludedItem | Yes | — | Items selected for the context window, in final placed order. |
 | `excluded` | list of ExcludedItem | Yes | — | Items not selected, sorted by score descending (stable by insertion order on ties). |
-| `total_candidates` | integer | Yes | — | Total number of items considered by the pipeline before any exclusion. |
-| `total_tokens_considered` | integer | Yes | — | Sum of tokens across all candidate items (included and excluded). |
+| `total_candidates` | integer | Yes | — | Total number of items considered by the pipeline. Equals `len(included) + len(excluded)`. |
+| `total_tokens_considered` | integer | Yes | — | Sum of `tokens` across all items in both `included` and `excluded` lists. |
+
+Items excluded at any pipeline stage — including pre-scoring exclusions such as `NegativeTokens` at the Classify stage and `Deduplicated` at the Deduplicate stage — appear in the `excluded` list. The `excluded` list is the complete set of items not selected, regardless of which stage excluded them. Items excluded before scoring carry a score of `0.0`.
 
 **Complete JSON example:**
 
@@ -44,24 +46,24 @@ The report is extracted from the collector after the pipeline run completes. Thi
   ],
   "included": [
     {
-      "item": { "content": "Recent conversation turn", "tokens": 256, "kind": "message" },
+      "item": { "content": "Recent conversation turn", "tokens": 256, "kind": "Message" },
       "score": 0.92,
       "reason": { "reason": "Scored" }
     },
     {
-      "item": { "content": "System prompt", "tokens": 128, "kind": "system" },
+      "item": { "content": "System prompt", "tokens": 128, "kind": "SystemPrompt" },
       "score": 0.0,
       "reason": { "reason": "Pinned" }
     }
   ],
   "excluded": [
     {
-      "item": { "content": "Old tool output", "tokens": 2048, "kind": "tool_output" },
+      "item": { "content": "Old tool output", "tokens": 2048, "kind": "ToolOutput" },
       "score": 0.45,
       "reason": { "reason": "BudgetExceeded", "item_tokens": 2048, "available_tokens": 512 }
     },
     {
-      "item": { "content": "Duplicate message", "tokens": 256, "kind": "message" },
+      "item": { "content": "Duplicate message", "tokens": 256, "kind": "Message" },
       "score": 0.30,
       "reason": { "reason": "Deduplicated", "deduplicated_against": "Recent conversation turn" }
     }
@@ -85,7 +87,7 @@ An `IncludedItem` pairs a context item with the score and reason that led to its
 
 ```json
 {
-  "item": { "content": "User's latest message", "tokens": 64, "kind": "message" },
+  "item": { "content": "User's latest message", "tokens": 64, "kind": "Message" },
   "score": 0.95,
   "reason": { "reason": "Scored" }
 }
@@ -105,7 +107,7 @@ An `ExcludedItem` pairs a context item with the score and reason that led to its
 
 ```json
 {
-  "item": { "content": "Large tool output", "tokens": 4096, "kind": "tool_output" },
+  "item": { "content": "Large tool output", "tokens": 4096, "kind": "ToolOutput" },
   "score": 0.60,
   "reason": { "reason": "BudgetExceeded", "item_tokens": 4096, "available_tokens": 1024 }
 }
@@ -115,7 +117,7 @@ An `ExcludedItem` pairs a context item with the score and reason that led to its
 
 ```json
 {
-  "item": { "content": "Duplicate content", "tokens": 256, "kind": "message" },
+  "item": { "content": "Duplicate content", "tokens": 256, "kind": "Message" },
   "score": 0.40,
   "reason": { "reason": "Deduplicated", "deduplicated_against": "Original message" }
 }
@@ -133,4 +135,4 @@ An `ExcludedItem` pairs a context item with the score and reason that led to its
 - The `included` list MUST be in final placed order (the order determined by the Placer), not score order or insertion order.
 - `total_candidates` MUST equal `len(included) + len(excluded)`.
 - `total_tokens_considered` MUST equal the sum of `tokens` across all items in both `included` and `excluded` lists.
-- The `score` field on `IncludedItem` and `ExcludedItem` MUST reflect the score at the time the inclusion/exclusion decision was made, not a recalculated value.
+- The `score` field on `IncludedItem` and `ExcludedItem` MUST reflect the score at the time the inclusion/exclusion decision was made, not a recalculated value. Items excluded before the Score stage (e.g., `NegativeTokens` at Classify) MUST have a `score` of `0.0`.

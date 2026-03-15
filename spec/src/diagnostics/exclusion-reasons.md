@@ -53,7 +53,7 @@ Reserved variants are defined but not emitted by any built-in pipeline stage. Th
 }
 ```
 
-Wire format: the `reason` field is a string discriminator. Variant-specific fields appear as sibling fields alongside `reason`. Fields that belong to other variants are omitted — absent fields are never represented as nulls.
+Wire format: the `reason` field is a string discriminator. Variant-specific fields appear as sibling fields alongside `reason`. Fields that belong to other variants are omitted — absent fields are never represented as nulls. Both `ExclusionReason` and `InclusionReason` use this same envelope format: `{ "reason": "<VariantName>", ...fields }`. For `InclusionReason`, which carries no fields, the envelope contains only the `reason` discriminator.
 
 ## InclusionReason
 
@@ -64,7 +64,7 @@ Wire format: the `reason` field is a string discriminator. Variant-specific fiel
 | Variant | Description | Emitted by |
 |---------|-------------|------------|
 | `Scored` | Included based on computed score within budget | Place stage |
-| `Pinned` | Bypassed scoring and slicing due to pinned status | Classify stage / Place stage |
+| `Pinned` | Bypassed scoring and slicing due to pinned status | Place stage |
 | `ZeroToken` | Included at no budget cost (zero-token item) | Place stage |
 
 **JSON example:**

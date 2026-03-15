@@ -88,12 +88,12 @@ Implementations may emit events for internal stages not listed here. Callers sho
 {
   "tokens_over_budget": 384,
   "overflowing_items": [
-    { "content": "...", "tokens": 512, "kind": "message" },
-    { "content": "...", "tokens": 1024, "kind": "tool_output" }
+    { "content": "...", "tokens": 512, "kind": "Message" },
+    { "content": "...", "tokens": 1024, "kind": "ToolOutput" }
   ],
   "budget": {
-    "max_tokens": 4096,
-    "target_tokens": 3072
+    "maxTokens": 4096,
+    "targetTokens": 3072
   }
 }
 ```
@@ -101,6 +101,6 @@ Implementations may emit events for internal stages not listed here. Callers sho
 ## Conformance Notes
 
 - Stage-level `TraceEvent` records MUST have `duration_ms` set to the wall-clock duration of that stage. Item-level events MUST have `duration_ms` set to `0.0`.
-- Each named pipeline stage (`Classify`, `Score`, `Deduplicate`, `Slice`, `Place`) MUST produce exactly one stage-level `TraceEvent` per pipeline run, emitted after the stage completes.
+- Each named pipeline stage (`Classify`, `Score`, `Deduplicate`, `Slice`, `Place`) MUST produce exactly one stage-level `TraceEvent` per pipeline run, emitted after the stage completes. This applies even when a stage processes zero items — the event is emitted with `item_count` of `0`.
 - `OverflowEvent` MUST only be produced when `OverflowStrategy` is `Proceed`. It MUST NOT be produced for `Throw`, `Truncate`, or any other strategy.
 - Implementations MUST handle unknown `PipelineStage` values gracefully when deserializing diagnostic data from other implementations.

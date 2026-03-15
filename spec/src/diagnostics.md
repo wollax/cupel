@@ -12,9 +12,9 @@ The trace collector is passed at call time, not stored on the pipeline. One coll
 
 This makes diagnostics per-invocation: each pipeline run receives a clean diagnostic context, and different concurrent runs can use different diagnostic configurations.
 
-**Rationale:** Per-invocation ownership avoids thread-safety concerns and ensures each pipeline run gets an isolated diagnostic context. Storing the collector on the pipeline object would couple its lifecycle to the pipeline instance, preventing concurrent runs with different diagnostic configurations.
+**Rationale:** Per-invocation ownership avoids thread-safety concerns and ensures each pipeline run gets an isolated diagnostic context.
 
-**Rejected alternative:** Storing the collector on the pipeline object — this couples the collector lifecycle to the pipeline, prevents concurrent runs with different diagnostic configurations, and turns a per-call concern into a per-instance configuration.
+**Rejected alternative:** Storing the collector on the pipeline object — this couples the collector lifecycle to the pipeline instance, prevents concurrent runs with different diagnostic configurations, and turns a per-call concern into a per-instance configuration.
 
 ## Null-Path Guarantee
 
