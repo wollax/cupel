@@ -99,7 +99,11 @@ Plans:
 4. `cargo-deny` configuration (`deny.toml`) exists and passes in CI
 5. GitHub branch protection accepts skipped Rust CI status check on .NET-only PRs (and vice versa)
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [x] 18-01-PLAN.md — Create Rust CI workflow, cargo-deny configuration, and add path filters to .NET CI
+- [x] 18-02-PLAN.md — Create Rust release workflow with dry-run support and environment gating
 
 ---
 
@@ -165,7 +169,7 @@ Plans:
 | 1-15 | v1.0 Core Library | 44/44 requirements | SHIPPED |
 | 16 | Pre-flight & Crate Scaffold | MIGRATE-01-05 | ● complete |
 | 17 | Crate Migration & Conformance Verification | MIGRATE-06-07, CONFORM-01-03 | ● complete |
-| 18 | Dual-Language CI | CI-01-02, CI-04-05 | ○ planned |
+| 18 | Dual-Language CI | CI-01-02, CI-04-05 | ● complete |
 | 19 | First Publish & Assay Switchover | CI-03, SWITCH-01-04 | ○ planned |
 | 20 | Serde Feature Flag | ENHANCE-01-03 | ○ planned |
 | 21 | docs.rs Documentation & Examples | ENHANCE-04-05 | ○ planned |
