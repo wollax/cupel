@@ -9,24 +9,24 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 
 ## Current Position
 
-Phase: 24 — Diagnostics Spec Chapter
+Phase: 25 — Conformance Infrastructure & Drift Guard
 Milestone: v1.2 Rust Parity & Quality Hardening
-Plan: 1 of 2
-Status: In Progress (plan 1 complete — producer-side types specified)
-Last activity: 2026-03-15 — Plan 24-01 complete (diagnostics.md, trace-collector.md, events.md)
+Plan: 0 of ? (planning)
+Status: Phase 24 complete — ready to begin Phase 25
+Last activity: 2026-03-15 — Plan 24-02 complete (exclusion-reasons.md, selection-report.md, SUMMARY.md)
 
-Progress: ████████████████████████████████░░░░░░░░ 23/32 phases shipped (phase 24 in progress)
+Progress: █████████████████████████████████░░░░░░░ 24/32 phases shipped
 
 ## Phase Overview
 
-NEXT_PHASE=24
+NEXT_PHASE=25
 
 | Phase | Name | Status |
 |-------|------|--------|
 | **v1.0 Core Library** | Phases 1-15 | SHIPPED 2026-03-14 (48 plans) |
 | **v1.1 Rust Crate Migration & crates.io Publishing** | Phases 16-22 | SHIPPED 2026-03-15 (15 plans) |
 | 23 | API Hardening Foundations | COMPLETE 2026-03-15 (3 plans) |
-| 24 | Diagnostics Spec Chapter | In Progress (1/2 plans complete) |
+| 24 | Diagnostics Spec Chapter | COMPLETE 2026-03-15 (2 plans) |
 | 25 | Conformance Infrastructure & Drift Guard | Planned |
 | 26 | Diagnostics Data Types | Planned |
 | 27 | TraceCollector Trait & Implementations | Planned |
