@@ -6,6 +6,11 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::CupelError;
 
+/// Error returned when a string cannot be parsed as a [`ContextKind`].
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[error("invalid context kind: {0:?}")]
+pub struct ParseContextKindError(String);
+
 /// An extensible string enumeration classifying the type of a context item.
 ///
 /// Comparison is case-insensitive using ASCII case folding.
@@ -64,6 +69,21 @@ impl ContextKind {
         Self(value.to_owned())
     }
 
+    /// Creates a [`ContextKind`] for the well-known "Message" kind.
+    pub fn message() -> Self { Self::from_static(Self::MESSAGE) }
+
+    /// Creates a [`ContextKind`] for the well-known "SystemPrompt" kind.
+    pub fn system_prompt() -> Self { Self::from_static(Self::SYSTEM_PROMPT) }
+
+    /// Creates a [`ContextKind`] for the well-known "Document" kind.
+    pub fn document() -> Self { Self::from_static(Self::DOCUMENT) }
+
+    /// Creates a [`ContextKind`] for the well-known "ToolOutput" kind.
+    pub fn tool_output() -> Self { Self::from_static(Self::TOOL_OUTPUT) }
+
+    /// Creates a [`ContextKind`] for the well-known "Memory" kind.
+    pub fn memory() -> Self { Self::from_static(Self::MEMORY) }
+
     /// Returns the underlying string value.
     pub fn as_str(&self) -> &str {
         &self.0
@@ -83,6 +103,17 @@ impl PartialEq for ContextKind {
 }
 
 impl Eq for ContextKind {}
+
+impl TryFrom<&str> for ContextKind {
+    type Error = ParseContextKindError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        if value.trim().is_empty() {
+            return Err(ParseContextKindError(value.to_owned()));
+        }
+        Ok(Self(value.to_owned()))
+    }
+}
 
 impl Hash for ContextKind {
     fn hash<H: Hasher>(&self, state: &mut H) {

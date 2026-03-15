@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 
 Phase: 23 — API Hardening Foundations
 Milestone: v1.2 Rust Parity & Quality Hardening
-Plan: —
-Status: Roadmap defined, not started
-Last activity: 2026-03-15 — v1.2 roadmap created (phases 23-32)
+Plan: 01 of 3
+Status: In progress
+Last activity: 2026-03-15 — Completed 23-01-PLAN.md (enum non-exhaustiveness & trait derives)
 
 Progress: ████████████████████████████████░░░░░░░░ 22/32 phases shipped (v1.0 + v1.1 complete; v1.2 planned)
 
@@ -25,7 +25,7 @@ NEXT_PHASE=23
 |-------|------|--------|
 | **v1.0 Core Library** | Phases 1-15 | SHIPPED 2026-03-14 (48 plans) |
 | **v1.1 Rust Crate Migration & crates.io Publishing** | Phases 16-22 | SHIPPED 2026-03-15 (15 plans) |
-| 23 | API Hardening Foundations | Planned |
+| 23 | API Hardening Foundations | In progress (1/3 plans complete) |
 | 24 | Diagnostics Spec Chapter | Planned |
 | 25 | Conformance Infrastructure & Drift Guard | Planned |
 | 26 | Diagnostics Data Types | Planned |
