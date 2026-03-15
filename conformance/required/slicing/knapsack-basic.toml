@@ -4,30 +4,9 @@ stage = "slicing"
 slicer = "knapsack"
 
 # Budget: 300 tokens, bucket_size: 100
-# This is a case where knapsack should differ from greedy.
+# This is a case where knapsack differs from greedy.
 #
 # Items:
-#   "expensive": tokens=300, score=0.8 → value=8000, discretized weight=3
-#   "cheap-a":   tokens=200, score=0.5 → value=5000, discretized weight=2
-#   "cheap-b":   tokens=200, score=0.4 → value=4000, discretized weight=2
-#
-# Capacity = floor(300/100) = 3
-#
-# Greedy (by density):
-#   expensive: density = 0.8/300 ≈ 0.00267
-#   cheap-a:   density = 0.5/200 = 0.0025
-#   cheap-b:   density = 0.4/200 = 0.002
-#   → selects "expensive" (remaining=0), total value = 0.8
-#
-# Knapsack DP:
-#   Taking cheap-a + cheap-b would need 400 tokens > 300, doesn't fit.
-#   Taking expensive = value 8000, weight 3 → fits exactly.
-#   Taking cheap-a alone = value 5000, weight 2.
-#   Taking cheap-b alone = value 4000, weight 2.
-#   expensive (8000) > cheap-a (5000) > cheap-b (4000)
-#   → Knapsack selects "expensive" (same as greedy in this case)
-#
-# Let me redesign for a genuine knapsack-vs-greedy difference:
 #   "big":     tokens=250, score=0.7 → value=7000, dw=ceil(250/100)=3
 #   "small-a": tokens=150, score=0.5 → value=5000, dw=ceil(150/100)=2
 #   "small-b": tokens=150, score=0.45 → value=4500, dw=ceil(150/100)=2

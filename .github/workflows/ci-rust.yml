@@ -7,12 +7,14 @@ on:
       - 'crates/**'
       - 'rust-toolchain.toml'
       - '.github/workflows/ci-rust.yml'
+      - 'spec/**'
   pull_request:
     branches: [main]
     paths:
       - 'crates/**'
       - 'rust-toolchain.toml'
       - '.github/workflows/ci-rust.yml'
+      - 'spec/**'
 
 jobs:
   check:
@@ -30,6 +32,18 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "crates/cupel -> target"
+
+      - name: Conformance drift guard
+        run: |
+          if [ -d spec/conformance/required ] && [ -d crates/cupel/conformance/required ]; then
+            diff -rq spec/conformance/required crates/cupel/conformance/required \
+              || { echo "ERROR: Conformance drift detected in required/ — spec and crates copies have diverged. Run: diff -r spec/conformance/required crates/cupel/conformance/required"; exit 1; }
+          fi
+          if [ -d spec/conformance/optional ] && [ -d crates/cupel/conformance/optional ]; then
+            diff -rq spec/conformance/optional crates/cupel/conformance/optional \
+              || { echo "ERROR: Conformance drift detected in optional/ — spec and crates copies have diverged. Run: diff -r spec/conformance/optional crates/cupel/conformance/optional"; exit 1; }
+          fi
+          echo "Conformance vectors in sync."
 
       - name: Format
         run: cargo fmt --check --manifest-path crates/cupel/Cargo.toml
