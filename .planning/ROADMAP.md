@@ -122,7 +122,11 @@ Plans:
 4. `assay/crates/assay-cupel/` directory deleted from assay repo
 5. `[patch.crates-io]` local development pattern documented in assay contributing guide
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 19-01-PLAN.md — Fix release workflow for first publish (remove --locked, make_latest: true) and add OIDC support
+- [ ] 19-02-PLAN.md — First publish to crates.io, configure OIDC trusted publishing, switch assay to registry dependency
 
 ---
 
