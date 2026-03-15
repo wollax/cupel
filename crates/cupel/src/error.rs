@@ -1,3 +1,10 @@
+//! Error types for pipeline construction and execution.
+//!
+//! All errors are represented by the single [`CupelError`] enum. Variants cover
+//! validation failures during model construction (e.g. empty content, invalid
+//! budgets), scorer/slicer configuration issues, and runtime pipeline errors
+//! (e.g. overflow, pinned items exceeding the budget).
+
 /// Errors that can occur during Cupel pipeline construction and execution.
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum CupelError {
