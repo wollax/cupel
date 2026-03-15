@@ -35,11 +35,17 @@ jobs:
       - name: Format
         run: cargo fmt --check --manifest-path crates/cupel/Cargo.toml
 
-      - name: Clippy
+      - name: Clippy (default features)
         run: cargo clippy --manifest-path crates/cupel/Cargo.toml -- -D warnings
 
-      - name: Test
+      - name: Clippy (all features)
+        run: cargo clippy --all-features --manifest-path crates/cupel/Cargo.toml -- -D warnings
+
+      - name: Test (default features)
         run: cargo test --manifest-path crates/cupel/Cargo.toml
+
+      - name: Test (all features)
+        run: cargo test --all-features --manifest-path crates/cupel/Cargo.toml
 
       - name: Deny
         uses: EmbarkStudios/cargo-deny-action@v2
