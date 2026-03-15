@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 Phase: 20 of 21 — Serde Feature Flag
 Milestone: v1.1 Rust Crate Migration & crates.io Publishing
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-03-15 — Completed 20-01-PLAN.md (Serde feature flag & leaf types)
+Last activity: 2026-03-15 — Completed 20-02-PLAN.md (Complex type serde)
 
-Progress: █████████░░░░░░░░░░░░░░░░ 9/24 plans (v1.1)
+Progress: ██████████░░░░░░░░░░░░░░░ 10/24 plans (v1.1)
 
 ## Phase Overview
 
@@ -29,7 +29,7 @@ CURRENT_PHASE=20
 | 17. Crate Migration & Conformance Verification | ● complete (2/2 plans) |
 | 18. Dual-Language CI | ● complete (2/2 plans) |
 | 19. First Publish & Assay Switchover | ● complete (2/2 plans) |
-| 20. Serde Feature Flag | ◐ in progress (1/3 plans) |
+| 20. Serde Feature Flag | ◐ in progress (2/3 plans) |
 | 21. docs.rs Documentation & Examples | ○ planned |
 
 ## Accumulated Context
