@@ -167,7 +167,12 @@ Plans:
 3. `examples/basic_pipeline.rs` exists and runs with `cargo run --example basic_pipeline`
 4. `cargo doc --no-deps --all-features` builds with zero warnings
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 21-01-PLAN.md — Write crate README with quickstart examples, wire lib.rs crate docs, configure docs.rs metadata
+- [ ] 21-02-PLAN.md — Add module-level doc comments and compilable doctests to all public modules, structs, and traits
+- [ ] 21-03-PLAN.md — Create three standalone runnable examples (basic_pipeline, serde_roundtrip, quota_slicing)
 
 ---
 
