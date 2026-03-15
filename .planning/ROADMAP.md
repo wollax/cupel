@@ -53,7 +53,11 @@
 4. Standalone `Cargo.toml` at `crates/cupel/` with all required fields (`name`, `version`, `edition`, `rust-version`, `license`, `repository`, `description`, `categories`, `keywords`, `include`) and chosen version strategy — no workspace-inherited fields
 5. `cargo check --manifest-path crates/cupel/Cargo.toml` passes on an empty `lib.rs` placeholder
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Verify crate name availability, create .gitignore, rust-toolchain.toml, and extend .editorconfig
+- [ ] 16-02-PLAN.md — Create standalone Cargo.toml and lib.rs placeholder, smoke-test with cargo check
 
 ---
 
