@@ -2,7 +2,8 @@
 name = "Pipeline diagnostics: BudgetExceeded exclusion reason"
 stage = "pipeline"
 
-# TBD: Replace with concrete values once Phase 29 implements run_traced.
+# Expected values below are final. A live integration test against run_traced
+# will be added in Phase 29.
 #
 # Budget: target=200, max=1000, reserve=0.
 #

@@ -28,8 +28,7 @@ stage = "pipeline"
 #   Both fit.
 #
 # Place (Chronological):
-#   merged = [system(pinned, score=1.0, no timestamp), new(score=1.0), old(score=0.0)]
-#   Actually, merged has pinned first: system(score=1.0), then sliced: new(1.0), old(0.0).
+#   merged = [system(pinned, score=1.0), new(score=1.0), old(score=0.0)]
 #   merged tokens = 100+150+150 = 400 = target → no overflow.
 #
 #   Chronological sort:

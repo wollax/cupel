@@ -157,10 +157,10 @@ Diagnostics vectors extend pipeline vectors with an `[expected.diagnostics]` sub
 |---|---|---|---|---|
 | `[[expected.diagnostics.included]]` | `content` | string | yes | Item content (matches placed order) |
 | `[[expected.diagnostics.included]]` | `score_approx` | float | yes | Expected score (epsilon tolerance) |
-| `[[expected.diagnostics.included]]` | `inclusion_reason` | string | yes | Reason: `"Scored"`, `"Pinned"` |
+| `[[expected.diagnostics.included]]` | `inclusion_reason` | string | yes | Reason: `"Scored"`, `"Pinned"`, `"ZeroToken"` |
 | `[[expected.diagnostics.excluded]]` | `content` | string | yes | Item content (sorted by score desc) |
 | `[[expected.diagnostics.excluded]]` | `score_approx` | float | yes | Expected score (epsilon tolerance) |
-| `[[expected.diagnostics.excluded]]` | `exclusion_reason` | string | yes | Reason discriminator: `"BudgetExceeded"`, `"Deduplicated"`, `"QuotaCapped"` |
+| `[[expected.diagnostics.excluded]]` | `exclusion_reason` | string | yes | Reason discriminator: `"BudgetExceeded"`, `"Deduplicated"`, `"QuotaCapExceeded"` |
 | `[[expected.diagnostics.excluded]]` | `item_tokens` | integer | conditional | Token count of excluded item (required for `BudgetExceeded`) |
 | `[[expected.diagnostics.excluded]]` | `available_tokens` | integer | conditional | Remaining budget at exclusion (required for `BudgetExceeded`) |
 | `[[expected.diagnostics.excluded]]` | `deduplicated_against` | string | conditional | Content of duplicate kept (required for `Deduplicated`) |
@@ -186,7 +186,8 @@ All three sub-tables (`included`, `excluded`, `summary`) are independently optio
 name = "Pipeline diagnostics: BudgetExceeded exclusion reason"
 stage = "pipeline"
 
-# TBD: Replace with concrete values once Phase 29 implements run_traced.
+# Expected values below are final. A live integration test against run_traced
+# will be added in Phase 29.
 #
 # Budget: target=200, max=1000, reserve=0.
 #

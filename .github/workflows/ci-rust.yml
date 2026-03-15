@@ -34,16 +34,25 @@ jobs:
           workspaces: "crates/cupel -> target"
 
       - name: Conformance drift guard
+        shell: bash
         run: |
-          if [ -d spec/conformance/required ] && [ -d crates/cupel/conformance/required ]; then
-            diff -rq spec/conformance/required crates/cupel/conformance/required \
-              || { echo "ERROR: Conformance drift detected in required/ — spec and crates copies have diverged. Run: diff -r spec/conformance/required crates/cupel/conformance/required"; exit 1; }
+          checked=0
+          for category in required optional; do
+            spec="spec/conformance/${category}"
+            crate="crates/cupel/conformance/${category}"
+            if [ -d "$spec" ] && [ -d "$crate" ]; then
+              diff -rq "$spec" "$crate" \
+                || { echo "ERROR: Conformance drift detected in ${category}/ — spec and crates copies have diverged."; diff -r "$spec" "$crate" || true; exit 1; }
+              checked=$((checked + 1))
+            elif [ -d "$spec" ] || [ -d "$crate" ]; then
+              echo "ERROR: Asymmetric conformance directories — only one of ${spec} or ${crate} exists."; exit 1
+            fi
+          done
+          if [ "$checked" -eq 0 ]; then
+            echo "WARNING: No conformance directories found to compare."
+          else
+            echo "Conformance vectors in sync (${checked} categories checked)."
           fi
-          if [ -d spec/conformance/optional ] && [ -d crates/cupel/conformance/optional ]; then
-            diff -rq spec/conformance/optional crates/cupel/conformance/optional \
-              || { echo "ERROR: Conformance drift detected in optional/ — spec and crates copies have diverged. Run: diff -r spec/conformance/optional crates/cupel/conformance/optional"; exit 1; }
-          fi
-          echo "Conformance vectors in sync."
 
       - name: Format
         run: cargo fmt --check --manifest-path crates/cupel/Cargo.toml
