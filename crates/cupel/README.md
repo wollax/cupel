@@ -4,11 +4,12 @@ Context window management pipeline for LLM applications.
 
 Given a set of context items — messages, documents, tool outputs, memory — and a
 token budget, Cupel determines the optimal subset and ordering for a model's
-context window. The pipeline follows a fixed three-phase model: **score** every
-candidate for relevance, **slice** the scored list to fit the budget, and
-**place** the selected items in an attention-optimal order. Each phase is
-independently configurable through trait implementations, and every
-inclusion/exclusion decision carries a traceable reason.
+context window. The pipeline follows a fixed six-stage flow: classify inputs,
+**score** every candidate for relevance, deduplicate, sort, **slice** the list
+to fit the budget, and **place** the selected items in an attention-optimal
+order. Each configurable stage (scorer, slicer, placer) is independently
+swappable through trait implementations, and every inclusion/exclusion decision
+carries a traceable reason.
 
 Cupel is framework-agnostic. It accepts pre-counted token lengths and returns
 plain `Vec<ContextItem>` — no LLM client, tokenizer, or async runtime required.

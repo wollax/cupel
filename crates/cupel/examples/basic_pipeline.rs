@@ -146,8 +146,8 @@ fn main() -> Result<(), cupel::CupelError> {
             item.kind(),
             item.tokens(),
             if item.pinned() { "yes" } else { "no " },
-            // Show first 60 chars of content
-            &item.content()[..item.content().len().min(60)],
+            // Show first 60 chars of content (safe for multi-byte)
+            item.content().chars().take(60).collect::<String>(),
         );
     }
 

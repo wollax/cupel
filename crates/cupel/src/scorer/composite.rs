@@ -24,13 +24,20 @@ use crate::scorer::Scorer;
 ///     (Box::new(KindScorer::with_default_weights()), 1.0),
 /// ])?;
 ///
-/// let item = ContextItemBuilder::new("hello", 5)
-///     .kind(ContextKind::new("Message")?)
-///     .timestamp(Utc::now())
-///     .build()?;
+/// let items = vec![
+///     ContextItemBuilder::new("recent", 5)
+///         .kind(ContextKind::new("Message")?)
+///         .timestamp(Utc::now())
+///         .build()?,
+///     ContextItemBuilder::new("older", 5)
+///         .kind(ContextKind::new("Message")?)
+///         .timestamp(Utc::now() - chrono::Duration::hours(1))
+///         .build()?,
+/// ];
 ///
-/// let score = scorer.score(&item, &[item.clone()]);
-/// assert!(score >= 0.0);
+/// let recent = scorer.score(&items[0], &items);
+/// let older = scorer.score(&items[1], &items);
+/// assert!(recent > older); // recency weight differentiates
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
 pub struct CompositeScorer {

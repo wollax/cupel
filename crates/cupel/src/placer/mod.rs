@@ -47,21 +47,11 @@ use crate::model::{ContextItem, ScoredItem};
 /// # Examples
 ///
 /// ```
-/// use cupel::{ContextItemBuilder, ScoredItem, ChronologicalPlacer, Placer};
-/// use chrono::Utc;
+/// use cupel::{ChronologicalPlacer, UShapedPlacer, Placer};
 ///
 /// // All built-in placers implement this trait
-/// let placer: Box<dyn Placer> = Box::new(ChronologicalPlacer);
-///
-/// let items = vec![ScoredItem {
-///     item: ContextItemBuilder::new("hello", 5)
-///         .timestamp(Utc::now())
-///         .build()?,
-///     score: 0.5,
-/// }];
-/// let placed = placer.place(&items);
-/// assert_eq!(placed.len(), 1);
-/// # Ok::<(), cupel::CupelError>(())
+/// let _: Box<dyn Placer> = Box::new(ChronologicalPlacer);
+/// let _: Box<dyn Placer> = Box::new(UShapedPlacer);
 /// ```
 pub trait Placer: Send + Sync {
     /// Orders the given items for final presentation in the context window.

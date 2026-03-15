@@ -189,7 +189,7 @@ fn main() -> Result<(), cupel::CupelError> {
             i + 1,
             item.kind(),
             item.tokens(),
-            &item.content()[..item.content().len().min(65)],
+            item.content().chars().take(65).collect::<String>(),
         );
     }
 

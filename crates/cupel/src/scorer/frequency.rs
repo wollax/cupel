@@ -20,9 +20,10 @@ use crate::scorer::Scorer;
 ///     .tags(vec!["topic-a".to_string()])
 ///     .build()?;
 ///
-/// let items = vec![a.clone(), b];
+/// let items = vec![a, b];
+/// // Pass a reference into the vec — FrequencyScorer uses ptr identity for self-exclusion
 /// let score = FrequencyScorer.score(&items[0], &items);
-/// assert_eq!(score, 1.0); // all peers share a tag
+/// assert_eq!(score, 1.0); // 1 of 1 non-self peer shares a tag
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
 #[derive(Debug, Clone, Copy)]

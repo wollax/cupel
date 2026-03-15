@@ -10,7 +10,7 @@
 ///
 /// // Three variants available
 /// let _ = OverflowStrategy::Throw;     // raise an error
-/// let _ = OverflowStrategy::Truncate;  // drop lowest-priority items
+/// let _ = OverflowStrategy::Truncate;  // drop lowest-scored items
 /// let _ = OverflowStrategy::Proceed;   // accept the overflow
 /// ```
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -20,7 +20,7 @@ pub enum OverflowStrategy {
     /// Raise an error when selected items exceed `targetTokens` (default).
     #[default]
     Throw,
-    /// Remove lowest-priority non-pinned items until the total fits.
+    /// Remove lowest-scored non-pinned items until the total fits.
     Truncate,
     /// Accept the over-budget selection and report overflow to an observer.
     Proceed,

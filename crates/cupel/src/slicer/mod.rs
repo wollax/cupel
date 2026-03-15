@@ -54,19 +54,11 @@ use crate::model::{ContextBudget, ContextItem, ScoredItem};
 /// # Examples
 ///
 /// ```
-/// use std::collections::HashMap;
-/// use cupel::{ContextItemBuilder, ContextBudget, ScoredItem, GreedySlice, Slicer};
+/// use cupel::{GreedySlice, KnapsackSlice, Slicer};
 ///
 /// // All built-in slicers implement this trait
-/// let slicer: Box<dyn Slicer> = Box::new(GreedySlice);
-///
-/// let items = vec![ScoredItem {
-///     item: ContextItemBuilder::new("context", 50).build()?,
-///     score: 0.9,
-/// }];
-/// let budget = ContextBudget::new(1000, 100, 0, HashMap::new(), 0.0)?;
-/// let selected = slicer.slice(&items, &budget);
-/// assert_eq!(selected.len(), 1);
+/// let _: Box<dyn Slicer> = Box::new(GreedySlice);
+/// let _: Box<dyn Slicer> = Box::new(KnapsackSlice::new(1)?);
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
 pub trait Slicer: Send + Sync {

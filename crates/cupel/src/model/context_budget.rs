@@ -14,7 +14,7 @@ use crate::model::ContextKind;
 ///
 /// ```
 /// use std::collections::HashMap;
-/// use cupel::{ContextBudget, ContextKind};
+/// use cupel::ContextBudget;
 ///
 /// // A simple budget: 4096 max, 3000 target, 1024 reserved for output
 /// let budget = ContextBudget::new(4096, 3000, 1024, HashMap::new(), 5.0)?;
@@ -24,8 +24,8 @@ use crate::model::ContextKind;
 /// assert_eq!(budget.output_reserve(), 1024);
 ///
 /// // Invalid budgets are rejected at construction time
-/// let err = ContextBudget::new(100, 200, 0, HashMap::new(), 0.0);
-/// assert!(err.is_err()); // target > max
+/// let err = ContextBudget::new(100, 200, 0, HashMap::new(), 0.0); // target 200 > max 100
+/// assert!(err.is_err());
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
 #[derive(Debug, Clone)]

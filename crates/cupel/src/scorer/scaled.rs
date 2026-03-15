@@ -3,7 +3,7 @@ use std::any::Any;
 use crate::model::ContextItem;
 use crate::scorer::Scorer;
 
-/// Composite scorer: min-max normalization of an inner scorer across all items.
+/// Wrapping scorer: min-max normalization of an inner scorer across all items.
 ///
 /// Returns 0.5 for degenerate cases (empty allItems, all scores equal).
 /// Self-identification uses reference identity (`std::ptr::eq`).

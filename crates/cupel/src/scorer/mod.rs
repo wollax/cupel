@@ -35,13 +35,20 @@
 //!     (Box::new(KindScorer::with_default_weights()), 1.0),
 //! ])?;
 //!
-//! let item = ContextItemBuilder::new("hello", 1)
-//!     .kind(ContextKind::new("Message")?)
-//!     .timestamp(Utc::now())
-//!     .build()?;
+//! let items = vec![
+//!     ContextItemBuilder::new("recent", 1)
+//!         .kind(ContextKind::new("Message")?)
+//!         .timestamp(Utc::now())
+//!         .build()?,
+//!     ContextItemBuilder::new("older", 1)
+//!         .kind(ContextKind::new("Message")?)
+//!         .timestamp(Utc::now() - chrono::Duration::hours(1))
+//!         .build()?,
+//! ];
 //!
-//! let score = scorer.score(&item, &[item.clone()]);
-//! assert!(score >= 0.0);
+//! let recent_score = scorer.score(&items[0], &items);
+//! let older_score = scorer.score(&items[1], &items);
+//! assert!(recent_score > older_score); // recency weight dominates
 //! # Ok::<(), cupel::CupelError>(())
 //! ```
 
@@ -75,17 +82,18 @@ use crate::model::ContextItem;
 /// # Examples
 ///
 /// ```
-/// use cupel::{ContextItemBuilder, RecencyScorer, Scorer};
-/// use chrono::Utc;
+/// use cupel::{ContextItemBuilder, PriorityScorer, Scorer};
 ///
 /// // All built-in scorers implement this trait
-/// let scorer: Box<dyn Scorer> = Box::new(RecencyScorer);
+/// let scorer: Box<dyn Scorer> = Box::new(PriorityScorer);
 ///
-/// let item = ContextItemBuilder::new("hello", 3)
-///     .timestamp(Utc::now())
-///     .build()?;
-/// let score = scorer.score(&item, &[item.clone()]);
-/// assert!(score >= 0.0);
+/// let items = vec![
+///     ContextItemBuilder::new("high", 5).priority(100).build()?,
+///     ContextItemBuilder::new("low", 5).priority(1).build()?,
+/// ];
+/// let hi = scorer.score(&items[0], &items);
+/// let lo = scorer.score(&items[1], &items);
+/// assert!(hi > lo);
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
 pub trait Scorer: Any + Send + Sync {

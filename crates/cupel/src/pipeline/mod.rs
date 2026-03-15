@@ -21,7 +21,7 @@
 //! # Example
 //!
 //! ```
-//! use std::collections::HashMap;
+//! # use std::collections::HashMap;
 //! use cupel::{
 //!     Pipeline, ContextItemBuilder, ContextBudget,
 //!     RecencyScorer, GreedySlice, ChronologicalPlacer,
@@ -35,14 +35,18 @@
 //!     .build()?;
 //!
 //! let items = vec![
-//!     ContextItemBuilder::new("Hello!", 5)
+//!     ContextItemBuilder::new("recent message", 10)
 //!         .timestamp(Utc::now())
 //!         .build()?,
+//!     ContextItemBuilder::new("huge filler doc", 5000)
+//!         .timestamp(Utc::now() - chrono::Duration::hours(1))
+//!         .build()?,
 //! ];
-//! let budget = ContextBudget::new(4096, 3000, 1024, HashMap::new(), 0.0)?;
+//! let budget = ContextBudget::new(4096, 200, 0, HashMap::new(), 0.0)?;
 //!
 //! let result = pipeline.run(&items, &budget)?;
-//! assert_eq!(result.len(), 1);
+//! assert_eq!(result.len(), 1); // filler excluded — doesn't fit budget
+//! assert_eq!(result[0].content(), "recent message");
 //! # Ok::<(), cupel::CupelError>(())
 //! ```
 
