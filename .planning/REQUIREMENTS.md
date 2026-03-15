@@ -4,11 +4,11 @@
 
 ### Rust API Hardening
 
-- [ ] **RAPI-01**: `CupelError` and `OverflowStrategy` enums have `#[non_exhaustive]` attribute
-- [ ] **RAPI-02**: Concrete slicer/placer structs (`GreedySlice`, `KnapsackSlice`, `UShapedPlacer`, `ChronologicalPlacer`) derive `Debug`, `Clone`, and `Copy`
-- [ ] **RAPI-03**: `ContextKind` provides factory methods for all known kinds (`message()`, `system_prompt()`, `document()`, `tool_output()`, `memory()`)
-- [ ] **RAPI-04**: `ContextKind` implements `TryFrom<&str>` for idiomatic error-propagation usage
-- [ ] **RAPI-05**: `ContextBudget` exposes `unreserved_capacity()` computed property in both .NET and Rust (`MaxTokens - OutputReserve - sum(ReservedSlots)`)
+- [x] **RAPI-01**: `CupelError` and `OverflowStrategy` enums have `#[non_exhaustive]` attribute
+- [x] **RAPI-02**: Concrete slicer/placer structs (`GreedySlice`, `KnapsackSlice`, `UShapedPlacer`, `ChronologicalPlacer`) derive `Debug`, `Clone`, and `Copy`
+- [x] **RAPI-03**: `ContextKind` provides factory methods for all known kinds (`message()`, `system_prompt()`, `document()`, `tool_output()`, `memory()`)
+- [x] **RAPI-04**: `ContextKind` implements `TryFrom<&str>` for idiomatic error-propagation usage
+- [x] **RAPI-05**: `ContextBudget` exposes `unreserved_capacity()` computed property in both .NET and Rust (`MaxTokens - OutputReserve - sum(ReservedSlots)`)
 - [ ] **RAPI-06**: `KnapsackSlice` validates DP table size before allocation and returns error if capacity × items exceeds 50M cells (both .NET and Rust)
 
 ### Rust Diagnostics — Specification

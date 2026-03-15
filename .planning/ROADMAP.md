@@ -57,11 +57,11 @@
 
 **Goal:** Close the diagnostics gap between the Rust and .NET implementations, harden the Rust API surface before semver commits, and batch-address 74+ accumulated quality issues.
 
-- [ ] Phase 23: API Hardening Foundations (3 plans) — RAPI-01, 02, 03, 04, 05
+- [x] Phase 23: API Hardening Foundations (3/3 plans, 2026-03-15) — RAPI-01, 02, 03, 04, 05
   Plans:
-  - [ ] 23-01-PLAN.md — #[non_exhaustive] on enums + derives on slicer/placer structs
-  - [ ] 23-02-PLAN.md — ContextKind factory methods, TryFrom<&str>, ParseContextKindError
-  - [ ] 23-03-PLAN.md — ContextBudget computed properties (Rust + .NET)
+  - [x] 23-01-PLAN.md — #[non_exhaustive] on enums + derives on slicer/placer structs
+  - [x] 23-02-PLAN.md — ContextKind factory methods, TryFrom<&str>, ParseContextKindError
+  - [x] 23-03-PLAN.md — ContextBudget computed properties (Rust + .NET)
 - [ ] Phase 24: Diagnostics Spec Chapter (~2 plans) — SPEC-01
 - [ ] Phase 25: Conformance Infrastructure & Drift Guard (~3 plans) — CONF-01, CONF-02, CI-03, SPEC-02
 - [ ] Phase 26: Diagnostics Data Types (~2 plans) — DIAG-04, 05, 06
