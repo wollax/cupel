@@ -21,7 +21,7 @@ Author a language-agnostic diagnostics spec chapter in `/spec/` that resolves al
 
 ### Spec prescriptiveness
 - Inline rationale: brief "why" sentence after each decision, co-located with the decision itself
-- No RFC 2119 keywords (MUST/SHOULD/MAY) — stay consistent with the existing informal-but-precise spec style
+- MUST keyword is permitted in Conformance Notes sections only, consistent with existing spec chapters (classify.md, slice.md). Informal prose elsewhere — no RFC 2119 keywords outside Conformance Notes.
 - Rejected alternatives mentioned: one sentence per load-bearing decision to prevent re-litigation
 - Pure contract level — no implementation hints, the spec defines *what*, implementations decide *how*
 
