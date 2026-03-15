@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer, ser::SerializeStruct};
 
 use crate::CupelError;
 use crate::model::{ContextKind, ContextSource};
@@ -187,5 +189,85 @@ impl ContextItemBuilder {
             pinned: self.pinned,
             original_tokens: self.original_tokens,
         })
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for ContextItem {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut state = serializer.serialize_struct("ContextItem", 11)?;
+        state.serialize_field("content", &self.content)?;
+        state.serialize_field("tokens", &self.tokens)?;
+        state.serialize_field("kind", &self.kind)?;
+        state.serialize_field("source", &self.source)?;
+        state.serialize_field("priority", &self.priority)?;
+        state.serialize_field("tags", &self.tags)?;
+        state.serialize_field("metadata", &self.metadata)?;
+        state.serialize_field("timestamp", &self.timestamp)?;
+        state.serialize_field("future_relevance_hint", &self.future_relevance_hint)?;
+        state.serialize_field("pinned", &self.pinned)?;
+        state.serialize_field("original_tokens", &self.original_tokens)?;
+        state.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for ContextItem {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Raw {
+            content: String,
+            tokens: i64,
+            #[serde(default)]
+            kind: Option<ContextKind>,
+            #[serde(default)]
+            source: Option<ContextSource>,
+            #[serde(default)]
+            priority: Option<i64>,
+            #[serde(default)]
+            tags: Option<Vec<String>>,
+            #[serde(default)]
+            metadata: Option<HashMap<String, String>>,
+            #[serde(default)]
+            timestamp: Option<DateTime<Utc>>,
+            #[serde(default)]
+            future_relevance_hint: Option<f64>,
+            #[serde(default)]
+            pinned: bool,
+            #[serde(default)]
+            original_tokens: Option<i64>,
+        }
+
+        let raw = Raw::deserialize(deserializer)?;
+        let mut builder = ContextItemBuilder::new(raw.content, raw.tokens);
+
+        if let Some(kind) = raw.kind {
+            builder = builder.kind(kind);
+        }
+        if let Some(source) = raw.source {
+            builder = builder.source(source);
+        }
+        if let Some(priority) = raw.priority {
+            builder = builder.priority(priority);
+        }
+        if let Some(tags) = raw.tags {
+            builder = builder.tags(tags);
+        }
+        if let Some(metadata) = raw.metadata {
+            builder = builder.metadata(metadata);
+        }
+        if let Some(timestamp) = raw.timestamp {
+            builder = builder.timestamp(timestamp);
+        }
+        if let Some(hint) = raw.future_relevance_hint {
+            builder = builder.future_relevance_hint(hint);
+        }
+        builder = builder.pinned(raw.pinned);
+        if let Some(original_tokens) = raw.original_tokens {
+            builder = builder.original_tokens(original_tokens);
+        }
+
+        builder.build().map_err(serde::de::Error::custom)
     }
 }

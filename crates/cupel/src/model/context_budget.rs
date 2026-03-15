@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer, ser::SerializeStruct};
+
 use crate::CupelError;
 use crate::model::ContextKind;
 
@@ -34,34 +37,34 @@ impl ContextBudget {
         estimation_safety_margin_percent: f64,
     ) -> Result<Self, CupelError> {
         if max_tokens < 0 {
-            return Err(CupelError::InvalidBudget(
-                "maxTokens must be >= 0".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "max_tokens ({max_tokens}) must be >= 0"
+            )));
         }
         if target_tokens < 0 {
-            return Err(CupelError::InvalidBudget(
-                "targetTokens must be >= 0".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "target_tokens ({target_tokens}) must be >= 0"
+            )));
         }
         if target_tokens > max_tokens {
-            return Err(CupelError::InvalidBudget(
-                "targetTokens must be <= maxTokens".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "target_tokens ({target_tokens}) must be <= max_tokens ({max_tokens})"
+            )));
         }
         if output_reserve < 0 {
-            return Err(CupelError::InvalidBudget(
-                "outputReserve must be >= 0".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "output_reserve ({output_reserve}) must be >= 0"
+            )));
         }
         if output_reserve > max_tokens {
-            return Err(CupelError::InvalidBudget(
-                "outputReserve must be <= maxTokens".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "output_reserve ({output_reserve}) must be <= max_tokens ({max_tokens})"
+            )));
         }
         if !(0.0..=100.0).contains(&estimation_safety_margin_percent) {
-            return Err(CupelError::InvalidBudget(
-                "estimationSafetyMarginPercent must be in [0.0, 100.0]".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "estimation_safety_margin_percent ({estimation_safety_margin_percent}) must be in [0.0, 100.0]"
+            )));
         }
         for (kind, &count) in &reserved_slots {
             if count < 0 {
@@ -104,5 +107,44 @@ impl ContextBudget {
     /// Percentage buffer for token estimation error.
     pub fn estimation_safety_margin_percent(&self) -> f64 {
         self.estimation_safety_margin_percent
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for ContextBudget {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut state = serializer.serialize_struct("ContextBudget", 5)?;
+        state.serialize_field("max_tokens", &self.max_tokens)?;
+        state.serialize_field("target_tokens", &self.target_tokens)?;
+        state.serialize_field("output_reserve", &self.output_reserve)?;
+        state.serialize_field("reserved_slots", &self.reserved_slots)?;
+        state.serialize_field("estimation_safety_margin_percent", &self.estimation_safety_margin_percent)?;
+        state.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for ContextBudget {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Raw {
+            max_tokens: i64,
+            target_tokens: i64,
+            output_reserve: i64,
+            #[serde(default)]
+            reserved_slots: HashMap<ContextKind, i64>,
+            estimation_safety_margin_percent: f64,
+        }
+
+        let raw = Raw::deserialize(deserializer)?;
+        ContextBudget::new(
+            raw.max_tokens,
+            raw.target_tokens,
+            raw.output_reserve,
+            raw.reserved_slots,
+            raw.estimation_safety_margin_percent,
+        )
+        .map_err(serde::de::Error::custom)
     }
 }

@@ -1,6 +1,9 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 use crate::CupelError;
 
 /// An extensible string enumeration identifying the origin of a context item.
@@ -59,5 +62,20 @@ impl Hash for ContextSource {
 impl fmt::Display for ContextSource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.0)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for ContextSource {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.0)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for ContextSource {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let s = String::deserialize(deserializer)?;
+        ContextSource::new(s).map_err(serde::de::Error::custom)
     }
 }

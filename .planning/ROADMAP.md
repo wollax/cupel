@@ -144,7 +144,12 @@ Plans:
 3. `cargo test` passes with `--features serde` and without (feature is additive, not breaking)
 4. Crate re-published to crates.io as a minor version bump with the new feature
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [x] 20-01-PLAN.md — Add serde feature flag to Cargo.toml, implement serde for leaf types (ContextKind, ContextSource, OverflowStrategy)
+- [x] 20-02-PLAN.md — Implement serde for complex types (ContextItem, ScoredItem, ContextBudget, QuotaEntry) with validation-on-deserialize
+- [x] 20-03-PLAN.md — Comprehensive serde test suite (24 tests) and version bump to 1.1.0
 
 ---
 
@@ -175,5 +180,5 @@ Plans:
 | 17 | Crate Migration & Conformance Verification | MIGRATE-06-07, CONFORM-01-03 | ● complete |
 | 18 | Dual-Language CI | CI-01-02, CI-04-05 | ● complete |
 | 19 | First Publish & Assay Switchover | CI-03, SWITCH-01-04 | ● complete |
-| 20 | Serde Feature Flag | ENHANCE-01-03 | ○ planned |
+| 20 | Serde Feature Flag | ENHANCE-01-03 | ● complete |
 | 21 | docs.rs Documentation & Examples | ENHANCE-04-05 | ○ planned |

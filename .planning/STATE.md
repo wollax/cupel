@@ -9,17 +9,17 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Current Position
 
-Phase: 19 of 21 — First Publish & Assay Switchover
+Phase: 20 of 21 — Serde Feature Flag
 Milestone: v1.1 Rust Crate Migration & crates.io Publishing
-Plan: 2 of 2 complete
+Plan: 3 of 3 complete
 Status: Phase complete
-Last activity: 2026-03-15 — Completed 19-02-PLAN.md (First publish, OIDC, assay switchover)
+Last activity: 2026-03-15 — Completed 20-03-PLAN.md (Serde tests & version bump)
 
-Progress: ████████░░░░░░░░░░░░░░░░░ 8/24 plans (v1.1)
+Progress: ███████████░░░░░░░░░░░░░░ 11/24 plans (v1.1)
 
 ## Phase Overview
 
-NEXT_PHASE=20
+NEXT_PHASE=21
 
 | Phase | Status |
 |-------|--------|
@@ -29,7 +29,7 @@ NEXT_PHASE=20
 | 17. Crate Migration & Conformance Verification | ● complete (2/2 plans) |
 | 18. Dual-Language CI | ● complete (2/2 plans) |
 | 19. First Publish & Assay Switchover | ● complete (2/2 plans) |
-| 20. Serde Feature Flag | ○ planned |
+| 20. Serde Feature Flag | ● complete (3/3 plans) |
 | 21. docs.rs Documentation & Examples | ○ planned |
 
 ## Accumulated Context
