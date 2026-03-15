@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 
 Phase: 25 — Conformance Infrastructure & Drift Guard
 Milestone: v1.2 Rust Parity & Quality Hardening
-Plan: 0 of ? (planning)
-Status: Phase 24 complete — ready to begin Phase 25
-Last activity: 2026-03-15 — Plan 24-02 complete (exclusion-reasons.md, selection-report.md, SUMMARY.md)
+Plan: 2 of 3
+Status: In progress — Plans 25-01 and 25-02 complete
+Last activity: 2026-03-15 — Plan 25-02 complete (ci-rust.yml drift guard, spec/** trigger, SUMMARY.md)
 
 Progress: █████████████████████████████████░░░░░░░ 24/32 phases shipped
 
