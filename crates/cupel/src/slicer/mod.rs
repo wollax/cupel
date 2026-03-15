@@ -8,7 +8,7 @@
 //!
 //! - [`GreedySlice`] — Selects by value density (score/token). Fast, good default.
 //! - [`KnapsackSlice`] — 0/1 knapsack DP for globally optimal selection. Slower.
-//! - [`QuotaSlice`] — Partitions budget by [`ContextKind`] with require/cap quotas,
+//! - [`QuotaSlice`] — Partitions budget by [`ContextKind`](crate::ContextKind) with require/cap quotas,
 //!   delegating per-kind selection to an inner slicer.
 //!
 //! # Example

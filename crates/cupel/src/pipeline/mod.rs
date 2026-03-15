@@ -8,15 +8,15 @@
 //!
 //! 1. **Classify** — Separates pinned items (which bypass scoring/slicing) from
 //!    scoreable candidates. Validates that pinned token totals fit the budget.
-//! 2. **Score** — Applies the configured [`Scorer`](crate::Scorer) to every
+//! 2. **Score** — Applies the configured [`Scorer`] to every
 //!    scoreable item, producing [`ScoredItem`](crate::ScoredItem) records.
 //! 3. **Deduplicate** — Removes content-identical items, keeping the
 //!    highest-scored copy (optional, enabled by default).
 //! 4. **Sort** — Orders scored items by score descending, with stable tiebreaks.
-//! 5. **Slice** — Applies the configured [`Slicer`](crate::Slicer) to select
+//! 5. **Slice** — Applies the configured [`Slicer`] to select
 //!    items that fit within the remaining token budget (after pinned items).
 //! 6. **Place** — Merges pinned and sliced items, then applies the configured
-//!    [`Placer`](crate::Placer) to determine final presentation order.
+//!    [`Placer`] to determine final presentation order.
 //!
 //! # Example
 //!
