@@ -248,9 +248,11 @@ Wollax.Cupel.ScorerType.Kind = 2 -> Wollax.Cupel.ScorerType
 Wollax.Cupel.ScorerType.Tag = 3 -> Wollax.Cupel.ScorerType
 Wollax.Cupel.ScorerType.Frequency = 4 -> Wollax.Cupel.ScorerType
 Wollax.Cupel.ScorerType.Reflexive = 5 -> Wollax.Cupel.ScorerType
+Wollax.Cupel.ScorerType.Scaled = 6 -> Wollax.Cupel.ScorerType
 Wollax.Cupel.SlicerType
 Wollax.Cupel.SlicerType.Greedy = 0 -> Wollax.Cupel.SlicerType
 Wollax.Cupel.SlicerType.Knapsack = 1 -> Wollax.Cupel.SlicerType
+Wollax.Cupel.SlicerType.Stream = 2 -> Wollax.Cupel.SlicerType
 Wollax.Cupel.PlacerType
 Wollax.Cupel.PlacerType.Chronological = 0 -> Wollax.Cupel.PlacerType
 Wollax.Cupel.PlacerType.UShaped = 1 -> Wollax.Cupel.PlacerType
@@ -260,6 +262,7 @@ Wollax.Cupel.ScorerEntry.Type.get -> Wollax.Cupel.ScorerType
 Wollax.Cupel.ScorerEntry.Weight.get -> double
 Wollax.Cupel.ScorerEntry.KindWeights.get -> System.Collections.Generic.IReadOnlyDictionary<Wollax.Cupel.ContextKind!, double>?
 Wollax.Cupel.ScorerEntry.TagWeights.get -> System.Collections.Generic.IReadOnlyDictionary<string!, double>?
+Wollax.Cupel.ScorerEntry.InnerScorer.get -> Wollax.Cupel.ScorerEntry?
 Wollax.Cupel.Slicing.QuotaEntry
 Wollax.Cupel.Slicing.QuotaEntry.QuotaEntry(Wollax.Cupel.ContextKind! kind, double? minPercent = null, double? maxPercent = null) -> void
 Wollax.Cupel.Slicing.QuotaEntry.Kind.get -> Wollax.Cupel.ContextKind!
@@ -274,6 +277,7 @@ Wollax.Cupel.CupelPolicy.DeduplicationEnabled.get -> bool
 Wollax.Cupel.CupelPolicy.OverflowStrategy.get -> Wollax.Cupel.Diagnostics.OverflowStrategy
 Wollax.Cupel.CupelPolicy.KnapsackBucketSize.get -> int?
 Wollax.Cupel.CupelPolicy.Quotas.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaEntry!>?
+Wollax.Cupel.CupelPolicy.StreamBatchSize.get -> int?
 Wollax.Cupel.CupelPolicy.Name.get -> string?
 Wollax.Cupel.CupelPolicy.Description.get -> string?
 Wollax.Cupel.CupelPresets
