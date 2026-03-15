@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 
 Phase: 23 — API Hardening Foundations
 Milestone: v1.2 Rust Parity & Quality Hardening
-Plan: 02 of 3
+Plan: 03 of 3
 Status: In progress
-Last activity: 2026-03-15 — Completed 23-02-PLAN.md (factory methods, TryFrom, ParseContextKindError)
+Last activity: 2026-03-15 — Completed 23-03-PLAN.md (computed budget properties: total_reserved, unreserved_capacity, has_capacity)
 
 Progress: ████████████████████████████████░░░░░░░░ 22/32 phases shipped (v1.0 + v1.1 complete; v1.2 planned)
 
@@ -25,7 +25,7 @@ NEXT_PHASE=23
 |-------|------|--------|
 | **v1.0 Core Library** | Phases 1-15 | SHIPPED 2026-03-14 (48 plans) |
 | **v1.1 Rust Crate Migration & crates.io Publishing** | Phases 16-22 | SHIPPED 2026-03-15 (15 plans) |
-| 23 | API Hardening Foundations | In progress (2/3 plans complete) |
+| 23 | API Hardening Foundations | In progress (3/3 plans complete) |
 | 24 | Diagnostics Spec Chapter | Planned |
 | 25 | Conformance Infrastructure & Drift Guard | Planned |
 | 26 | Diagnostics Data Types | Planned |
