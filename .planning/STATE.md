@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Current Position
 
-Phase: 20 of 21 — Serde Feature Flag
+Phase: 21 of 21 — docs.rs Documentation & Examples
 Milestone: v1.1 Rust Crate Migration & crates.io Publishing
-Plan: 3 of 3 complete
-Status: Phase complete
-Last activity: 2026-03-15 — Completed 20-03-PLAN.md (Serde tests & version bump)
+Plan: 1 of 3 complete
+Status: Executing
+Last activity: 2026-03-15 — Completed 21-01-PLAN.md (Crate README & docs.rs config)
 
-Progress: ███████████░░░░░░░░░░░░░░ 11/24 plans (v1.1)
+Progress: ████████████░░░░░░░░░░░░░ 12/24 plans (v1.1)
 
 ## Phase Overview
 
@@ -30,7 +30,7 @@ NEXT_PHASE=21
 | 18. Dual-Language CI | ● complete (2/2 plans) |
 | 19. First Publish & Assay Switchover | ● complete (2/2 plans) |
 | 20. Serde Feature Flag | ● complete (3/3 plans) |
-| 21. docs.rs Documentation & Examples | ○ planned |
+| 21. docs.rs Documentation & Examples | ◐ active (1/3 plans) |
 
 ## Accumulated Context
 
