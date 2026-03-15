@@ -2,33 +2,30 @@
 
 ## What This Is
 
-Cupel is a .NET context management library for coding agents. Given a set of context items (messages, documents, tool outputs, memory) and a token budget, Cupel determines the optimal context window — maximizing information density while respecting the attention mechanics of any LLM. It serves both autonomous agent orchestration (Smelt spawning subagents) and interactive human-agent sessions.
+Cupel is a dual-language (.NET + Rust) context management library for coding agents. Given a set of context items (messages, documents, tool outputs, memory) and a token budget, Cupel determines the optimal context window — maximizing information density while respecting the attention mechanics of any LLM. It serves both autonomous agent orchestration (Smelt spawning subagents) and interactive human-agent sessions.
 
 Part of the Wollax agentic development stack: **Assay** (spec-driven development) → **Smelt** (orchestration) → **Cupel** (context management).
 
 ## Current State
 
-**Shipped:** v1.0 Core Library (2026-03-14)
+**Shipped:** v1.1 Rust Crate Migration & crates.io Publishing (2026-03-15)
+- .NET: 4,303 lines of C# across 56 source files, 641 tests, 4 NuGet packages
+- Rust: 4,550 lines across 11 source files, 94 tests (28 conformance + 33 serde + 33 doctests)
+- `cupel` crate published on crates.io (v1.1.0) with optional serde feature
+- Dual-language CI/CD with path-filtered GitHub Actions and OIDC trusted publishing
+- Language-agnostic specification with 28 required conformance test vectors
+- wollax/assay consuming cupel from crates.io registry
+
+<details>
+<summary>v1.0 Core Library (2026-03-14)</summary>
+
 - 4,303 lines of C# across 56 source files
 - 11,175 lines of test code across 49 test files (641 tests)
 - 4 NuGet packages: Core, DI Extensions, Tiktoken, Json
 - Language-agnostic specification with 28 conformance test vectors
 - Rust crate implementation (assay-cupel) passing all conformance vectors
 
-## Current Milestone: v1.1 Rust Crate Migration & crates.io Publishing
-
-**Goal:** Pull the `assay-cupel` Rust crate from `wollax/assay` into the cupel monorepo, publish as `cupel-rs` on crates.io, and have assay reference it as a crates.io consumer.
-
-**Target features:**
-
-- Rust crate at `crates/cupel/` in the cupel repo (standalone, no Cargo workspace)
-- Published to crates.io as `cupel-rs` v1.0.0 (spec-aligned versioning)
-- Conformance test vectors: single source of truth at `conformance/`, vendored copy in crate with CI drift guard
-- Dual-language CI/CD (Rust jobs added to GitHub Actions)
-- `rust-toolchain.toml` at repo root, `.editorconfig` extended for Rust
-- Assay updated to consume `cupel-rs` from crates.io (not path dependency)
-- `crates/assay-cupel/` deleted from assay repo after migration verified
-- Local dev workflow documented (`[patch.crates-io]` pattern)
+</details>
 
 ## Core Value
 
@@ -53,9 +50,18 @@ Given candidates and a budget, return the optimal context selection with full ex
 - JSON serialization with source-generated JsonSerializerContext — v1.0
 - 4 NuGet packages (Core, DI, Tiktoken, Json) published to nuget.org — v1.0
 
+- Rust crate migrated to cupel monorepo, published to crates.io — v1.1
+- Standalone Cargo.toml with MSRV 1.85, Edition 2024, all crates.io metadata — v1.1
+- Conformance vectors vendored with CI drift guard and tarball round-trip verification — v1.1
+- Dual-language CI (Rust + .NET) with path filtering and cargo-deny supply chain checks — v1.1
+- OIDC trusted publishing for crates.io releases — v1.1
+- wollax/assay switched from path dependency to crates.io registry consumer — v1.1
+- Optional serde feature with validation-on-deserialize for ContextBudget — v1.1
+- docs.rs documentation with crate README, module docs, 33 doctests, 3 standalone examples — v1.1
+
 ### Active
 
-(See REQUIREMENTS.md for v1.1 requirements)
+(No active milestone — run `/kata-add-milestone` to define next)
 
 ### Out of Scope
 
@@ -108,6 +114,12 @@ Given candidates and a budget, return the optimal context selection with full ex
 | No IContextSink | Cupel selects; consumers convert. Output adapters are scope creep. | Good |
 | ContextBudget as sealed class (not record) | Prevents with-expressions bypassing constructor validation | Good |
 | Language-agnostic specification | Enables multi-language implementations with conformance guarantee | Good |
+| Crate name `cupel` (not `cupel-rs`) | Shorter, cleaner — name was available on crates.io | Good |
+| Standalone Cargo.toml (no workspace) | Single-crate repo avoids workspace complexity; workspace-inherited fields not needed | Good |
+| OIDC trusted publishing with secret fallback | OIDC eliminates token management; fallback ensures first publish works before OIDC configured | Good |
+| Validation-on-deserialize for ContextBudget | Custom deserializer routes through constructor — prevents serde from bypassing invariants | Good |
+| Cargo.lock excluded from git | Library crate convention — consumers resolve their own dependency tree | Good |
+| Toolchain pinned to 1.85.0 (not 'stable') | MSRV alignment — CI and local builds use identical Rust version | Good |
 
 ---
-*Last updated: 2026-03-14 — v1.0 shipped, v1.1 active*
+*Last updated: 2026-03-15 — v1.1 shipped*
