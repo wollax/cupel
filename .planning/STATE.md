@@ -11,15 +11,15 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 
 Phase: 25 — Conformance Infrastructure & Drift Guard
 Milestone: v1.2 Rust Parity & Quality Hardening
-Plan: 0 of ? (planning)
-Status: Phase 24 complete — ready to begin Phase 25
-Last activity: 2026-03-15 — Plan 24-02 complete (exclusion-reasons.md, selection-report.md, SUMMARY.md)
+Plan: 3 of 3
+Status: Phase 25 complete — verified, ready for next phase
+Last activity: 2026-03-15 — Phase 25 complete (comment fixes, CI drift guard, diagnostics schema)
 
-Progress: █████████████████████████████████░░░░░░░ 24/32 phases shipped
+Progress: ██████████████████████████████████░░░░░░ 25/32 phases shipped
 
 ## Phase Overview
 
-NEXT_PHASE=25
+NEXT_PHASE=26
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -27,7 +27,7 @@ NEXT_PHASE=25
 | **v1.1 Rust Crate Migration & crates.io Publishing** | Phases 16-22 | SHIPPED 2026-03-15 (15 plans) |
 | 23 | API Hardening Foundations | COMPLETE 2026-03-15 (3 plans) |
 | 24 | Diagnostics Spec Chapter | COMPLETE 2026-03-15 (2 plans) |
-| 25 | Conformance Infrastructure & Drift Guard | Planned |
+| 25 | Conformance Infrastructure & Drift Guard | COMPLETE 2026-03-15 (3 plans) |
 | 26 | Diagnostics Data Types | Planned |
 | 27 | TraceCollector Trait & Implementations | Planned |
 | 28 | Pipeline Integration & run_traced | Planned |

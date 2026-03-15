@@ -19,13 +19,16 @@ stage = "pipeline"
 # Sort: new(1.0), old(0.0)
 #
 # Slice (Greedy, effective target = 400 - 100 pinned = 300):
+#   Density sort (using scored values from Score step above):
+#     new: 1.0/150 ≈ 0.00667
+#     old: 0.0/150 = 0.0
+#   Sorted: new, old
 #   new: density=1.0/150≈0.00667 → selected (remaining=150)
 #   old: density=0.0/150=0.0 → selected (remaining=0)
 #   Both fit.
 #
 # Place (Chronological):
-#   merged = [system(pinned, score=1.0, no timestamp), new(score=1.0), old(score=0.0)]
-#   Actually, merged has pinned first: system(score=1.0), then sliced: new(1.0), old(0.0).
+#   merged = [system(pinned, score=1.0), new(score=1.0), old(score=0.0)]
 #   merged tokens = 100+150+150 = 400 = target → no overflow.
 #
 #   Chronological sort:

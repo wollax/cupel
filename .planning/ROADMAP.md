@@ -66,7 +66,11 @@
   Plans:
   - [x] 24-01-PLAN.md — Diagnostics overview, TraceCollector contract, and Events sub-pages
   - [x] 24-02-PLAN.md — Exclusion Reasons, SelectionReport sub-pages, and SUMMARY.md registration
-- [ ] Phase 25: Conformance Infrastructure & Drift Guard (~3 plans) — CONF-01, CONF-02, CI-03, SPEC-02
+- [x] Phase 25: Conformance Infrastructure & Drift Guard (3/3 plans, 2026-03-15) — CONF-01, CONF-02, CI-03, SPEC-02
+  Plans:
+  - [x] 25-01-PLAN.md — Fix misleading comments in conformance vector TOML files
+  - [x] 25-02-PLAN.md — Add CI conformance drift guard to ci-rust.yml
+  - [x] 25-03-PLAN.md — Document diagnostics conformance vector schema and create example vector
 - [ ] Phase 26: Diagnostics Data Types (~2 plans) — DIAG-04, 05, 06
 - [ ] Phase 27: TraceCollector Trait & Implementations (~2 plans) — DIAG-01, 02, 03
 - [ ] Phase 28: Pipeline Integration & run_traced (~3 plans) — DIAG-07, 08

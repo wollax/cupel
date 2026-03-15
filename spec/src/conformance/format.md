@@ -147,6 +147,114 @@ Pipeline vectors test the full 6-stage pipeline end-to-end.
 
 Pipeline output is compared as an **ordered list** — both the selected items and their presentation order must match. An implementation passes if the output items, in order, match the `expected_output` entries exactly.
 
+## Diagnostics Vectors
+
+Diagnostics vectors extend pipeline vectors with an `[expected.diagnostics]` sub-table. They assert on which items were included or excluded, why, and aggregate counts. Diagnostics vectors are pipeline-level only (`stage = "pipeline"`). The `[expected.diagnostics]` table composes with `[[expected_output]]` — a single vector file can assert on both output order and diagnostic details simultaneously.
+
+### Schema
+
+| Table | Field | Type | Required | Description |
+|---|---|---|---|---|
+| `[[expected.diagnostics.included]]` | `content` | string | yes | Item content (matches placed order) |
+| `[[expected.diagnostics.included]]` | `score_approx` | float | yes | Expected score (epsilon tolerance) |
+| `[[expected.diagnostics.included]]` | `inclusion_reason` | string | yes | Reason: `"Scored"`, `"Pinned"`, `"ZeroToken"` |
+| `[[expected.diagnostics.excluded]]` | `content` | string | yes | Item content (sorted by score desc) |
+| `[[expected.diagnostics.excluded]]` | `score_approx` | float | yes | Expected score (epsilon tolerance) |
+| `[[expected.diagnostics.excluded]]` | `exclusion_reason` | string | yes | Reason discriminator: `"BudgetExceeded"`, `"Deduplicated"`, `"QuotaCapExceeded"` |
+| `[[expected.diagnostics.excluded]]` | `item_tokens` | integer | conditional | Token count of excluded item (required for `BudgetExceeded`) |
+| `[[expected.diagnostics.excluded]]` | `available_tokens` | integer | conditional | Remaining budget at exclusion (required for `BudgetExceeded`) |
+| `[[expected.diagnostics.excluded]]` | `deduplicated_against` | string | conditional | Content of duplicate kept (required for `Deduplicated`) |
+| `[expected.diagnostics.summary]` | `total_candidates` | integer | no | Total items considered |
+| `[expected.diagnostics.summary]` | `total_tokens_considered` | integer | no | Sum of all candidate token counts |
+
+### Ordering
+
+`included` entries appear in placed order, matching the order of `[[expected_output]]` entries. `excluded` entries appear sorted by score descending.
+
+### Optionality
+
+All three sub-tables (`included`, `excluded`, `summary`) are independently optional. A vector can assert on any combination: included items only, excluded items only, summary counts only, or any mix.
+
+### Compatibility
+
+`[expected.diagnostics]` is a dotted-key sub-table under `[expected]` and does not conflict with `[[expected_output]]` (different key names). This is valid TOML 1.0. A single pipeline vector file may contain both `[[expected_output]]` (ordered output assertion) and `[expected.diagnostics]` (diagnostic assertion).
+
+### Example
+
+```toml
+[test]
+name = "Pipeline diagnostics: BudgetExceeded exclusion reason"
+stage = "pipeline"
+
+# Expected values below are final. A live integration test against run_traced
+# will be added in Phase 29.
+#
+# Budget: target=200, max=1000, reserve=0.
+#
+# Items:
+#   "fits":    tokens=150, kind=Message, timestamp=Jun
+#   "too-big": tokens=400, kind=Message, timestamp=Jan
+#
+# Score (RecencyScorer, 2 timestamped, denominator=1):
+#   "too-big" (Jan): rank 0 → 0.0
+#   "fits"    (Jun): rank 1 → 1.0
+#
+# Slice (Greedy, target=200):
+#   Density sort: fits(1.0/150≈0.00667), too-big(0.0/400=0.0)
+#   fits: 150 ≤ 200 → selected (remaining=50)
+#   too-big: 400 > 50 → excluded (BudgetExceeded)
+#
+# Expected diagnostics:
+#   included: fits (score=1.0, reason=Scored)
+#   excluded: too-big (score=0.0, reason=BudgetExceeded, item_tokens=400, available=50)
+#   summary: total_candidates=2, total_tokens_considered=550
+
+[budget]
+max_tokens = 1000
+target_tokens = 200
+output_reserve = 0
+
+[config]
+slicer = "greedy"
+placer = "chronological"
+deduplication = false
+
+[[config.scorers]]
+type = "recency"
+weight = 1.0
+
+[[items]]
+content = "fits"
+tokens = 150
+kind = "Message"
+timestamp = 2024-06-01T00:00:00Z
+
+[[items]]
+content = "too-big"
+tokens = 400
+kind = "Message"
+timestamp = 2024-01-01T00:00:00Z
+
+[[expected_output]]
+content = "fits"
+
+[expected.diagnostics.summary]
+total_candidates = 2
+total_tokens_considered = 550
+
+[[expected.diagnostics.included]]
+content = "fits"
+score_approx = 1.0
+inclusion_reason = "Scored"
+
+[[expected.diagnostics.excluded]]
+content = "too-big"
+score_approx = 0.0
+exclusion_reason = "BudgetExceeded"
+item_tokens = 400
+available_tokens = 50
+```
+
 ## Field Types
 
 | Type | TOML Representation | Notes |
