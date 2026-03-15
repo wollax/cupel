@@ -19,7 +19,7 @@ Progress: ███████████░░░░░░░░░░░░�
 
 ## Phase Overview
 
-CURRENT_PHASE=20
+NEXT_PHASE=21
 
 | Phase | Status |
 |-------|--------|
