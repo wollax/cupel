@@ -56,8 +56,8 @@
 **Plans:** 2 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — Verify crate name availability, create .gitignore, rust-toolchain.toml, and extend .editorconfig
-- [ ] 16-02-PLAN.md — Create standalone Cargo.toml and lib.rs placeholder, smoke-test with cargo check
+- [x] 16-01-PLAN.md — Verify crate name availability, create .gitignore, rust-toolchain.toml, and extend .editorconfig
+- [x] 16-02-PLAN.md — Create standalone Cargo.toml and lib.rs placeholder, smoke-test with cargo check
 
 ---
 
@@ -159,7 +159,7 @@ Plans:
 | Phase | Name | Requirements | Status |
 |-------|------|-------------|--------|
 | 1-15 | v1.0 Core Library | 44/44 requirements | SHIPPED |
-| 16 | Pre-flight & Crate Scaffold | MIGRATE-01-05 | ○ planned |
+| 16 | Pre-flight & Crate Scaffold | MIGRATE-01-05 | ● complete |
 | 17 | Crate Migration & Conformance Verification | MIGRATE-06-07, CONFORM-01-03 | ○ planned |
 | 18 | Dual-Language CI | CI-01-02, CI-04-05 | ○ planned |
 | 19 | First Publish & Assay Switchover | CI-03, SWITCH-01-04 | ○ planned |
