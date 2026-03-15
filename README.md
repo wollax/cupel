@@ -2,8 +2,11 @@
 
 Context management library for coding agents. Given a set of context items and a token budget, Cupel determines the optimal context window — maximizing information density while respecting LLM attention mechanics.
 
+Available in **.NET** and **Rust**.
+
 ## Install
 
+**.NET:**
 ```bash
 dotnet add package Wollax.Cupel
 ```
@@ -13,6 +16,15 @@ Optional companions:
 dotnet add package Wollax.Cupel.Extensions.DependencyInjection
 dotnet add package Wollax.Cupel.Tiktoken
 dotnet add package Wollax.Cupel.Json
+```
+
+**Rust:**
+```toml
+[dependencies]
+cupel = "1.1"
+
+# Optional: serialization support
+cupel = { version = "1.1", features = ["serde"] }
 ```
 
 ## Quick Start
@@ -118,9 +130,19 @@ foreach (var excluded in report.Excluded)
 | `Wollax.Cupel.Tiktoken` | Token counting via Microsoft.ML.Tokenizers |
 | `Wollax.Cupel.Json` | JSON policy serialization |
 
+## Rust Crate
+
+The [`cupel`](https://crates.io/crates/cupel) crate implements the full conformance specification in Rust. See `crates/cupel/` for source and [docs.rs](https://docs.rs/cupel) for API documentation.
+
+Features:
+- Full conformance with all 28 required test vectors
+- Optional `serde` feature for Serialize/Deserialize on all public types
+- Validation-on-deserialize for `ContextBudget` (constructor invariants enforced)
+- 3 runnable examples: `basic_pipeline`, `serde_roundtrip`, `quota_slicing`
+
 ## Specification
 
-Cupel's algorithm is documented as a [language-agnostic specification](spec/) with 28 conformance test vectors. A [Rust implementation](https://github.com/wollax/assay/tree/main/crates/assay-cupel) validates the spec's language-independence.
+Cupel's algorithm is documented as a [language-agnostic specification](spec/) with 28 conformance test vectors. Both the .NET and Rust implementations pass all conformance vectors.
 
 ## License
 
