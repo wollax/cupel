@@ -71,23 +71,33 @@ impl ContextKind {
 
     /// Creates a [`ContextKind`] for the well-known "Message" kind.
     #[must_use]
-    pub fn message() -> Self { Self::from_static(Self::MESSAGE) }
+    pub fn message() -> Self {
+        Self::from_static(Self::MESSAGE)
+    }
 
     /// Creates a [`ContextKind`] for the well-known "SystemPrompt" kind.
     #[must_use]
-    pub fn system_prompt() -> Self { Self::from_static(Self::SYSTEM_PROMPT) }
+    pub fn system_prompt() -> Self {
+        Self::from_static(Self::SYSTEM_PROMPT)
+    }
 
     /// Creates a [`ContextKind`] for the well-known "Document" kind.
     #[must_use]
-    pub fn document() -> Self { Self::from_static(Self::DOCUMENT) }
+    pub fn document() -> Self {
+        Self::from_static(Self::DOCUMENT)
+    }
 
     /// Creates a [`ContextKind`] for the well-known "ToolOutput" kind.
     #[must_use]
-    pub fn tool_output() -> Self { Self::from_static(Self::TOOL_OUTPUT) }
+    pub fn tool_output() -> Self {
+        Self::from_static(Self::TOOL_OUTPUT)
+    }
 
     /// Creates a [`ContextKind`] for the well-known "Memory" kind.
     #[must_use]
-    pub fn memory() -> Self { Self::from_static(Self::MEMORY) }
+    pub fn memory() -> Self {
+        Self::from_static(Self::MEMORY)
+    }
 
     /// Returns the underlying string value.
     pub fn as_str(&self) -> &str {

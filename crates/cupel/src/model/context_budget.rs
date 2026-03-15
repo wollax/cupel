@@ -159,7 +159,10 @@ impl Serialize for ContextBudget {
         state.serialize_field("target_tokens", &self.target_tokens)?;
         state.serialize_field("output_reserve", &self.output_reserve)?;
         state.serialize_field("reserved_slots", &self.reserved_slots)?;
-        state.serialize_field("estimation_safety_margin_percent", &self.estimation_safety_margin_percent)?;
+        state.serialize_field(
+            "estimation_safety_margin_percent",
+            &self.estimation_safety_margin_percent,
+        )?;
         state.end()
     }
 }

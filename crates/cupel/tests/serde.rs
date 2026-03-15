@@ -129,10 +129,7 @@ fn roundtrip_quota_entry() {
 #[test]
 fn roundtrip_scored_item() {
     let item = ContextItemBuilder::new("scored", 20).build().unwrap();
-    let scored = ScoredItem {
-        item,
-        score: 0.85,
-    };
+    let scored = ScoredItem { item, score: 0.85 };
     let json = serde_json::to_string(&scored).unwrap();
     let restored: ScoredItem = serde_json::from_str(&json).unwrap();
 
