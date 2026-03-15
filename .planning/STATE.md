@@ -19,12 +19,12 @@ Progress: ███████████████████████�
 
 ## Phase Overview
 
-NEXT_PHASE=22
+NEXT_PHASE=none
 
 | Phase | Status |
 |-------|--------|
 | **v1.0 Core Library** | SHIPPED 2026-03-14 (15 phases, 48 plans) |
-| **v1.1 Rust Crate Migration & crates.io Publishing** | |
+| **v1.1 Rust Crate Migration & crates.io Publishing** | SHIPPED 2026-03-15 |
 | 16. Pre-flight & Crate Scaffold | ● complete (2/2 plans) |
 | 17. Crate Migration & Conformance Verification | ● complete (2/2 plans) |
 | 18. Dual-Language CI | ● complete (2/2 plans) |
@@ -50,7 +50,7 @@ NEXT_PHASE=22
 
 ### Roadmap Evolution
 - v1.0 shipped 2026-03-14 — 15 phases, 48 plans, 44/44 requirements, 641 tests
-- v1.1 active: Rust crate migration to cupel repo + crates.io publishing (6 phases, 24 requirements)
+- v1.1 shipped 2026-03-15 — 7 phases, 15 plans, 24 requirements
 
 ### Blockers
 (None)

@@ -5,7 +5,7 @@
 | Milestone | Status | Phases |
 |-----------|--------|--------|
 | v1.0 Core Library | SHIPPED 2026-03-14 | 1-15 |
-| v1.1 Rust Crate Migration & crates.io Publishing | ○ planned | 16-22 |
+| v1.1 Rust Crate Migration & crates.io Publishing | SHIPPED 2026-03-15 | 16-22 |
 
 ---
 
@@ -192,7 +192,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 22-01-PLAN.md — Add --all-features test steps to ci-rust.yml and release-rust.yml
+- [x] 22-01-PLAN.md — Add --all-features test steps to ci-rust.yml and release-rust.yml
 
 ---
 
@@ -207,4 +207,4 @@ Plans:
 | 19 | First Publish & Assay Switchover | CI-03, SWITCH-01-04 | ● complete |
 | 20 | Serde Feature Flag | ENHANCE-01-03 | ● complete |
 | 21 | docs.rs Documentation & Examples | ENHANCE-04-05 | ● complete |
-| 22 | CI Feature Coverage | Audit gap closure | ○ planned |
+| 22 | CI Feature Coverage | Audit gap closure | ● complete |
