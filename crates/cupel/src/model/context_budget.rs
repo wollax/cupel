@@ -127,6 +127,27 @@ impl ContextBudget {
     pub fn estimation_safety_margin_percent(&self) -> f64 {
         self.estimation_safety_margin_percent
     }
+
+    /// Returns the sum of all [`reserved_slots`](Self::reserved_slots) values.
+    #[must_use]
+    pub fn total_reserved(&self) -> i64 {
+        self.reserved_slots.values().sum()
+    }
+
+    /// Returns the token capacity not committed to output or reserved slots.
+    ///
+    /// Computed as `max_tokens - output_reserve - sum(reserved_slots)`.
+    /// May be negative if the budget is over-committed.
+    #[must_use]
+    pub fn unreserved_capacity(&self) -> i64 {
+        self.max_tokens - self.output_reserve - self.total_reserved()
+    }
+
+    /// Returns `true` if any unreserved capacity remains.
+    #[must_use]
+    pub fn has_capacity(&self) -> bool {
+        self.unreserved_capacity() > 0
+    }
 }
 
 #[cfg(feature = "serde")]
