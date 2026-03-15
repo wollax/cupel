@@ -9,17 +9,17 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Current Position
 
-Phase: 18 of 21 — Dual-Language CI
+Phase: 19 of 21 — First Publish & Assay Switchover
 Milestone: v1.1 Rust Crate Migration & crates.io Publishing
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-03-15 — Completed 18-01-PLAN.md (Rust CI workflow & .NET path filters)
+Plan: 0 of 2 complete
+Status: Ready
+Last activity: 2026-03-15 — Completed 18-02-PLAN.md (Rust release workflow)
 
-Progress: █████░░░░░░░░░░░░░░░░░░░░ 5/24 plans (v1.1)
+Progress: ██████░░░░░░░░░░░░░░░░░░░ 6/24 plans (v1.1)
 
 ## Phase Overview
 
-NEXT_PHASE=18
+NEXT_PHASE=19
 
 | Phase | Status |
 |-------|--------|
@@ -27,7 +27,7 @@ NEXT_PHASE=18
 | **v1.1 Rust Crate Migration & crates.io Publishing** | |
 | 16. Pre-flight & Crate Scaffold | ● complete (2/2 plans) |
 | 17. Crate Migration & Conformance Verification | ● complete (2/2 plans) |
-| 18. Dual-Language CI | ◐ in progress (1/2 plans) |
+| 18. Dual-Language CI | ● complete (2/2 plans) |
 | 19. First Publish & Assay Switchover | ○ planned |
 | 20. Serde Feature Flag | ○ planned |
 | 21. docs.rs Documentation & Examples | ○ planned |
