@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer, ser::SerializeStruct};
+
 use crate::CupelError;
 use crate::model::{ContextBudget, ContextItem, ContextKind, ScoredItem};
 use crate::slicer::Slicer;
@@ -56,6 +59,33 @@ impl QuotaEntry {
     /// Maximum percentage of the budget. Range: [0.0, 100.0].
     pub fn cap(&self) -> f64 {
         self.cap
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for QuotaEntry {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut state = serializer.serialize_struct("QuotaEntry", 3)?;
+        state.serialize_field("kind", &self.kind)?;
+        state.serialize_field("require", &self.require)?;
+        state.serialize_field("cap", &self.cap)?;
+        state.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for QuotaEntry {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Raw {
+            kind: ContextKind,
+            require: f64,
+            cap: f64,
+        }
+
+        let raw = Raw::deserialize(deserializer)?;
+        QuotaEntry::new(raw.kind, raw.require, raw.cap).map_err(serde::de::Error::custom)
     }
 }
 
