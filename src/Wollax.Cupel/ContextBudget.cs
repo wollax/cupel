@@ -44,7 +44,7 @@ public sealed class ContextBudget : IEquatable<ContextBudget>
     /// May be negative if the budget is over-committed.
     /// </summary>
     [JsonIgnore]
-    public int UnreservedCapacity => MaxTokens - OutputReserve - TotalReservedTokens;
+    public int UnreservedCapacity => MaxTokens - TotalReserved;
 
     /// <summary>Returns true if any unreserved capacity remains.</summary>
     [JsonIgnore]

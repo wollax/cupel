@@ -128,19 +128,20 @@ impl ContextBudget {
         self.estimation_safety_margin_percent
     }
 
-    /// Returns the sum of all [`reserved_slots`](Self::reserved_slots) values.
+    /// Returns the sum of [`output_reserve`](Self::output_reserve) and all
+    /// [`reserved_slots`](Self::reserved_slots) values.
     #[must_use]
     pub fn total_reserved(&self) -> i64 {
-        self.reserved_slots.values().sum()
+        self.output_reserve + self.reserved_slots.values().sum::<i64>()
     }
 
     /// Returns the token capacity not committed to output or reserved slots.
     ///
-    /// Computed as `max_tokens - output_reserve - sum(reserved_slots)`.
+    /// Computed as `max_tokens - total_reserved()`.
     /// May be negative if the budget is over-committed.
     #[must_use]
     pub fn unreserved_capacity(&self) -> i64 {
-        self.max_tokens - self.output_reserve - self.total_reserved()
+        self.max_tokens - self.total_reserved()
     }
 
     /// Returns `true` if any unreserved capacity remains.
@@ -186,5 +187,67 @@ impl<'de> Deserialize<'de> for ContextBudget {
             raw.estimation_safety_margin_percent,
         )
         .map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn budget_with_slots() -> ContextBudget {
+        let mut slots = HashMap::new();
+        slots.insert(ContextKind::message(), 2000);
+        slots.insert(ContextKind::document(), 3000);
+        ContextBudget::new(128_000, 100_000, 4_096, slots, 5.0).unwrap()
+    }
+
+    #[test]
+    fn total_reserved_includes_output_reserve_and_slots() {
+        let b = budget_with_slots();
+        assert_eq!(b.total_reserved(), 4_096 + 2000 + 3000);
+    }
+
+    #[test]
+    fn total_reserved_no_slots_returns_output_reserve() {
+        let b = ContextBudget::new(4096, 3000, 1024, HashMap::new(), 0.0).unwrap();
+        assert_eq!(b.total_reserved(), 1024);
+    }
+
+    #[test]
+    fn unreserved_capacity_positive() {
+        let b = budget_with_slots();
+        // 128_000 - (4_096 + 5_000) = 118_904
+        assert_eq!(b.unreserved_capacity(), 128_000 - 4_096 - 5_000);
+    }
+
+    #[test]
+    fn unreserved_capacity_negative_over_committed() {
+        let mut slots = HashMap::new();
+        slots.insert(ContextKind::message(), 90_000);
+        let b = ContextBudget::new(100_000, 80_000, 20_000, slots, 0.0).unwrap();
+        // 100_000 - (20_000 + 90_000) = -10_000
+        assert_eq!(b.unreserved_capacity(), -10_000);
+    }
+
+    #[test]
+    fn has_capacity_true_when_positive() {
+        let b = budget_with_slots();
+        assert!(b.has_capacity());
+    }
+
+    #[test]
+    fn has_capacity_false_when_zero() {
+        let mut slots = HashMap::new();
+        slots.insert(ContextKind::message(), 80_000);
+        let b = ContextBudget::new(100_000, 80_000, 20_000, slots, 0.0).unwrap();
+        assert!(!b.has_capacity());
+    }
+
+    #[test]
+    fn has_capacity_false_when_negative() {
+        let mut slots = HashMap::new();
+        slots.insert(ContextKind::message(), 90_000);
+        let b = ContextBudget::new(100_000, 80_000, 20_000, slots, 0.0).unwrap();
+        assert!(!b.has_capacity());
     }
 }

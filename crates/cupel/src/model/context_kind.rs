@@ -70,18 +70,23 @@ impl ContextKind {
     }
 
     /// Creates a [`ContextKind`] for the well-known "Message" kind.
+    #[must_use]
     pub fn message() -> Self { Self::from_static(Self::MESSAGE) }
 
     /// Creates a [`ContextKind`] for the well-known "SystemPrompt" kind.
+    #[must_use]
     pub fn system_prompt() -> Self { Self::from_static(Self::SYSTEM_PROMPT) }
 
     /// Creates a [`ContextKind`] for the well-known "Document" kind.
+    #[must_use]
     pub fn document() -> Self { Self::from_static(Self::DOCUMENT) }
 
     /// Creates a [`ContextKind`] for the well-known "ToolOutput" kind.
+    #[must_use]
     pub fn tool_output() -> Self { Self::from_static(Self::TOOL_OUTPUT) }
 
     /// Creates a [`ContextKind`] for the well-known "Memory" kind.
+    #[must_use]
     pub fn memory() -> Self { Self::from_static(Self::MEMORY) }
 
     /// Returns the underlying string value.
@@ -108,10 +113,7 @@ impl TryFrom<&str> for ContextKind {
     type Error = ParseContextKindError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        if value.trim().is_empty() {
-            return Err(ParseContextKindError(value.to_owned()));
-        }
-        Ok(Self(value.to_owned()))
+        Self::new(value).map_err(|_| ParseContextKindError(value.to_owned()))
     }
 }
 
@@ -141,5 +143,63 @@ impl<'de> Deserialize<'de> for ContextKind {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let s = String::deserialize(deserializer)?;
         ContextKind::new(s).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn factory_message_returns_message() {
+        assert_eq!(ContextKind::message().as_str(), "Message");
+    }
+
+    #[test]
+    fn factory_system_prompt_returns_system_prompt() {
+        assert_eq!(ContextKind::system_prompt().as_str(), "SystemPrompt");
+    }
+
+    #[test]
+    fn factory_document_returns_document() {
+        assert_eq!(ContextKind::document().as_str(), "Document");
+    }
+
+    #[test]
+    fn factory_tool_output_returns_tool_output() {
+        assert_eq!(ContextKind::tool_output().as_str(), "ToolOutput");
+    }
+
+    #[test]
+    fn factory_memory_returns_memory() {
+        assert_eq!(ContextKind::memory().as_str(), "Memory");
+    }
+
+    #[test]
+    fn factory_equals_new() {
+        assert_eq!(ContextKind::message(), ContextKind::new("message").unwrap());
+    }
+
+    #[test]
+    fn try_from_valid_string() {
+        let kind = ContextKind::try_from("Custom").unwrap();
+        assert_eq!(kind.as_str(), "Custom");
+    }
+
+    #[test]
+    fn try_from_empty_string_fails() {
+        let err = ContextKind::try_from("").unwrap_err();
+        assert_eq!(err, ParseContextKindError(String::new()));
+    }
+
+    #[test]
+    fn try_from_whitespace_only_fails() {
+        assert!(ContextKind::try_from("   ").is_err());
+    }
+
+    #[test]
+    fn parse_context_kind_error_display() {
+        let err = ParseContextKindError("".to_owned());
+        assert!(err.to_string().contains("invalid context kind"));
     }
 }
