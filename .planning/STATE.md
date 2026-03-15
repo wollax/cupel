@@ -13,7 +13,7 @@ Phase: 25 — Conformance Infrastructure & Drift Guard
 Milestone: v1.2 Rust Parity & Quality Hardening
 Plan: 3 of 3
 Status: Phase 25 complete — verified, ready for next phase
-Last activity: 2026-03-15 — Phase 25 complete (comment fixes, CI drift guard, diagnostics schema)
+Last activity: 2026-03-15 — Completed quick task 001: Fix Rust CI formatting failures
 
 Progress: ██████████████████████████████████░░░░░░ 25/32 phases shipped
 
@@ -51,6 +51,12 @@ NEXT_PHASE=26
 - v1.0 shipped 2026-03-14 — 15 phases, 48 plans, 44/44 requirements, 641 tests
 - v1.1 shipped 2026-03-15 — 7 phases, 15 plans, 22/22 requirements, 94 Rust tests
 - v1.2 roadmap defined 2026-03-15 — 10 phases (23-32), ~24 plans, 25 requirements
+
+### Quick Tasks Completed
+
+| #   | Description | Date | Commit | Directory |
+| --- | ----------- | ---- | ------ | --------- |
+| 001 | Fix Rust CI formatting failures | 2026-03-15 | fd66cca | [001-ci-is-failing-for-rust](./quick/001-ci-is-failing-for-rust/) |
 
 ### Blockers
 (None)
