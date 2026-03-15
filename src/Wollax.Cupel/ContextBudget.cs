@@ -34,6 +34,22 @@ public sealed class ContextBudget : IEquatable<ContextBudget>
     [JsonIgnore]
     internal int TotalReservedTokens { get; }
 
+    /// <summary>Sum of OutputReserve and all ReservedSlots token counts.</summary>
+    [JsonIgnore]
+    public int TotalReserved => OutputReserve + TotalReservedTokens;
+
+    /// <summary>
+    /// Token capacity not committed to output or reserved slots.
+    /// Computed as MaxTokens - OutputReserve - sum(ReservedSlots).
+    /// May be negative if the budget is over-committed.
+    /// </summary>
+    [JsonIgnore]
+    public int UnreservedCapacity => MaxTokens - OutputReserve - TotalReservedTokens;
+
+    /// <summary>Returns true if any unreserved capacity remains.</summary>
+    [JsonIgnore]
+    public bool HasCapacity => UnreservedCapacity > 0;
+
     [JsonConstructor]
     public ContextBudget(
         int maxTokens,
