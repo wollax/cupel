@@ -9,23 +9,23 @@ See: .planning/PROJECT.md (updated 2026-03-14)
 
 ## Current Position
 
-Phase: 16 of 21 — Pre-flight & Crate Scaffold
+Phase: 17 of 21 — Crate Migration & Conformance Verification
 Milestone: v1.1 Rust Crate Migration & crates.io Publishing
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-03-15 — Completed 16-01-PLAN.md
+Plan: 0 of ? complete
+Status: Ready
+Last activity: 2026-03-15 — Completed 16-02-PLAN.md (Phase 16 complete)
 
-Progress: █░░░░░░░░░░░░░░░░░░░░░░░ 1/24 plans (v1.1)
+Progress: ██░░░░░░░░░░░░░░░░░░░░░░ 2/24 plans (v1.1)
 
 ## Phase Overview
 
-NEXT_PHASE=16
+NEXT_PHASE=17
 
 | Phase | Status |
 |-------|--------|
 | **v1.0 Core Library** | SHIPPED 2026-03-14 (15 phases, 48 plans) |
 | **v1.1 Rust Crate Migration & crates.io Publishing** | |
-| 16. Pre-flight & Crate Scaffold | ◐ in progress (1/2 plans) |
+| 16. Pre-flight & Crate Scaffold | ● complete (2/2 plans) |
 | 17. Crate Migration & Conformance Verification | ○ planned |
 | 18. Dual-Language CI | ○ planned |
 | 19. First Publish & Assay Switchover | ○ planned |
