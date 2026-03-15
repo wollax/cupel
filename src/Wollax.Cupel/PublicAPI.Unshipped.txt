@@ -1,1 +1,4 @@
 #nullable enable
+Wollax.Cupel.ContextBudget.TotalReserved.get -> int
+Wollax.Cupel.ContextBudget.UnreservedCapacity.get -> int
+Wollax.Cupel.ContextBudget.HasCapacity.get -> bool

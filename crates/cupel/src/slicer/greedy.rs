@@ -30,6 +30,7 @@ use crate::slicer::Slicer;
 /// assert_eq!(selected[0].content(), "high value");
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct GreedySlice;
 
 impl Slicer for GreedySlice {

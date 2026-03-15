@@ -10,8 +10,8 @@ pub mod slicer;
 
 pub use error::CupelError;
 pub use model::{
-    ContextBudget, ContextItem, ContextItemBuilder, ContextKind, ContextSource, OverflowStrategy,
-    ScoredItem,
+    ContextBudget, ContextItem, ContextItemBuilder, ContextKind, ContextSource,
+    OverflowStrategy, ParseContextKindError, ScoredItem,
 };
 pub use pipeline::{Pipeline, PipelineBuilder};
 pub use placer::{ChronologicalPlacer, Placer, UShapedPlacer};
