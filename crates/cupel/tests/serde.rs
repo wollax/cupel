@@ -164,6 +164,12 @@ fn reject_empty_context_source() {
 }
 
 #[test]
+fn reject_whitespace_context_source() {
+    let result = serde_json::from_str::<ContextSource>(r#""   ""#);
+    assert!(result.is_err());
+}
+
+#[test]
 fn reject_empty_content_context_item() {
     let json = r#"{"content":"","tokens":10}"#;
     let result = serde_json::from_str::<ContextItem>(json);
@@ -197,6 +203,84 @@ fn reject_invalid_budget_negative_max() {
 }
 
 #[test]
+fn reject_invalid_budget_negative_target() {
+    let json = r#"{
+        "max_tokens": 1000,
+        "target_tokens": -1,
+        "output_reserve": 0,
+        "reserved_slots": {},
+        "estimation_safety_margin_percent": 0.0
+    }"#;
+    let result = serde_json::from_str::<ContextBudget>(json);
+    assert!(result.is_err());
+}
+
+#[test]
+fn reject_invalid_budget_negative_output_reserve() {
+    let json = r#"{
+        "max_tokens": 1000,
+        "target_tokens": 800,
+        "output_reserve": -1,
+        "reserved_slots": {},
+        "estimation_safety_margin_percent": 5.0
+    }"#;
+    let result = serde_json::from_str::<ContextBudget>(json);
+    assert!(result.is_err());
+}
+
+#[test]
+fn reject_invalid_budget_output_reserve_exceeds_max() {
+    let json = r#"{
+        "max_tokens": 100,
+        "target_tokens": 80,
+        "output_reserve": 200,
+        "reserved_slots": {},
+        "estimation_safety_margin_percent": 5.0
+    }"#;
+    let result = serde_json::from_str::<ContextBudget>(json);
+    assert!(result.is_err());
+}
+
+#[test]
+fn reject_invalid_budget_safety_margin_too_high() {
+    let json = r#"{
+        "max_tokens": 1000,
+        "target_tokens": 800,
+        "output_reserve": 100,
+        "reserved_slots": {},
+        "estimation_safety_margin_percent": 101.0
+    }"#;
+    let result = serde_json::from_str::<ContextBudget>(json);
+    assert!(result.is_err());
+}
+
+#[test]
+fn reject_invalid_budget_safety_margin_negative() {
+    let json = r#"{
+        "max_tokens": 1000,
+        "target_tokens": 800,
+        "output_reserve": 100,
+        "reserved_slots": {},
+        "estimation_safety_margin_percent": -1.0
+    }"#;
+    let result = serde_json::from_str::<ContextBudget>(json);
+    assert!(result.is_err());
+}
+
+#[test]
+fn reject_invalid_budget_negative_reserved_slot() {
+    let json = r#"{
+        "max_tokens": 1000,
+        "target_tokens": 800,
+        "output_reserve": 100,
+        "reserved_slots": {"Document": -1},
+        "estimation_safety_margin_percent": 5.0
+    }"#;
+    let result = serde_json::from_str::<ContextBudget>(json);
+    assert!(result.is_err());
+}
+
+#[test]
 fn reject_invalid_quota_require_exceeds_cap() {
     let json = r#"{"kind":"Document","require":80.0,"cap":50.0}"#;
     let result = serde_json::from_str::<QuotaEntry>(json);
@@ -206,6 +290,20 @@ fn reject_invalid_quota_require_exceeds_cap() {
 #[test]
 fn reject_invalid_quota_negative_require() {
     let json = r#"{"kind":"Document","require":-1.0,"cap":50.0}"#;
+    let result = serde_json::from_str::<QuotaEntry>(json);
+    assert!(result.is_err());
+}
+
+#[test]
+fn reject_invalid_quota_cap_exceeds_100() {
+    let json = r#"{"kind":"Document","require":10.0,"cap":150.0}"#;
+    let result = serde_json::from_str::<QuotaEntry>(json);
+    assert!(result.is_err());
+}
+
+#[test]
+fn reject_invalid_quota_negative_cap() {
+    let json = r#"{"kind":"Document","require":0.0,"cap":-1.0}"#;
     let result = serde_json::from_str::<QuotaEntry>(json);
     assert!(result.is_err());
 }

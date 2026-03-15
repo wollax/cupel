@@ -37,34 +37,34 @@ impl ContextBudget {
         estimation_safety_margin_percent: f64,
     ) -> Result<Self, CupelError> {
         if max_tokens < 0 {
-            return Err(CupelError::InvalidBudget(
-                "maxTokens must be >= 0".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "max_tokens ({max_tokens}) must be >= 0"
+            )));
         }
         if target_tokens < 0 {
-            return Err(CupelError::InvalidBudget(
-                "targetTokens must be >= 0".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "target_tokens ({target_tokens}) must be >= 0"
+            )));
         }
         if target_tokens > max_tokens {
-            return Err(CupelError::InvalidBudget(
-                "targetTokens must be <= maxTokens".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "target_tokens ({target_tokens}) must be <= max_tokens ({max_tokens})"
+            )));
         }
         if output_reserve < 0 {
-            return Err(CupelError::InvalidBudget(
-                "outputReserve must be >= 0".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "output_reserve ({output_reserve}) must be >= 0"
+            )));
         }
         if output_reserve > max_tokens {
-            return Err(CupelError::InvalidBudget(
-                "outputReserve must be <= maxTokens".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "output_reserve ({output_reserve}) must be <= max_tokens ({max_tokens})"
+            )));
         }
         if !(0.0..=100.0).contains(&estimation_safety_margin_percent) {
-            return Err(CupelError::InvalidBudget(
-                "estimationSafetyMarginPercent must be in [0.0, 100.0]".to_owned(),
-            ));
+            return Err(CupelError::InvalidBudget(format!(
+                "estimation_safety_margin_percent ({estimation_safety_margin_percent}) must be in [0.0, 100.0]"
+            )));
         }
         for (kind, &count) in &reserved_slots {
             if count < 0 {

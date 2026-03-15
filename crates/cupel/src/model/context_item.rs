@@ -234,7 +234,7 @@ impl<'de> Deserialize<'de> for ContextItem {
             #[serde(default)]
             future_relevance_hint: Option<f64>,
             #[serde(default)]
-            pinned: Option<bool>,
+            pinned: bool,
             #[serde(default)]
             original_tokens: Option<i64>,
         }
@@ -263,9 +263,7 @@ impl<'de> Deserialize<'de> for ContextItem {
         if let Some(hint) = raw.future_relevance_hint {
             builder = builder.future_relevance_hint(hint);
         }
-        if let Some(pinned) = raw.pinned {
-            builder = builder.pinned(pinned);
-        }
+        builder = builder.pinned(raw.pinned);
         if let Some(original_tokens) = raw.original_tokens {
             builder = builder.original_tokens(original_tokens);
         }
