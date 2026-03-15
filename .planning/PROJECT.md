@@ -61,7 +61,18 @@ Given candidates and a budget, return the optimal context selection with full ex
 
 ### Active
 
-(No active milestone — run `/kata-add-milestone` to define next)
+**v1.2 Rust Parity & Quality Hardening**
+
+Goal: Close the Rust diagnostics/explainability gap, harden both codebases with quick wins and quality fixes.
+
+Target features:
+- Rust diagnostics parity (TraceCollector trait, SelectionReport, DiagnosticTraceCollector) — spec-first
+- Rust API future-proofing (#[non_exhaustive], derives)
+- Spec conformance vector cleanup
+- ContextKind convenience constructors (Rust)
+- UnreservedCapacity helper (both languages)
+- KnapsackSlice DP table size guard (both languages)
+- Quality hardening pass (batch mechanical issues from 74-issue backlog)
 
 ### Out of Scope
 
@@ -122,4 +133,4 @@ Given candidates and a budget, return the optimal context selection with full ex
 | Toolchain pinned to 1.85.0 (not 'stable') | MSRV alignment — CI and local builds use identical Rust version | Good |
 
 ---
-*Last updated: 2026-03-15 — v1.1 shipped*
+*Last updated: 2026-03-15 — v1.2 milestone started*

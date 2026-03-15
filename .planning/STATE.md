@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Optimal context selection with full explainability
-**Current focus:** Planning next milestone
+**Current focus:** v1.2 Rust Parity & Quality Hardening
 
 ## Current Position
 
-Phase: None active
-Milestone: v1.1 complete — next milestone TBD
-Plan: N/A
-Status: Ready for next milestone
-Last activity: 2026-03-15 — v1.1 milestone complete
+Phase: Not started (defining requirements)
+Milestone: v1.2 Rust Parity & Quality Hardening
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-15 — Milestone v1.2 started
 
 Progress: ████████████████████████████████ 22/22 phases shipped (v1.0 + v1.1)
 
