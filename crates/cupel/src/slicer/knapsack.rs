@@ -7,6 +7,32 @@ use crate::slicer::Slicer;
 ///
 /// Discretizes weights and capacity using a configurable bucket size for
 /// feasible DP table sizes.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use cupel::{ContextItemBuilder, ContextBudget, ScoredItem, KnapsackSlice, Slicer};
+///
+/// let slicer = KnapsackSlice::with_default_bucket_size();
+///
+/// let items = vec![
+///     ScoredItem {
+///         item: ContextItemBuilder::new("high value", 100).build()?,
+///         score: 0.9,
+///     },
+///     ScoredItem {
+///         item: ContextItemBuilder::new("medium value", 100).build()?,
+///         score: 0.5,
+///     },
+/// ];
+///
+/// let budget = ContextBudget::new(1000, 150, 0, HashMap::new(), 0.0)?;
+/// let selected = slicer.slice(&items, &budget);
+///
+/// assert_eq!(selected.len(), 1);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct KnapsackSlice {
     bucket_size: i64,
 }

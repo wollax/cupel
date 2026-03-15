@@ -43,6 +43,26 @@ use crate::model::{ContextItem, ScoredItem};
 ///
 /// Placers receive merged items (pinned + sliced) with their scores and
 /// produce the final ordered list of context items.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, ScoredItem, ChronologicalPlacer, Placer};
+/// use chrono::Utc;
+///
+/// // All built-in placers implement this trait
+/// let placer: Box<dyn Placer> = Box::new(ChronologicalPlacer);
+///
+/// let items = vec![ScoredItem {
+///     item: ContextItemBuilder::new("hello", 5)
+///         .timestamp(Utc::now())
+///         .build()?,
+///     score: 0.5,
+/// }];
+/// let placed = placer.place(&items);
+/// assert_eq!(placed.len(), 1);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub trait Placer: Send + Sync {
     /// Orders the given items for final presentation in the context window.
     fn place(&self, items: &[ScoredItem]) -> Vec<ContextItem>;

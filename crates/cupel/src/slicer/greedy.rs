@@ -5,6 +5,31 @@ use crate::slicer::Slicer;
 /// from highest-density items first.
 ///
 /// Zero-token items have density `f64::MAX` and are always included.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use cupel::{ContextItemBuilder, ContextBudget, ScoredItem, GreedySlice, Slicer};
+///
+/// let items = vec![
+///     ScoredItem {
+///         item: ContextItemBuilder::new("high value", 50).build()?,
+///         score: 0.9,
+///     },
+///     ScoredItem {
+///         item: ContextItemBuilder::new("low value", 200).build()?,
+///         score: 0.1,
+///     },
+/// ];
+///
+/// let budget = ContextBudget::new(1000, 100, 0, HashMap::new(), 0.0)?;
+/// let selected = GreedySlice.slice(&items, &budget);
+///
+/// assert_eq!(selected.len(), 1);
+/// assert_eq!(selected[0].content(), "high value");
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct GreedySlice;
 
 impl Slicer for GreedySlice {

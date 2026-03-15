@@ -50,6 +50,25 @@ use crate::model::{ContextBudget, ContextItem, ScoredItem};
 ///
 /// Slicers receive items pre-sorted by score descending (from the Sort stage)
 /// and return the subset of items that fits within the budget.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use cupel::{ContextItemBuilder, ContextBudget, ScoredItem, GreedySlice, Slicer};
+///
+/// // All built-in slicers implement this trait
+/// let slicer: Box<dyn Slicer> = Box::new(GreedySlice);
+///
+/// let items = vec![ScoredItem {
+///     item: ContextItemBuilder::new("context", 50).build()?,
+///     score: 0.9,
+/// }];
+/// let budget = ContextBudget::new(1000, 100, 0, HashMap::new(), 0.0)?;
+/// let selected = slicer.slice(&items, &budget);
+/// assert_eq!(selected.len(), 1);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub trait Slicer: Send + Sync {
     /// Selects items from `sorted` that fit within `budget`.
     fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Vec<ContextItem>;

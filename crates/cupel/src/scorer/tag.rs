@@ -8,6 +8,27 @@ use crate::scorer::Scorer;
 /// Absolute scorer: weighted tag matching, normalized by total configured weight.
 ///
 /// Tag key lookup is case-sensitive (ordinal) per spec.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use cupel::{ContextItemBuilder, TagScorer, Scorer};
+///
+/// let weights = HashMap::from([
+///     ("important".to_string(), 1.0),
+///     ("recent".to_string(), 0.5),
+/// ]);
+/// let scorer = TagScorer::new(weights)?;
+///
+/// let item = ContextItemBuilder::new("tagged item", 5)
+///     .tags(vec!["important".to_string()])
+///     .build()?;
+///
+/// let score = scorer.score(&item, &[item.clone()]);
+/// assert!((score - 0.6666).abs() < 0.01); // 1.0 / 1.5
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone)]
 pub struct TagScorer {
     tag_weights: HashMap<String, f64>,

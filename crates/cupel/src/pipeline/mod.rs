@@ -63,6 +63,34 @@ use crate::slicer::Slicer;
 ///
 /// Stages execute in order: Classify, Score, Deduplicate, Sort, Slice, Place.
 /// Stages cannot be reordered, skipped, or inserted between.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use cupel::{
+///     Pipeline, ContextItemBuilder, ContextBudget,
+///     RecencyScorer, GreedySlice, ChronologicalPlacer,
+/// };
+/// use chrono::Utc;
+///
+/// let pipeline = Pipeline::builder()
+///     .scorer(Box::new(RecencyScorer))
+///     .slicer(Box::new(GreedySlice))
+///     .placer(Box::new(ChronologicalPlacer))
+///     .build()?;
+///
+/// let items = vec![
+///     ContextItemBuilder::new("user message", 10)
+///         .timestamp(Utc::now())
+///         .build()?,
+/// ];
+/// let budget = ContextBudget::new(4096, 3000, 1024, HashMap::new(), 0.0)?;
+///
+/// let result = pipeline.run(&items, &budget)?;
+/// assert_eq!(result.len(), 1);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct Pipeline {
     scorer: Box<dyn Scorer>,
     slicer: Box<dyn Slicer>,
@@ -129,6 +157,21 @@ impl std::fmt::Debug for Pipeline {
 }
 
 /// Builder for constructing a [`Pipeline`] with required and optional configuration.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{Pipeline, RecencyScorer, GreedySlice, UShapedPlacer, OverflowStrategy};
+///
+/// let pipeline = Pipeline::builder()
+///     .scorer(Box::new(RecencyScorer))
+///     .slicer(Box::new(GreedySlice))
+///     .placer(Box::new(UShapedPlacer))
+///     .deduplication(false)
+///     .overflow_strategy(OverflowStrategy::Truncate)
+///     .build()?;
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct PipelineBuilder {
     scorer: Option<Box<dyn Scorer>>,
     slicer: Option<Box<dyn Slicer>>,

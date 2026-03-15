@@ -8,6 +8,22 @@ use crate::scorer::Scorer;
 /// Absolute scorer: assigns a score based on the item's kind using a weight map.
 ///
 /// Weight lookup is case-insensitive (via ContextKind's Hash/Eq).
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, ContextKind, KindScorer, Scorer};
+///
+/// let scorer = KindScorer::with_default_weights();
+///
+/// let item = ContextItemBuilder::new("system instruction", 10)
+///     .kind(ContextKind::new("SystemPrompt")?)
+///     .build()?;
+///
+/// let score = scorer.score(&item, &[item.clone()]);
+/// assert_eq!(score, 1.0); // SystemPrompt has default weight 1.0
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone)]
 pub struct KindScorer {
     weights: HashMap<ContextKind, f64>,

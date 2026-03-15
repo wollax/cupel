@@ -6,6 +6,24 @@ use crate::placer::Placer;
 ///
 /// Exploits primacy and recency bias in LLMs by placing the most relevant items
 /// where they receive the most attention.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, ScoredItem, UShapedPlacer, Placer};
+///
+/// let items = vec![
+///     ScoredItem { item: ContextItemBuilder::new("A", 5).build()?, score: 0.9 },
+///     ScoredItem { item: ContextItemBuilder::new("B", 5).build()?, score: 0.1 },
+///     ScoredItem { item: ContextItemBuilder::new("C", 5).build()?, score: 0.5 },
+/// ];
+///
+/// let placed = UShapedPlacer.place(&items);
+/// // Highest scores at edges, lowest in the middle
+/// assert_eq!(placed[0].content(), "A"); // highest at start
+/// assert_eq!(placed[2].content(), "C"); // second-highest at end
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct UShapedPlacer;
 
 impl Placer for UShapedPlacer {

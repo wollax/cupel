@@ -70,7 +70,24 @@ use crate::model::ContextItem;
 /// A scorer computes a relevance score for a context item relative to all scoreable items.
 ///
 /// Scorers are pure functions: given identical inputs, they must return the same output.
-/// Scores are conventionally in [0.0, 1.0] but this is not enforced.
+/// Scores are conventionally in \[0.0, 1.0\] but this is not enforced.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, RecencyScorer, Scorer};
+/// use chrono::Utc;
+///
+/// // All built-in scorers implement this trait
+/// let scorer: Box<dyn Scorer> = Box::new(RecencyScorer);
+///
+/// let item = ContextItemBuilder::new("hello", 3)
+///     .timestamp(Utc::now())
+///     .build()?;
+/// let score = scorer.score(&item, &[item.clone()]);
+/// assert!(score >= 0.0);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub trait Scorer: Any + Send + Sync {
     /// Computes a relevance score for `item` given the full list of scoreable items.
     fn score(&self, item: &ContextItem, all_items: &[ContextItem]) -> f64;
