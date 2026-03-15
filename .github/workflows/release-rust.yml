@@ -63,6 +63,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Setup Rust
@@ -72,7 +73,7 @@ jobs:
         id: version
         run: |
           VERSION=$(cargo metadata --manifest-path crates/cupel/Cargo.toml --format-version 1 --no-deps | jq -r '.packages[0].version')
-          if [ -z "$VERSION" ]; then
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
             echo "::error::Failed to extract version from Cargo.toml"
             exit 1
           fi
@@ -80,7 +81,7 @@ jobs:
           echo "Version: $VERSION"
 
       - name: Publish to crates.io
-        run: cargo publish --manifest-path crates/cupel/Cargo.toml
+        run: cargo publish --manifest-path crates/cupel/Cargo.toml --locked
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
@@ -90,3 +91,4 @@ jobs:
           tag_name: rust-v${{ steps.version.outputs.version }}
           name: cupel rust-v${{ steps.version.outputs.version }}
           generate_release_notes: true
+          make_latest: false
