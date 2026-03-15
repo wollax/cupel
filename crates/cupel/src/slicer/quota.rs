@@ -8,6 +8,22 @@ use crate::model::{ContextBudget, ContextItem, ContextKind, ScoredItem};
 use crate::slicer::Slicer;
 
 /// A single quota entry specifying require and cap percentages for a kind.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextKind, QuotaEntry};
+///
+/// let entry = QuotaEntry::new(
+///     ContextKind::new("SystemPrompt")?,
+///     10.0,  // require at least 10% of budget
+///     30.0,  // cap at 30% of budget
+/// )?;
+///
+/// assert_eq!(entry.require(), 10.0);
+/// assert_eq!(entry.cap(), 30.0);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone)]
 pub struct QuotaEntry {
     kind: ContextKind,
@@ -92,6 +108,34 @@ impl<'de> Deserialize<'de> for QuotaEntry {
 /// A decorator slicer that partitions items by [`ContextKind`], distributes the
 /// token budget across kinds using configurable quotas, and delegates per-kind
 /// selection to an inner slicer.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use cupel::{
+///     ContextItemBuilder, ContextBudget, ContextKind,
+///     ScoredItem, QuotaEntry, QuotaSlice, GreedySlice, Slicer,
+/// };
+///
+/// let quotas = vec![
+///     QuotaEntry::new(ContextKind::new("SystemPrompt")?, 10.0, 30.0)?,
+///     QuotaEntry::new(ContextKind::new("Message")?, 20.0, 80.0)?,
+/// ];
+/// let slicer = QuotaSlice::new(quotas, Box::new(GreedySlice))?;
+///
+/// let items = vec![ScoredItem {
+///     item: ContextItemBuilder::new("hello", 50)
+///         .kind(ContextKind::new("Message")?)
+///         .build()?,
+///     score: 0.8,
+/// }];
+///
+/// let budget = ContextBudget::new(1000, 500, 0, HashMap::new(), 0.0)?;
+/// let selected = slicer.slice(&items, &budget);
+/// assert_eq!(selected.len(), 1);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct QuotaSlice {
     quotas: Vec<QuotaEntry>,
     inner: Box<dyn Slicer>,

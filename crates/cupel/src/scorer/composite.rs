@@ -9,6 +9,37 @@ use crate::scorer::Scorer;
 ///
 /// Validates at construction: at least one entry, all weights positive and finite,
 /// and no cycles in the scorer graph (detected via DFS with reference identity).
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{
+///     ContextItemBuilder, ContextKind,
+///     CompositeScorer, RecencyScorer, KindScorer, Scorer,
+/// };
+/// use chrono::Utc;
+///
+/// let scorer = CompositeScorer::new(vec![
+///     (Box::new(RecencyScorer), 2.0),
+///     (Box::new(KindScorer::with_default_weights()), 1.0),
+/// ])?;
+///
+/// let items = vec![
+///     ContextItemBuilder::new("recent", 5)
+///         .kind(ContextKind::new("Message")?)
+///         .timestamp(Utc::now())
+///         .build()?,
+///     ContextItemBuilder::new("older", 5)
+///         .kind(ContextKind::new("Message")?)
+///         .timestamp(Utc::now() - chrono::Duration::hours(1))
+///         .build()?,
+/// ];
+///
+/// let recent = scorer.score(&items[0], &items);
+/// let older = scorer.score(&items[1], &items);
+/// assert!(recent > older); // recency weight differentiates
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct CompositeScorer {
     scorers: Vec<Box<dyn Scorer>>,
     normalized_weights: Vec<f64>,

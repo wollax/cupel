@@ -7,6 +7,25 @@ use crate::scorer::Scorer;
 ///
 /// Self-exclusion uses reference identity (`std::ptr::eq`).
 /// Tag comparison is case-insensitive (ASCII fold).
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, FrequencyScorer, Scorer};
+///
+/// let a = ContextItemBuilder::new("first", 5)
+///     .tags(vec!["topic-a".to_string()])
+///     .build()?;
+/// let b = ContextItemBuilder::new("second", 5)
+///     .tags(vec!["topic-a".to_string()])
+///     .build()?;
+///
+/// let items = vec![a, b];
+/// // Pass a reference into the vec — FrequencyScorer uses ptr identity for self-exclusion
+/// let score = FrequencyScorer.score(&items[0], &items);
+/// assert_eq!(score, 1.0); // 1 of 1 non-self peer shares a tag
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct FrequencyScorer;
 

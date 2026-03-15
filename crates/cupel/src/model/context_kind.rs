@@ -9,6 +9,29 @@ use crate::CupelError;
 /// An extensible string enumeration classifying the type of a context item.
 ///
 /// Comparison is case-insensitive using ASCII case folding.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::ContextKind;
+///
+/// // Use well-known constants
+/// let system = ContextKind::new(ContextKind::SYSTEM_PROMPT)?;
+/// assert_eq!(system.as_str(), "SystemPrompt");
+///
+/// // Custom kinds are supported
+/// let custom = ContextKind::new("Embedding")?;
+/// assert_eq!(custom.as_str(), "Embedding");
+///
+/// // Comparison is case-insensitive
+/// let a = ContextKind::new("message")?;
+/// let b = ContextKind::new("Message")?;
+/// assert_eq!(a, b);
+///
+/// // Default is "Message"
+/// assert_eq!(ContextKind::default().as_str(), "Message");
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone)]
 pub struct ContextKind(String);
 

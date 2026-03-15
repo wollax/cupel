@@ -9,6 +9,25 @@ use crate::model::ContextKind;
 /// Token budget constraints that control how much context the pipeline can select.
 ///
 /// All fields are validated at construction time — no invalid budget can exist at runtime.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use cupel::ContextBudget;
+///
+/// // A simple budget: 4096 max, 3000 target, 1024 reserved for output
+/// let budget = ContextBudget::new(4096, 3000, 1024, HashMap::new(), 5.0)?;
+///
+/// assert_eq!(budget.max_tokens(), 4096);
+/// assert_eq!(budget.target_tokens(), 3000);
+/// assert_eq!(budget.output_reserve(), 1024);
+///
+/// // Invalid budgets are rejected at construction time
+/// let err = ContextBudget::new(100, 200, 0, HashMap::new(), 0.0); // target 200 > max 100
+/// assert!(err.is_err());
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone)]
 pub struct ContextBudget {
     max_tokens: i64,

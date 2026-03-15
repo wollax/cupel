@@ -6,6 +6,20 @@ use crate::scorer::Scorer;
 /// Rank-based scorer: higher priority values score higher.
 ///
 /// Items without a priority receive 0.0. A single prioritized item scores 1.0.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, PriorityScorer, Scorer};
+///
+/// let item = ContextItemBuilder::new("important", 5)
+///     .priority(10)
+///     .build()?;
+///
+/// let score = PriorityScorer.score(&item, &[item.clone()]);
+/// assert_eq!(score, 1.0); // single prioritized item scores 1.0
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct PriorityScorer;
 

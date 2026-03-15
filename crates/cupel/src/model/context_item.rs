@@ -10,6 +10,22 @@ use crate::model::{ContextKind, ContextSource};
 /// An immutable record representing a single piece of context in the pipeline.
 ///
 /// Constructed via [`ContextItemBuilder`]. All fields are private with public accessor methods.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, ContextKind};
+///
+/// let item = ContextItemBuilder::new("You are a helpful assistant.", 8)
+///     .kind(ContextKind::new("SystemPrompt")?)
+///     .priority(10)
+///     .build()?;
+///
+/// assert_eq!(item.content(), "You are a helpful assistant.");
+/// assert_eq!(item.tokens(), 8);
+/// assert_eq!(item.priority(), Some(10));
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct ContextItem {
     content: String,
@@ -83,6 +99,26 @@ impl ContextItem {
 }
 
 /// Builder for constructing [`ContextItem`] instances.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, ContextKind, ContextSource};
+/// use chrono::Utc;
+///
+/// let item = ContextItemBuilder::new("tool result: 42", 10)
+///     .kind(ContextKind::new("ToolOutput")?)
+///     .source(ContextSource::new("Tool")?)
+///     .priority(5)
+///     .tags(vec!["math".to_string()])
+///     .timestamp(Utc::now())
+///     .future_relevance_hint(0.8)
+///     .build()?;
+///
+/// assert_eq!(item.tokens(), 10);
+/// assert!(!item.pinned());
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug)]
 pub struct ContextItemBuilder {
     content: String,

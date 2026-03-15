@@ -6,6 +6,21 @@ use crate::scorer::Scorer;
 /// Rank-based scorer: more recent items score higher.
 ///
 /// Items without a timestamp receive 0.0. A single timestamped item scores 1.0.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, RecencyScorer, Scorer};
+/// use chrono::Utc;
+///
+/// let item = ContextItemBuilder::new("recent message", 5)
+///     .timestamp(Utc::now())
+///     .build()?;
+///
+/// let score = RecencyScorer.score(&item, &[item.clone()]);
+/// assert_eq!(score, 1.0); // single timestamped item scores 1.0
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct RecencyScorer;
 

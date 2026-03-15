@@ -3,9 +3,23 @@ use std::any::Any;
 use crate::model::ContextItem;
 use crate::scorer::Scorer;
 
-/// Absolute scorer: passes through `futureRelevanceHint`, clamped to [0.0, 1.0].
+/// Absolute scorer: passes through `futureRelevanceHint`, clamped to \[0.0, 1.0\].
 ///
 /// Returns 0.0 for null or non-finite hints. Finiteness is checked before clamping.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, ReflexiveScorer, Scorer};
+///
+/// let item = ContextItemBuilder::new("relevant context", 10)
+///     .future_relevance_hint(0.75)
+///     .build()?;
+///
+/// let score = ReflexiveScorer.score(&item, &[item.clone()]);
+/// assert_eq!(score, 0.75);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct ReflexiveScorer;
 

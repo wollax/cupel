@@ -1,3 +1,55 @@
+//! The fixed 6-stage context selection pipeline.
+//!
+//! [`Pipeline`] executes six stages in order to select and arrange context items
+//! that fit within a token budget. Stages cannot be reordered, skipped, or
+//! inserted between.
+//!
+//! # Stage flow
+//!
+//! 1. **Classify** — Separates pinned items (which bypass scoring/slicing) from
+//!    scoreable candidates. Validates that pinned token totals fit the budget.
+//! 2. **Score** — Applies the configured [`Scorer`] to every
+//!    scoreable item, producing [`ScoredItem`](crate::ScoredItem) records.
+//! 3. **Deduplicate** — Removes content-identical items, keeping the
+//!    highest-scored copy (optional, enabled by default).
+//! 4. **Sort** — Orders scored items by score descending, with stable tiebreaks.
+//! 5. **Slice** — Applies the configured [`Slicer`] to select
+//!    items that fit within the remaining token budget (after pinned items).
+//! 6. **Place** — Merges pinned and sliced items, then applies the configured
+//!    [`Placer`] to determine final presentation order.
+//!
+//! # Example
+//!
+//! ```
+//! # use std::collections::HashMap;
+//! use cupel::{
+//!     Pipeline, ContextItemBuilder, ContextBudget,
+//!     RecencyScorer, GreedySlice, ChronologicalPlacer,
+//! };
+//! use chrono::Utc;
+//!
+//! let pipeline = Pipeline::builder()
+//!     .scorer(Box::new(RecencyScorer))
+//!     .slicer(Box::new(GreedySlice))
+//!     .placer(Box::new(ChronologicalPlacer))
+//!     .build()?;
+//!
+//! let items = vec![
+//!     ContextItemBuilder::new("recent message", 10)
+//!         .timestamp(Utc::now())
+//!         .build()?,
+//!     ContextItemBuilder::new("huge filler doc", 5000)
+//!         .timestamp(Utc::now() - chrono::Duration::hours(1))
+//!         .build()?,
+//! ];
+//! let budget = ContextBudget::new(4096, 200, 0, HashMap::new(), 0.0)?;
+//!
+//! let result = pipeline.run(&items, &budget)?;
+//! assert_eq!(result.len(), 1); // filler excluded — doesn't fit budget
+//! assert_eq!(result[0].content(), "recent message");
+//! # Ok::<(), cupel::CupelError>(())
+//! ```
+
 mod classify;
 mod deduplicate;
 mod place;
@@ -15,6 +67,34 @@ use crate::slicer::Slicer;
 ///
 /// Stages execute in order: Classify, Score, Deduplicate, Sort, Slice, Place.
 /// Stages cannot be reordered, skipped, or inserted between.
+///
+/// # Examples
+///
+/// ```
+/// use std::collections::HashMap;
+/// use cupel::{
+///     Pipeline, ContextItemBuilder, ContextBudget,
+///     RecencyScorer, GreedySlice, ChronologicalPlacer,
+/// };
+/// use chrono::Utc;
+///
+/// let pipeline = Pipeline::builder()
+///     .scorer(Box::new(RecencyScorer))
+///     .slicer(Box::new(GreedySlice))
+///     .placer(Box::new(ChronologicalPlacer))
+///     .build()?;
+///
+/// let items = vec![
+///     ContextItemBuilder::new("user message", 10)
+///         .timestamp(Utc::now())
+///         .build()?,
+/// ];
+/// let budget = ContextBudget::new(4096, 3000, 1024, HashMap::new(), 0.0)?;
+///
+/// let result = pipeline.run(&items, &budget)?;
+/// assert_eq!(result.len(), 1);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct Pipeline {
     scorer: Box<dyn Scorer>,
     slicer: Box<dyn Slicer>,
@@ -81,6 +161,21 @@ impl std::fmt::Debug for Pipeline {
 }
 
 /// Builder for constructing a [`Pipeline`] with required and optional configuration.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{Pipeline, RecencyScorer, GreedySlice, UShapedPlacer, OverflowStrategy};
+///
+/// let pipeline = Pipeline::builder()
+///     .scorer(Box::new(RecencyScorer))
+///     .slicer(Box::new(GreedySlice))
+///     .placer(Box::new(UShapedPlacer))
+///     .deduplication(false)
+///     .overflow_strategy(OverflowStrategy::Truncate)
+///     .build()?;
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct PipelineBuilder {
     scorer: Option<Box<dyn Scorer>>,
     slicer: Option<Box<dyn Slicer>>,

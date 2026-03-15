@@ -5,6 +5,34 @@ use crate::placer::Placer;
 ///
 /// Timestamped items sort before null-timestamp items. Among timestamped items,
 /// ordering is ascending by timestamp. Tiebreak is by original index (stable).
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, ScoredItem, ChronologicalPlacer, Placer};
+/// use chrono::{Utc, Duration};
+///
+/// let now = Utc::now();
+/// let items = vec![
+///     ScoredItem {
+///         item: ContextItemBuilder::new("later", 5)
+///             .timestamp(now)
+///             .build()?,
+///         score: 0.5,
+///     },
+///     ScoredItem {
+///         item: ContextItemBuilder::new("earlier", 5)
+///             .timestamp(now - Duration::hours(1))
+///             .build()?,
+///         score: 0.9,
+///     },
+/// ];
+///
+/// let placed = ChronologicalPlacer.place(&items);
+/// assert_eq!(placed[0].content(), "earlier");
+/// assert_eq!(placed[1].content(), "later");
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct ChronologicalPlacer;
 
 impl Placer for ChronologicalPlacer {

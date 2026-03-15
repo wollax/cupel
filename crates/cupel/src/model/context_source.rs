@@ -9,6 +9,24 @@ use crate::CupelError;
 /// An extensible string enumeration identifying the origin of a context item.
 ///
 /// Comparison is case-insensitive using ASCII case folding.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::ContextSource;
+///
+/// // Use well-known constants
+/// let chat = ContextSource::new(ContextSource::CHAT)?;
+/// assert_eq!(chat.as_str(), "Chat");
+///
+/// // Custom sources are supported
+/// let custom = ContextSource::new("Webhook")?;
+/// assert_eq!(custom.as_str(), "Webhook");
+///
+/// // Default is "Chat"
+/// assert_eq!(ContextSource::default().as_str(), "Chat");
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone)]
 pub struct ContextSource(String);
 

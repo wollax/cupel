@@ -1,6 +1,19 @@
 use crate::model::ContextItem;
 
 /// A value type associating a [`ContextItem`] with its computed relevance score.
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, ScoredItem};
+///
+/// let item = ContextItemBuilder::new("user message", 12).build()?;
+/// let scored = ScoredItem { item, score: 0.85 };
+///
+/// assert_eq!(scored.item.content(), "user message");
+/// assert_eq!(scored.score, 0.85);
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(deny_unknown_fields))]

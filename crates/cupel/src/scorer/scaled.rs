@@ -3,10 +3,28 @@ use std::any::Any;
 use crate::model::ContextItem;
 use crate::scorer::Scorer;
 
-/// Composite scorer: min-max normalization of an inner scorer across all items.
+/// Wrapping scorer: min-max normalization of an inner scorer across all items.
 ///
 /// Returns 0.5 for degenerate cases (empty allItems, all scores equal).
 /// Self-identification uses reference identity (`std::ptr::eq`).
+///
+/// # Examples
+///
+/// ```
+/// use cupel::{ContextItemBuilder, ScaledScorer, PriorityScorer, Scorer};
+///
+/// let scorer = ScaledScorer::new(Box::new(PriorityScorer));
+///
+/// let lo = ContextItemBuilder::new("low", 5).priority(1).build()?;
+/// let hi = ContextItemBuilder::new("high", 5).priority(10).build()?;
+/// let items = vec![lo.clone(), hi.clone()];
+///
+/// let lo_score = scorer.score(&items[0], &items);
+/// let hi_score = scorer.score(&items[1], &items);
+/// assert_eq!(lo_score, 0.0); // min
+/// assert_eq!(hi_score, 1.0); // max
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
 pub struct ScaledScorer {
     inner: Box<dyn Scorer>,
 }
