@@ -177,9 +177,13 @@ impl Slicer for QuotaSlice {
             kind_budgets.insert((*kind).clone(), kind_budget);
         }
 
-        // Phase 4: Per-kind slicing
+        // Phase 4: Per-kind slicing (iterate sorted_kinds for deterministic order)
         let mut all_selected: Vec<ContextItem> = Vec::new();
-        for (kind, items) in &partitions {
+        for kind in &sorted_kinds {
+            let items = match partitions.get(*kind) {
+                Some(items) => items,
+                None => continue,
+            };
             let kind_budget = kind_budgets.get(kind).copied().unwrap_or(0);
             if kind_budget <= 0 {
                 continue;

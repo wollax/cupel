@@ -12,8 +12,12 @@ fn run_slicing_test(vector_path: &str) {
     let target_tokens = vector["budget"]["target_tokens"]
         .as_integer()
         .expect("missing budget.target_tokens");
+    let max_tokens = vector["budget"]
+        .get("max_tokens")
+        .and_then(|v| v.as_integer())
+        .unwrap_or(target_tokens);
 
-    let budget = ContextBudget::new(target_tokens, target_tokens, 0, HashMap::new(), 0.0)
+    let budget = ContextBudget::new(max_tokens, target_tokens, 0, HashMap::new(), 0.0)
         .expect("budget should be valid");
 
     let selected = slicer.slice(&scored_items, &budget);

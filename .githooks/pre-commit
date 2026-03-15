@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Ensure we're at repo root regardless of where git invokes us
+cd "$(git rev-parse --show-toplevel)"
+
 # Guard: conformance vectors must stay in sync
 if ! diff -rq conformance/required/ crates/cupel/conformance/required/ >/dev/null 2>&1; then
     echo "ERROR: Conformance vectors are out of sync."

@@ -1,7 +1,6 @@
-use chrono::{DateTime, Utc};
 use cupel::{ContextItemBuilder, ScoredItem};
 
-use super::{assert_ordered_eq, build_placer, load_vector};
+use super::{assert_ordered_eq, build_placer, load_vector, parse_toml_datetime};
 
 fn build_placing_items(vector: &toml::Value) -> Vec<ScoredItem> {
     let items_array = vector
@@ -22,15 +21,7 @@ fn build_placing_items(vector: &toml::Value) -> Vec<ScoredItem> {
             let mut builder = ContextItemBuilder::new(content, tokens);
 
             if let Some(ts) = item.get("timestamp") {
-                let dt = match ts {
-                    toml::Value::Datetime(dt) => {
-                        let s = dt.to_string();
-                        s.parse::<DateTime<Utc>>()
-                            .unwrap_or_else(|e| panic!("failed to parse datetime '{s}': {e}"))
-                    }
-                    other => panic!("expected TOML datetime, got: {other:?}"),
-                };
-                builder = builder.timestamp(dt);
+                builder = builder.timestamp(parse_toml_datetime(ts));
             }
 
             ScoredItem {

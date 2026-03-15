@@ -54,7 +54,7 @@ pub(crate) fn place_items(
 }
 
 fn handle_overflow(
-    merged: Vec<ScoredItem>,
+    mut merged: Vec<ScoredItem>,
     target_tokens: i64,
     strategy: OverflowStrategy,
 ) -> Result<Vec<ScoredItem>, CupelError> {
@@ -67,6 +67,14 @@ fn handle_overflow(
             })
         }
         OverflowStrategy::Truncate => {
+            // Sort non-pinned items by score descending so truncation removes
+            // lowest-priority items first (pinned items are always kept).
+            merged.sort_by(|a, b| match (a.item.pinned(), b.item.pinned()) {
+                (true, false) => std::cmp::Ordering::Less,
+                (false, true) => std::cmp::Ordering::Greater,
+                _ => b.score.total_cmp(&a.score),
+            });
+
             let mut kept = Vec::new();
             let mut current_tokens: i64 = 0;
 

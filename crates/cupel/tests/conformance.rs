@@ -31,7 +31,7 @@ mod conformance {
     }
 
     /// Parse a TOML datetime value to chrono::DateTime<Utc>.
-    fn parse_toml_datetime(val: &Value) -> DateTime<Utc> {
+    pub fn parse_toml_datetime(val: &Value) -> DateTime<Utc> {
         match val {
             Value::Datetime(dt) => {
                 let s = dt.to_string();
