@@ -10,9 +10,7 @@ pub(crate) fn sort_scored(deduped: Vec<ScoredItem>) -> Vec<ScoredItem> {
     let mut indexed: Vec<(usize, ScoredItem)> = deduped.into_iter().enumerate().collect();
 
     indexed.sort_by(|(idx_a, a), (idx_b, b)| {
-        b.score
-            .total_cmp(&a.score)
-            .then_with(|| idx_a.cmp(idx_b))
+        b.score.total_cmp(&a.score).then_with(|| idx_a.cmp(idx_b))
     });
 
     indexed.into_iter().map(|(_, si)| si).collect()

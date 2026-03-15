@@ -1,5 +1,5 @@
-use crate::model::{ContextBudget, ContextItem};
 use crate::CupelError;
+use crate::model::{ContextBudget, ContextItem};
 
 /// Partitions input items into pinned and scoreable lists, excluding invalid items.
 ///

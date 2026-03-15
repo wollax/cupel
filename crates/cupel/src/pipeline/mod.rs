@@ -5,11 +5,11 @@ mod score;
 mod slice;
 mod sort;
 
+use crate::CupelError;
 use crate::model::{ContextBudget, ContextItem, OverflowStrategy};
 use crate::placer::Placer;
 use crate::scorer::Scorer;
 use crate::slicer::Slicer;
-use crate::CupelError;
 
 /// A fixed 6-stage pipeline that selects and orders context items within a token budget.
 ///
@@ -57,8 +57,7 @@ impl Pipeline {
 
         // Stage 5: Slice
         let pinned_tokens: i64 = pinned.iter().map(|i| i.tokens()).sum();
-        let sliced =
-            slice::slice_items(&sorted, budget, pinned_tokens, self.slicer.as_ref());
+        let sliced = slice::slice_items(&sorted, budget, pinned_tokens, self.slicer.as_ref());
 
         // Stage 6: Place
         place::place_items(

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::model::{ContextItem, ContextBudget, OverflowStrategy, ScoredItem};
-use crate::placer::Placer;
 use crate::CupelError;
+use crate::model::{ContextBudget, ContextItem, OverflowStrategy, ScoredItem};
+use crate::placer::Placer;
 
 /// Merges pinned items with sliced items, handles overflow, and delegates to
 /// the placer for final ordering.
@@ -71,8 +71,7 @@ fn handle_overflow(
             let mut current_tokens: i64 = 0;
 
             for si in merged {
-                let fits = si.item.pinned()
-                    || current_tokens + si.item.tokens() <= target_tokens;
+                let fits = si.item.pinned() || current_tokens + si.item.tokens() <= target_tokens;
                 if fits {
                     current_tokens += si.item.tokens();
                     kept.push(si);

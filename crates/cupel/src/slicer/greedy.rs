@@ -29,9 +29,7 @@ impl Slicer for GreedySlice {
             .collect();
 
         // Step 2: Stable sort by density descending, tiebreak by index ascending
-        densities.sort_by(|a, b| {
-            b.0.total_cmp(&a.0).then_with(|| a.1.cmp(&b.1))
-        });
+        densities.sort_by(|a, b| b.0.total_cmp(&a.0).then_with(|| a.1.cmp(&b.1)));
 
         // Step 3: Greedy fill
         let mut remaining = budget.target_tokens();

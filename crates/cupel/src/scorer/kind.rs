@@ -19,15 +19,9 @@ impl KindScorer {
     /// Default weights: SystemPrompt=1.0, Memory=0.8, ToolOutput=0.6, Document=0.4, Message=0.2
     pub fn with_default_weights() -> Self {
         let mut weights = HashMap::new();
-        weights.insert(
-            ContextKind::from_static(ContextKind::SYSTEM_PROMPT),
-            1.0,
-        );
+        weights.insert(ContextKind::from_static(ContextKind::SYSTEM_PROMPT), 1.0);
         weights.insert(ContextKind::from_static(ContextKind::MEMORY), 0.8);
-        weights.insert(
-            ContextKind::from_static(ContextKind::TOOL_OUTPUT),
-            0.6,
-        );
+        weights.insert(ContextKind::from_static(ContextKind::TOOL_OUTPUT), 0.6);
         weights.insert(ContextKind::from_static(ContextKind::DOCUMENT), 0.4);
         weights.insert(ContextKind::from_static(ContextKind::MESSAGE), 0.2);
         Self { weights }

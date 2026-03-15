@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
+use crate::CupelError;
 use crate::model::{ContextBudget, ContextItem, ContextKind, ScoredItem};
 use crate::slicer::Slicer;
-use crate::CupelError;
 
 /// A single quota entry specifying require and cap percentages for a kind.
 #[derive(Debug, Clone)]
@@ -191,14 +191,8 @@ impl Slicer for QuotaSlice {
 
             // Create a sub-budget for the inner slicer.
             // Safe: cap >= kind_budget >= 0 after the defensive guard above.
-            let sub_budget = ContextBudget::new(
-                cap,
-                kind_budget,
-                0,
-                HashMap::new(),
-                0.0,
-            )
-            .expect("sub-budget should be valid since cap >= kind_budget >= 0");
+            let sub_budget = ContextBudget::new(cap, kind_budget, 0, HashMap::new(), 0.0)
+                .expect("sub-budget should be valid since cap >= kind_budget >= 0");
 
             let selected = self.inner.slice(items, &sub_budget);
             all_selected.extend(selected);

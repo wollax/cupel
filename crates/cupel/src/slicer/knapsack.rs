@@ -1,6 +1,6 @@
+use crate::CupelError;
 use crate::model::{ContextBudget, ContextItem, ScoredItem};
 use crate::slicer::Slicer;
-use crate::CupelError;
 
 /// Selects items using 0/1 knapsack dynamic programming, finding the combination
 /// that maximizes total score within the token budget.

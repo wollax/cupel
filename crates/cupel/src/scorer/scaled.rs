@@ -46,7 +46,10 @@ impl Scorer for ScaledScorer {
             }
         }
 
-        debug_assert!(raw_score.is_finite(), "ScaledScorer: item not found in all_items via reference identity");
+        debug_assert!(
+            raw_score.is_finite(),
+            "ScaledScorer: item not found in all_items via reference identity"
+        );
 
         if max == min {
             return 0.5;

@@ -33,9 +33,7 @@ impl CompositeScorer {
                 ));
             }
             if !weight.is_finite() {
-                return Err(CupelError::ScorerConfig(
-                    "weight must be finite".to_owned(),
-                ));
+                return Err(CupelError::ScorerConfig("weight must be finite".to_owned()));
             }
             total_weight += weight;
         }
@@ -47,8 +45,7 @@ impl CompositeScorer {
             detect_cycles_dfs(scorer.as_ref(), &mut visited, &mut in_path)?;
         }
 
-        let normalized_weights: Vec<f64> =
-            entries.iter().map(|(_, w)| w / total_weight).collect();
+        let normalized_weights: Vec<f64> = entries.iter().map(|(_, w)| w / total_weight).collect();
         let scorers: Vec<Box<dyn Scorer>> = entries.into_iter().map(|(s, _)| s).collect();
 
         Ok(Self {

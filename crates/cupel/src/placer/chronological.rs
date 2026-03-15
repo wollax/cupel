@@ -31,9 +31,6 @@ impl Placer for ChronologicalPlacer {
             }
         });
 
-        sortable
-            .iter()
-            .map(|&i| items[i].item.clone())
-            .collect()
+        sortable.iter().map(|&i| items[i].item.clone()).collect()
     }
 }
