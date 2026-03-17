@@ -21,3 +21,5 @@
 | D013 | prior | arch | Standalone Cargo.toml | No workspace | Single-crate repo avoids workspace complexity | No |
 | D014 | prior | arch | Validation-on-deserialize for ContextBudget | Custom deserializer routes through constructor | Prevents serde from bypassing constructor invariants | No |
 | D015 | prior | arch | #[non_exhaustive] on CupelError and OverflowStrategy | Additive enum evolution without breaking downstream | Standard Rust pattern for library-owned enums | No |
+| D016 | S01 planning | arch | S01 verification strategy | Contract-level only (compile + cargo test + doc + clippy + drift guard) | Diagnostic types have no runtime behavior to test; harness coverage of `expected.diagnostics.*` is a S03 concern; TOML vector correctness is manually verified against diagnostics-budget-exceeded.toml schema | No |
+| D017 | S01 planning | convention | ExclusionReason serde deferred to S04 | S01 stubs `cfg_attr` annotations with `// custom serde impl in S04` comment | Adjacent-tagged wire format cannot be derived; implementing it in S01 would violate task scope and risk S02 rework if field shapes change | No |

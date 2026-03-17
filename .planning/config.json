@@ -4,9 +4,9 @@
   "parallelization": true,
   "commit_docs": true,
   "pr_workflow": true,
-  "model_profile": "quality",
+  "model_profile": "balanced",
   "display": {
-    "statusline": true
+    "statusline": false
   },
   "workflow": {
     "research": true,

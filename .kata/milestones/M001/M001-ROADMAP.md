@@ -54,7 +54,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Diagnostics Data Types** `risk:low` `depends:[]`
+- [x] **S01: Diagnostics Data Types** `risk:low` `depends:[]`
   > After this: `TraceEvent`, `ExclusionReason`, `InclusionReason`, and `SelectionReport` types exist in the Rust crate with full doc comments — `cargo test` and `cargo doc` pass; diagnostics conformance vectors authored in `spec/conformance/`.
 
 - [ ] **S02: TraceCollector Trait & Implementations** `risk:medium` `depends:[S01]`

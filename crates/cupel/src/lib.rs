@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
+pub mod diagnostics;
 pub mod error;
 pub mod model;
 pub mod pipeline;
@@ -8,6 +9,10 @@ pub mod placer;
 pub mod scorer;
 pub mod slicer;
 
+pub use diagnostics::{
+    ExcludedItem, ExclusionReason, IncludedItem, InclusionReason, OverflowEvent, PipelineStage,
+    SelectionReport, TraceEvent,
+};
 pub use error::CupelError;
 pub use model::{
     ContextBudget, ContextItem, ContextItemBuilder, ContextKind, ContextSource, OverflowStrategy,
