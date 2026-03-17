@@ -80,12 +80,12 @@ This milestone is complete only when all are true:
 ### S01 → S02
 
 Produces:
-- `src/diagnostics/mod.rs` (or equivalent) — `TraceEvent` enum, `PipelineStage` enum, `OverflowEvent` struct
+- `src/diagnostics/mod.rs` (or equivalent) — `TraceEvent` struct, `PipelineStage` enum, `OverflowEvent` struct
 - `ExclusionReason` enum — all 8 variants (4 active + 4 reserved), data-carrying fields per spec
 - `InclusionReason` enum — `Scored`, `Pinned`, `ZeroToken` variants
 - `SelectionReport` struct — `included: Vec<IncludedItem>`, `excluded: Vec<ExcludedItem>`, stage-level timing
 - `IncludedItem` struct — `item: ContextItem`, `score: f64`, `reason: InclusionReason`
-- `ExcludedItem` struct — `item: ContextItem`, `score: Option<f64>`, `reason: ExclusionReason`
+- `ExcludedItem` struct — `item: ContextItem`, `score: f64`, `reason: ExclusionReason`
 - `spec/conformance/diag-*.toml` — minimum 5 diagnostics conformance vectors
 
 Consumes: nothing (builds on existing model types)
