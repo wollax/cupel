@@ -4,7 +4,71 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Active
 
-(none — all M001 requirements validated)
+### R040 — Count-based quota design resolution
+- Class: differentiator
+- Status: active
+- Description: Resolve the 5 open design questions for count-based quotas in `QuotaSlice`: (1) algorithm integration with GreedySlice/KnapsackSlice, (2) tag non-exclusivity semantics for items with multiple tags, (3) pinned item interaction with minimum-count guarantees, (4) run-time vs build-time conflict detection rules, (5) KnapsackSlice compatibility path. Output: design decision record + spec-ready pseudocode. No implementation.
+- Why it matters: Percentage-based quotas solve "at least 20% messages" but not "at least 3 tool results". Count-based quotas are required for agent memory scenarios where absolute minimum counts matter more than budget percentages. The design cannot be deferred further without blocking v1.3 implementation.
+- Source: user
+- Primary owning slice: M002/S03
+- Supporting slices: M002/S01
+- Validation: unmapped
+- Notes: Explicitly deferred from M001 brainstorm (March 15). Tag non-exclusivity and knapsack path are the two hardest sub-problems.
+
+### R041 — Spec quality debt closure
+- Class: quality-attribute
+- Status: active
+- Description: Close ~8-10 open spec editorial issues: event ordering within pipeline stages, item_count sentinel disambiguation, observer callback normative status, GreedySlice zero-token item ordering note, KnapsackSlice floor vs truncation-toward-zero note, UShapedPlacer pinned edge case table row, CompositeScorer pseudocode storage assignment, ScaledScorer nesting depth warning.
+- Why it matters: The spec is publicly served as an mdBook. Ambiguous ordering guarantees block conformance test vector authoring; misleading algorithm descriptions mislead new language binding implementors.
+- Source: user
+- Primary owning slice: M002/S02
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Issues tracked in `.planning/issues/open/` with `spec` prefix. S02 batch-closes them.
+
+### R042 — Metadata convention system spec
+- Class: differentiator
+- Status: active
+- Description: Define the `"cupel:<key>"` metadata namespace in the spec, establish first-class conventions (`cupel:trust` float64 [0,1] and `cupel:source-type` string enum), and write the `MetadataTrustScorer` spec chapter with conformance vector outlines. No implementation.
+- Why it matters: Without a canonical namespace, every caller invents their own trust-key schema; a `MetadataTrustScorer` built on ad hoc keys is useless across projects. Reserving the namespace now enables the ecosystem to converge before anyone serializes production data with conflicting key names.
+- Source: user (brainstorm March 15 — radical ideas, survived 2 rounds)
+- Primary owning slice: M002/S04
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Trust is a scoring input, not a filter. No trust gates (silent exclusion) in this spec.
+
+### R043 — Cupel.Testing vocabulary design
+- Class: differentiator
+- Status: active
+- Description: Define 10-15 named assertion patterns over `SelectionReport` as a vocabulary spec section: what each assertion checks, tolerance/edge cases, error message format on failure. Output is a spec-ready vocabulary document — no implementation. This is the prerequisite for the Cupel.Testing NuGet package (R021).
+- Why it matters: The testing vocabulary must be designed before implementation begins — shipping a testing package with ambiguous assertion semantics (e.g. "what is high-scoring?" in `PlaceHighScorersAtEdges`) creates an unstable API surface from day one.
+- Source: user (brainstorm March 15 — high-value, design-phase requirement)
+- Primary owning slice: M002/S05
+- Supporting slices: none
+- Validation: unmapped
+- Notes: No FluentAssertions dependency; no snapshot testing (ordering stability not yet guaranteed). Vocabulary design output feeds R021 implementation.
+
+### R044 — Future features spec chapters (DecayScorer, OTel, budget simulation)
+- Class: quality-attribute
+- Status: active
+- Description: Produce spec chapters for three deferred features: (a) `DecayScorer` — algorithm, TimeProvider injection pattern, null-timestamp policy, three curve factory methods, conformance vector outlines; (b) OpenTelemetry verbosity levels — exact `cupel.*` attributes per verbosity tier, pre-stability disclaimer; (c) budget simulation API contracts — `GetMarginalItems` and `FindMinBudgetFor` with monotonicity precondition spec. No implementation.
+- Why it matters: Each spec chapter is the prerequisite blocking implementation. Starting implementation without spec means the API surface gets driven by Rust/C# type system constraints rather than semantic clarity — a pattern explicitly rejected in the M001 brainstorm.
+- Source: user (brainstorm March 15 — high-value features)
+- Primary owning slice: M002/S06
+- Supporting slices: none
+- Validation: unmapped
+- Notes: DecayScorer feeds R020; OTel feeds R022; budget simulation is a new requirement (no prior R-number). TimeProvider is mandatory (not optional) — no silent default to TimeProvider.System.
+
+### R045 — Fresh brainstorm: post-v1.2 ideas
+- Class: quality-attribute
+- Status: active
+- Description: Run a new explorer/challenger brainstorm session (following the established .planning/brainstorms/ format) against the current v1.2 codebase state. Surface new ideas not yet in the backlog, validate or retire existing deferred ideas in light of v1.2 completion, and produce a refined idea register.
+- Why it matters: The last brainstorm (March 15) was conducted before diagnostics parity shipped. With SelectionReport and run_traced now live, the landscape has shifted — new ideas around analytics, testing, and ecosystem become more concrete.
+- Source: user
+- Primary owning slice: M002/S01
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Brainstorm output feeds count-quota design (S03) and future features spec (S06) by surfacing new angles on those problems.
 
 ## Validated (M001)
 
@@ -139,10 +203,10 @@ This file is the explicit capability and coverage contract for the project.
 - Description: Built-in time-decay scorer with injectable TimeProvider for testability
 - Why it matters: Common use case; RecencyScorer only does ordinal ranking, not true decay curves
 - Source: user
-- Primary owning slice: none (v1.3)
-- Supporting slices: none
+- Primary owning slice: none (v1.3 implementation; spec chapter in M002/S06)
+- Supporting slices: M002/S06
 - Validation: unmapped
-- Notes: Deferred to v1.3 — not needed for v1.2 quality hardening focus
+- Notes: Spec chapter designed in M002/S06 (R044); implementation deferred to v1.3
 
 ### R021 — Cupel.Testing package
 - Class: quality-attribute
@@ -150,10 +214,10 @@ This file is the explicit capability and coverage contract for the project.
 - Description: Fluent assertion chains over SelectionReport for test authoring
 - Why it matters: Reduces boilerplate in caller tests
 - Source: user
-- Primary owning slice: none (v1.3)
-- Supporting slices: none
+- Primary owning slice: none (v1.3 implementation; vocabulary design in M002/S05)
+- Supporting slices: M002/S05
 - Validation: unmapped
-- Notes: Deferred to v1.3
+- Notes: Vocabulary design phase in M002/S05 (R043); implementation deferred to v1.3
 
 ### R022 — OpenTelemetry bridge
 - Class: operability
@@ -161,10 +225,10 @@ This file is the explicit capability and coverage contract for the project.
 - Description: Bridge ITraceCollector/TraceCollector to ActivitySource for OTel integration
 - Why it matters: Production observability without custom logging
 - Source: user
-- Primary owning slice: none (v1.3)
-- Supporting slices: none
+- Primary owning slice: none (v1.3 implementation; verbosity spec in M002/S06)
+- Supporting slices: M002/S06
 - Validation: unmapped
-- Notes: Must be a companion package, not core — zero-dep constraint
+- Notes: Must be a companion package, not core — zero-dep constraint; verbosity levels spec in M002/S06 (R044)
 
 ## Out of Scope
 
@@ -216,16 +280,23 @@ This file is the explicit capability and coverage contract for the project.
 | R012 | core-capability | validated | M001 phase 23 | none | validated |
 | R013 | quality-attribute | validated | M001 phase 25 | none | validated |
 | R014 | core-capability | validated | M001 phase 24 | none | validated |
-| R020 | core-capability | deferred | none | none | unmapped |
-| R021 | quality-attribute | deferred | none | none | unmapped |
-| R022 | operability | deferred | none | none | unmapped |
+| R020 | core-capability | deferred | none (v1.3) | M002/S06 | unmapped |
+| R021 | quality-attribute | deferred | none (v1.3) | M002/S05 | unmapped |
+| R022 | operability | deferred | none (v1.3) | M002/S06 | unmapped |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
+| R040 | differentiator | active | M002/S03 | M002/S01 | unmapped |
+| R041 | quality-attribute | active | M002/S02 | none | unmapped |
+| R042 | differentiator | active | M002/S04 | none | unmapped |
+| R043 | differentiator | active | M002/S05 | none | unmapped |
+| R044 | quality-attribute | active | M002/S06 | none | unmapped |
+| R045 | quality-attribute | active | M002/S01 | none | unmapped |
 
 ## Coverage Summary
 
-- Active requirements: 0
-- Mapped to slices: 0
+- Active requirements: 6 (R040–R045, all M002)
+- Mapped to slices: 6
 - Validated: 11 (R001–R006, R010–R014)
+- Unmapped active requirements: 0
 - Unmapped active requirements: 0
