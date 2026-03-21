@@ -59,7 +59,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Spec Editorial Debt** `risk:low` `depends:[]`
   > After this: all ~8-10 spec/phase24 issues from `.planning/issues/open/` are closed; event ordering, item_count sentinel, observer callback normative status, greedy zero-token note, knapsack floor/truncation note, UShapedPlacer pinned edge, composite pseudocode, ScaledScorer nesting warning are all addressed in `spec/src/`.
 
-- [ ] **S03: Count-Based Quota Design** `risk:high` `depends:[S01]`
+- [x] **S03: Count-Based Quota Design** `risk:high` `depends:[S01]`
   > After this: a design decision record in `.planning/design/count-quota-design.md` resolves all 5 open questions — algorithm, tag non-exclusivity, pinned interaction, conflict detection, knapsack path — with pseudocode and no remaining TBD fields.
 
 - [ ] **S04: Metadata Convention System Spec** `risk:low` `depends:[]`

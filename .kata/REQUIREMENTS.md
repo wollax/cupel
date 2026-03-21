@@ -6,13 +6,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R040 — Count-based quota design resolution
 - Class: differentiator
-- Status: active
+- Status: validated
 - Description: Resolve the 5 open design questions for count-based quotas in `QuotaSlice`: (1) algorithm integration with GreedySlice/KnapsackSlice, (2) tag non-exclusivity semantics for items with multiple tags, (3) pinned item interaction with minimum-count guarantees, (4) run-time vs build-time conflict detection rules, (5) KnapsackSlice compatibility path. Output: design decision record + spec-ready pseudocode. No implementation.
 - Why it matters: Percentage-based quotas solve "at least 20% messages" but not "at least 3 tool results". Count-based quotas are required for agent memory scenarios where absolute minimum counts matter more than budget percentages. The design cannot be deferred further without blocking v1.3 implementation.
 - Source: user
 - Primary owning slice: M002/S03
 - Supporting slices: M002/S01
-- Validation: unmapped
+- Validation: validated — `.planning/design/count-quota-design.md` exists with all five decision areas present; DI-1 (separate decorator), DI-2 (non-exclusive tags), DI-3 (ScarcityBehavior::Degrade + quota_violations), DI-4 (5E KnapsackSlice guard), DI-5 (slicer-scoped caps + pinned decrement), DI-6 (backward-compat audit) all settled; COUNT-DISTRIBUTE-BUDGET pseudocode written; `grep -ci "\bTBD\b"` → 0; cargo test (35 passed) and dotnet test (583 passed) both green
 - Notes: Explicitly deferred from M001 brainstorm (March 15). Tag non-exclusivity and knapsack path are the two hardest sub-problems.
 
 ### R041 — Spec quality debt closure
@@ -286,7 +286,7 @@ This file is the explicit capability and coverage contract for the project.
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
-| R040 | differentiator | active | M002/S03 | M002/S01 | unmapped |
+| R040 | differentiator | validated | M002/S03 | M002/S01 | validated |
 | R041 | quality-attribute | validated | M002/S02 | none | validated |
 | R042 | differentiator | active | M002/S04 | none | unmapped |
 | R043 | differentiator | active | M002/S05 | none | unmapped |
@@ -295,8 +295,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 6 (R040–R045, all M002)
-- Mapped to slices: 6
-- Validated: 11 (R001–R006, R010–R014)
-- Unmapped active requirements: 0
+- Active requirements: 5 (R041–R045, all M002)
+- Mapped to slices: 5
+- Validated: 12 (R001–R006, R010–R014, R040)
 - Unmapped active requirements: 0
