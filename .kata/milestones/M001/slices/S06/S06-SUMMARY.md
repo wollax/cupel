@@ -3,25 +3,27 @@ id: S06
 parent: M001
 milestone: M001
 provides:
-  - KnapsackSlice DP table guard — InvalidOperationException when candidateCount × (capacity+1) > 50M cells
-  - QuotaBuilder epsilon fix — three equal-share 33.333...% quotas now accepted
-  - OverflowStrategyValue → OverflowStrategy internal rename in CupelPipeline + consumer update
-  - Caller-facing error messages (CupelPolicy Quotas+Stream, ScorerEntry InnerScorer)
+  - KnapsackSlice DP table size guard — throws InvalidOperationException when (long)candidateCount * (capacity+1) > 50_000_000L
+  - QuotaBuilder epsilon fix — three 33.333...% quota kinds accepted without spurious rejection
+  - CupelPipeline.OverflowStrategyValue renamed to OverflowStrategy (internal)
+  - Caller-facing CupelPolicy Quotas+Stream error message (no internal type names)
+  - ScorerEntry InnerScorer error message with corrective guidance
   - ScorerType.Scaled = 6, SlicerType.Stream = 2, PipelineStage 0–4 explicit integer anchors
   - Comprehensive XML <summary> docs on all 11 ContextItem properties
-  - ITraceCollector.IsEnabled constancy contract in doc
-  - ISlicer.Slice sort precondition in method summary
-  - ContextResult.Report behavioral nullability language (no concrete type reference)
+  - ITraceCollector.IsEnabled constancy contract in XML docs
+  - ISlicer.Slice method summary states sort precondition (candidates sorted score desc)
+  - ContextResult.Report uses behavioral nullability language ("null when tracing is disabled")
   - SelectionReport class summary references ITraceCollector not DiagnosticTraceCollector
-  - 6 new tests (KnapsackSlice guard boundary, QuotaSlice null-arg, PriorityScorer range, TagScorer case-insensitive + zero-weight, CupelPolicy stream-knapsack)
-  - 1 duplicate DI test removed
-  - NegativeTokenItems_SilentlyExcluded coverage test
+  - 6 new tests (KnapsackSlice guard boundary x3, negative-token x1, null constructor args x2, scorer range x1, tag scorer x2, policy stream+knapsack x1)
+  - 1 duplicate test removed (CupelServiceCollectionExtensionsTests)
+  - 658 tests total, 0 failures
 requires: []
 affects:
   - S07
 key_files:
   - src/Wollax.Cupel/KnapsackSlice.cs
   - src/Wollax.Cupel/CupelPipeline.cs
+  - src/Wollax.Cupel.Extensions.DependencyInjection/CupelServiceCollectionExtensions.cs
   - src/Wollax.Cupel/Slicing/QuotaBuilder.cs
   - src/Wollax.Cupel/CupelPolicy.cs
   - src/Wollax.Cupel/ScorerEntry.cs
@@ -33,129 +35,129 @@ key_files:
   - src/Wollax.Cupel/ISlicer.cs
   - src/Wollax.Cupel/ContextResult.cs
   - src/Wollax.Cupel/Diagnostics/SelectionReport.cs
-  - src/Wollax.Cupel.Extensions.DependencyInjection/CupelServiceCollectionExtensions.cs
   - tests/Wollax.Cupel.Tests/Slicing/KnapsackSliceTests.cs
   - tests/Wollax.Cupel.Tests/Policy/CupelPolicyTests.cs
   - tests/Wollax.Cupel.Tests/Slicing/QuotaSliceTests.cs
   - tests/Wollax.Cupel.Tests/Scoring/PriorityScorerTests.cs
   - tests/Wollax.Cupel.Tests/Scoring/TagScorerTests.cs
   - tests/Wollax.Cupel.Extensions.DependencyInjection.Tests/CupelServiceCollectionExtensionsTests.cs
-  - tests/Wollax.Cupel.Tests/Pipeline/PipelineBuilderTests.cs
 key_decisions:
-  - OOM-bound guard pattern: compute cell count with long arithmetic, throw InvalidOperationException before allocating
-  - Epsilon applied only to total-sum check (> 100.0 + 1e-9), not per-kind Require > Cap checks
-  - Error messages name only public API surface — no internal types (ISlicer, QuotaSlice) in user-visible exceptions
-  - Interface contract docs use interface types (ITraceCollector), not concrete implementations
+  - D031 — Error messages name only public API surface (no internal types in user-visible exceptions)
+  - D032 — Epsilon applied only to total-sum check in QuotaBuilder (not per-kind checks)
+  - D033 — Interface contract docs use interface types (ITraceCollector), not concrete implementations
 patterns_established:
-  - OOM-bound guard: (long)candidateCount * (capacity + 1) > limit with diagnostic message including all three fields
-  - Exception tests use ThrowsExactly<T> (not Throws<T>)
-  - Each test class uses its own CreateItem helper — no shared fixtures
+  - OOM-bound guard pattern: compute cell count with long arithmetic, throw InvalidOperationException with diagnostic interpolation before allocating
+  - Error messages name only the public API surface (param name, enum value)
+  - Interface contract XML docs describe behavioral conditions using interface types, not concrete implementations
 observability_surfaces:
-  - InvalidOperationException message includes candidates=N, capacity=C, cells=K when guard fires
-  - CupelPolicy Quotas+Stream exception names public API constraint precisely (SlicerType.Stream)
-  - ScorerEntry InnerScorer exception includes corrective action ("Remove it or change the type to Scaled")
+  - KnapsackSlice InvalidOperationException message includes candidates=N, capacity=C, cells=K for diagnosability
+  - CupelPolicy Quotas+Stream exception message names public constraint — visible in test output and logs
+  - ScorerEntry InnerScorer exception message includes corrective action ("Remove it or change the type to Scaled")
 drill_down_paths:
   - .kata/milestones/M001/slices/S06/tasks/T01-SUMMARY.md
   - .kata/milestones/M001/slices/S06/tasks/T02-SUMMARY.md
   - .kata/milestones/M001/slices/S06/tasks/T03-SUMMARY.md
   - .kata/milestones/M001/slices/S06/tasks/T04-SUMMARY.md
-duration: ~2h (4 tasks)
+duration: ~2h total (T01: 10m, T02: 12m, T03: short, T04: ~60m)
 verification_result: passed
 completed_at: 2026-03-21
 ---
 
 # S06: .NET Quality Hardening
 
-**20 triage items resolved across the .NET codebase: KnapsackSlice DP guard, epsilon fix for equal-share quotas, naming/error message/enum hardening, four interface contract doc improvements, and 6 new tests (net +5 after duplicate removal) — 658 tests pass with zero regressions.**
+**658 tests pass with zero regressions; 20 triage items resolved across KnapsackSlice OOM guard, API surface hardening, interface contract docs, and test coverage gaps.**
 
 ## What Happened
 
-Four tasks executed cleanly in sequence with no regressions between any of them.
+S06 executed as four sequential tasks resolving all 20 planned triage items across the `Wollax.Cupel` library and its test suite.
 
-**T01 — KnapsackSlice DP table size guard:** Inserted the R002 guard immediately after `discretizedWeights` is built and before `ArrayPool.Rent` calls. Uses `(long)candidateCount * (capacity + 1) > 50_000_000L` — long cast on the first operand prevents int overflow; the `>` (not `>=`) condition lets exactly 50M cells pass. Exception message includes all three diagnostic fields (`candidates=N, capacity=C, cells=K`). Four tests added: at-limit-passes, one-above-throws, clearly-over-throws, and negative-token-items-silently-skipped.
+**T01 — KnapsackSlice DP guard:** R002's OOM guard inserted after `discretizedWeights` is built and before any `ArrayPool.Rent` calls. The guard computes `cellCount = (long)candidateCount * (capacity + 1)` and throws `InvalidOperationException` when `cellCount > 50_000_000L`. The `long` cast on the first operand promotes the entire multiplication, preventing int overflow. Four tests cover: at-limit passes (5000 × 10000 = 50M → no throw), one-above-limit throws (5000 × 10001 = 50,005,000), clearly-over throws (10000 × 5001), and the existing negative-token silent-exclusion filter.
 
-**T02 — API surface hardening (7 items):** Renamed `CupelPipeline.OverflowStrategyValue` → `OverflowStrategy` (one internal consumer in `CupelServiceCollectionExtensions.cs`). Fixed `QuotaBuilder` total-sum check with `> 100.0 + 1e-9` to accept three equal-share 33.333...% quotas without floating-point rejection. Replaced internal-type-leaking error messages in `CupelPolicy` and `ScorerEntry` with caller-facing language. Anchored `ScorerType.Scaled = 6`, `SlicerType.Stream = 2`, and `PipelineStage` 0–4 — all verified against `PublicAPI.Shipped.txt` before writing. Added comprehensive XML `<summary>` docs to all 11 `ContextItem` properties.
+**T02 — API surface hardening:** Seven fixes applied cleanly. `CupelPipeline.OverflowStrategyValue` renamed to `OverflowStrategy` (internal only; one consumer updated in `CupelServiceCollectionExtensions.cs`). QuotaBuilder epsilon fix allows three equal-share 33.333...% quotas through the total-sum check without floating-point drift rejection. `CupelPolicy` Quotas+Stream error message rewritten to name only public types. `ScorerEntry` InnerScorer error adds corrective guidance ("Remove it or change the type to Scaled"). `ScorerType.Scaled = 6`, `SlicerType.Stream = 2`, `PipelineStage` 0–4 all anchored after verification against `PublicAPI.Shipped.txt`. All 11 `ContextItem` properties received comprehensive XML `<summary>` docs with units, invariants, and behavioral notes.
 
-**T03 — Interface contract documentation (4 items):** `ITraceCollector.IsEnabled` doc states callers may cache the value; implementations must not toggle mid-run. `ISlicer.Slice` method summary includes the sort precondition. `ContextResult.Report` doc uses behavioral language ("null when tracing is disabled") with no concrete type reference. `SelectionReport` class summary references `ITraceCollector` instead of `DiagnosticTraceCollector`.
+**T03 — Interface contract docs:** Four targeted doc-only changes: `ITraceCollector.IsEnabled` documents the constancy requirement (callers may cache; implementations must not toggle mid-run). `ISlicer.Slice` method summary now states the sort precondition. `ContextResult.Report` uses behavioral nullability language without referencing concrete types. `SelectionReport` class summary references `ITraceCollector` not `DiagnosticTraceCollector`.
 
-**T04 — Test coverage gaps and hygiene (8 items):** Added `Validation_StreamBatchSizeWithKnapsackSlicer_Throws` (CupelPolicy), `QuotaSlice_NullSlicer_ThrowsArgumentNull` and `QuotaSlice_NullQuotas_ThrowsArgumentNull` (backed by `ArgumentNullException.ThrowIfNull` guards added to the constructor), `ScoresAreInZeroToOneRange` (PriorityScorer, mirrors RecencyScorer pattern), `TagScorer_CaseInsensitiveMatch` and `TagScorer_ZeroTotalWeight_ReturnsZeroScore`. Removed the duplicate `AddCupelTracing_IsTransient_DifferentInstancesPerResolve` test at line ~288 in DI tests. The `PipelineBuilderTests.cs:688` assertion was already `IsEqualTo(3)` — no change needed.
+**T04 — Test coverage and hygiene:** Six test files updated. New tests: `Validation_StreamBatchSizeWithKnapsackSlicer_Throws` (CupelPolicy), `QuotaSlice_NullSlicer_ThrowsArgumentNull` and `QuotaSlice_NullQuotas_ThrowsArgumentNull` backed by `ArgumentNullException.ThrowIfNull` guards added to `QuotaSlice` constructor, `ScoresAreInZeroToOneRange` (PriorityScorer), `TagScorer_CaseInsensitiveMatch` and `TagScorer_ZeroTotalWeight_ReturnsZeroScore`. Duplicate DI test `AddCupelTracing_IsTransient_DifferentInstancesPerResolve` removed. `PipelineBuilderTests.cs:688` assertion was already `IsEqualTo(3)` — no change needed. Net result: +5 tests (6 added, 1 removed), total 658.
 
 ## Verification
 
-- `dotnet test` — 658 tests, 0 failures, 0 skipped (meets 649+ goal)
-- `dotnet build` — zero errors, zero warnings
-- All new exception tests use `ThrowsExactly<T>` throughout
-- Guard boundary: 50M cells exactly passes; 50M+1 throws `InvalidOperationException`
+- `dotnet test` — 658 tests, 0 failures, 0 skipped ✅
+- `dotnet build` — zero errors, zero warnings ✅
+- `dotnet test --treenode-filter "/*/*/KnapsackSliceTests/*"` — 17 tests pass including all 4 new guard tests ✅
+- `dotnet test --treenode-filter "/*/*/CupelPolicyTests/*"` — 21 tests pass including Knapsack stream batch size test ✅
+- `dotnet test --treenode-filter "/*/*/QuotaSliceTests/*"` — 13 tests pass including null constructor arg tests ✅
+- All new exception tests use `ThrowsExactly<T>` ✅
 
 ## Requirements Advanced
 
-- R002 (.NET KnapsackSlice DP guard) — guard implemented, boundary tests pass; partial coverage complete; Rust half remains in S07
-- R004 (.NET codebase quality hardening) — all 20 triage items resolved: naming, epsilon, error messages, enum anchors, XML docs, interface contracts, test coverage
+- R002 — .NET half of KnapsackSlice DP guard now implemented; `InvalidOperationException` thrown at >50M cells with diagnostic message; four tests verify boundary behavior
+- R004 — All 20 triage items resolved: naming, error messages, enum anchoring, epsilon fix, XML docs, test gaps, test hygiene
 
 ## Requirements Validated
 
-- R004 — all 20 triage items verified by `dotnet build` + `dotnet test` passing with zero regressions; requirement is fully satisfied
+- R004 — .NET codebase quality hardening: all 20 high-signal issues resolved; 658 tests pass with zero regressions; `dotnet build` clean; R004 is validated
 
 ## New Requirements Surfaced
 
-- none
+- None — the triage scope was pre-defined; no new issues identified during execution that warrant tracking
 
 ## Requirements Invalidated or Re-scoped
 
-- none
+- None
 
 ## Deviations
 
-- **T04 test count:** T04 summary reported suite growth from 658→663, but the actual before-T04 count was 653 (confirmed by T01–T03 summaries); after T04's net +5 delta the correct total is 658. The "663" figure in the T04 summary was a transcription error in the narrative.
-- **`PipelineBuilderTests.cs:688` assertion:** Already `IsEqualTo(3)` — no change required. Not a regression; the pre-existing code was already correct.
+- **T04 test count:** T04 summary reports "658 to 663" but actual post-T04 count is 658. Pre-T04 count was 653 (confirmed by T01–T03 summaries all reporting 653). With +6 new tests −1 duplicate = net +5, the final count is 658, not 663. The T04 summary's starting baseline was incorrect. The "649+" slice goal is satisfied.
+- `PipelineBuilderTests.cs:688` — Plan said "Change `Count > 0` to `IsEqualTo(3)`"; the assertion was already `IsEqualTo(3)` in the codebase. No change required.
 
 ## Known Limitations
 
-- R002 Rust half deferred to S07 (`CupelError::TableTooLarge` + Rust guard not implemented yet)
-- `QuotaSlice` had no `ArgumentNullException.ThrowIfNull` guards before T04; added as part of test work (minor production code change not originally scoped but correct)
+- R002 is half-validated: the .NET guard is in place and tested; the Rust guard (`CupelError::TableTooLarge`) is S07's responsibility. R002 will be fully validated after S07.
+- 20 issues resolved but ~70 open issues remain in `.planning/issues/open/` — these are cosmetic or low-signal and intentionally deferred
 
 ## Follow-ups
 
-- S07 must add `CupelError::TableTooLarge` variant and the Rust KnapsackSlice guard to complete R002
+- S07 must add the Rust-side `CupelError::TableTooLarge` variant and KnapsackSlice guard to complete R002
 
 ## Files Created/Modified
 
-- `src/Wollax.Cupel/KnapsackSlice.cs` — DP table guard before ArrayPool.Rent
+- `src/Wollax.Cupel/KnapsackSlice.cs` — DP table size guard inserted after discretizedWeights, before ArrayPool.Rent
 - `src/Wollax.Cupel/CupelPipeline.cs` — OverflowStrategyValue → OverflowStrategy rename
-- `src/Wollax.Cupel.Extensions.DependencyInjection/CupelServiceCollectionExtensions.cs` — updated rename consumer
-- `src/Wollax.Cupel/Slicing/QuotaBuilder.cs` — epsilon fix on total-sum check
+- `src/Wollax.Cupel.Extensions.DependencyInjection/CupelServiceCollectionExtensions.cs` — updated to OverflowStrategy
+- `src/Wollax.Cupel/Slicing/QuotaBuilder.cs` — epsilon fix on total-sum check; ArgumentNullException.ThrowIfNull added to QuotaSlice constructor
 - `src/Wollax.Cupel/CupelPolicy.cs` — caller-facing Quotas+Stream error message
-- `src/Wollax.Cupel/ScorerEntry.cs` — InnerScorer error message with corrective guidance
+- `src/Wollax.Cupel/ScorerEntry.cs` — improved InnerScorer error message with corrective guidance
 - `src/Wollax.Cupel/ScorerType.cs` — Scaled = 6 explicit anchor
 - `src/Wollax.Cupel/SlicerType.cs` — Stream = 2 explicit anchor
 - `src/Wollax.Cupel/Diagnostics/PipelineStage.cs` — Classify = 0 through Place = 4 explicit anchors
-- `src/Wollax.Cupel/ContextItem.cs` — comprehensive XML <summary> on all 11 properties
+- `src/Wollax.Cupel/ContextItem.cs` — comprehensive XML <summary> docs on all 11 properties
 - `src/Wollax.Cupel/Diagnostics/ITraceCollector.cs` — IsEnabled constancy contract
 - `src/Wollax.Cupel/ISlicer.cs` — sort precondition in Slice method summary
-- `src/Wollax.Cupel/ContextResult.cs` — Report behavioral nullability doc
+- `src/Wollax.Cupel/ContextResult.cs` — behavioral nullability language on Report property
 - `src/Wollax.Cupel/Diagnostics/SelectionReport.cs` — class summary references ITraceCollector
-- `tests/Wollax.Cupel.Tests/Slicing/KnapsackSliceTests.cs` — 4 new tests (guard boundary + negative-token)
-- `tests/Wollax.Cupel.Tests/Policy/CupelPolicyTests.cs` — StreamBatchSize+Knapsack validation test
-- `tests/Wollax.Cupel.Tests/Slicing/QuotaSliceTests.cs` — null-slicer and null-quotas tests
-- `tests/Wollax.Cupel.Tests/Scoring/PriorityScorerTests.cs` — ScoresAreInZeroToOneRange test
-- `tests/Wollax.Cupel.Tests/Scoring/TagScorerTests.cs` — case-insensitive and zero-weight tests
+- `tests/Wollax.Cupel.Tests/Slicing/KnapsackSliceTests.cs` — 4 new tests (guard boundary x3, negative-token x1)
+- `tests/Wollax.Cupel.Tests/Policy/CupelPolicyTests.cs` — Validation_StreamBatchSizeWithKnapsackSlicer_Throws
+- `tests/Wollax.Cupel.Tests/Slicing/QuotaSliceTests.cs` — QuotaSlice_NullSlicer_ThrowsArgumentNull, QuotaSlice_NullQuotas_ThrowsArgumentNull
+- `tests/Wollax.Cupel.Tests/Scoring/PriorityScorerTests.cs` — ScoresAreInZeroToOneRange
+- `tests/Wollax.Cupel.Tests/Scoring/TagScorerTests.cs` — TagScorer_CaseInsensitiveMatch, TagScorer_ZeroTotalWeight_ReturnsZeroScore
 - `tests/Wollax.Cupel.Extensions.DependencyInjection.Tests/CupelServiceCollectionExtensionsTests.cs` — duplicate test removed
-- `tests/Wollax.Cupel.Tests/Pipeline/PipelineBuilderTests.cs` — already correct (no change)
 
 ## Forward Intelligence
 
 ### What the next slice should know
-- S07 must implement `CupelError::TableTooLarge` in Rust to complete R002; the .NET guard pattern (long arithmetic, `>` not `>=`, diagnostic message with candidates/capacity/cells) should be mirrored
-- The `QuotaSlice` production code now has `ArgumentNullException.ThrowIfNull` guards — this was added as part of T04's test work; it's in the test-gap fixes task but affects production code
+- S07 inherits a clean .NET suite (658 tests, zero build warnings) — no regressions to worry about from S06 changes
+- The Rust KnapsackSlice guard (S07/T01 or similar) should mirror the .NET pattern: `(long)candidateCount * (capacity + 1) > 50_000_000L`, throw with diagnostic fields, test at-limit / one-above / clearly-over
+- The `CupelError::TableTooLarge` variant is specified but not yet created; `#[non_exhaustive]` on `CupelError` is already in place (D015)
 
 ### What's fragile
-- `TagScorer` case-insensitive matching depends on `FrozenDictionary` preserving the `StringComparer.OrdinalIgnoreCase` comparer from the source `Dictionary` — if the FrozenDictionary construction path changes this could silently break
-- QuotaBuilder epsilon (`1e-9`) is a hard-coded constant — if floating-point accumulation changes with different input counts, the threshold may need revisiting
+- `QuotaBuilder` epsilon — only applied to the total-sum check; per-kind `Require > Cap` checks remain integer-precision. Any future floating-point quota changes should check whether additional epsilon guards are needed there.
+- `TagScorer` case-insensitive behavior depends on `FrozenDictionary` preserving the `StringComparer.OrdinalIgnoreCase` comparer from the source `Dictionary`. If the source Dictionary construction changes, case-insensitivity could silently break.
 
 ### Authoritative diagnostics
-- `rg "OverflowStrategyValue" src/ tests/` — zero results confirms rename is complete
-- `dotnet test` count (658) is the authoritative baseline for S07 start
+- `dotnet test` output is the ground truth for test counts and pass/fail — summary files may have incorrect counts
+- `rg "OverflowStrategyValue" src/ tests/` → zero results confirms rename complete
+- `dotnet build` warnings=0 is the authoritative build-clean signal
 
 ### What assumptions changed
-- T04 plan assumed `PipelineBuilderTests.cs:688` had `Count > 0` — the file already had `IsEqualTo(3)`; no change was needed
-- T04 test count narrative in summary had a transcription error (reported 663); actual count is 658 (653 baseline + net +5 from T04)
+- T04 test count: plan assumed pre-T04 suite was 658 (written after observing T01 result), but T01-T03 summaries consistently report 653. The net +5 from T04 lands at 658, not 663.
+- `PipelineBuilderTests.cs:688` `Count > 0` assertion was already `IsEqualTo(3)` — triage issue was pre-fixed in a prior session.
