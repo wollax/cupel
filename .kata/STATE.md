@@ -2,12 +2,12 @@
 
 **Active Milestone:** M001 — v1.2 Rust Parity & Quality Hardening
 **Active Slice:** S03 — Pipeline run_traced & DryRun
-**Active Task:** T01 — Extend stage functions and implement run_traced + dry_run
-**Phase:** Planned; ready to execute T01
-**Slice Branch:** kata/M001/S02 (pending merge to main; S03 branch to be created from main after merge)
+**Active Task:** (all tasks complete — S03 done)
+**Phase:** S03 complete — both tasks done, all 10 conformance pipeline tests pass
+**Slice Branch:** kata/M001/S03
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Squash-merge S02 to main → create kata/M001/S03 branch → execute T01
-**Last Updated:** 2026-03-17
+**Next Action:** Write S03 slice summary, mark S03 done in roadmap, advance to S04
+**Last Updated:** 2026-03-21
 **Requirements Status:** 6 active · 5 validated · 3 deferred · 3 out of scope
 
 ## Completed Slices This Milestone

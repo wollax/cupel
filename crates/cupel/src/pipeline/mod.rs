@@ -57,7 +57,15 @@ mod score;
 mod slice;
 mod sort;
 
+use std::time::Instant;
+
 use crate::CupelError;
+use crate::diagnostics::{
+    ExclusionReason, InclusionReason, PipelineStage, SelectionReport, TraceEvent,
+};
+use crate::diagnostics::trace_collector::{
+    DiagnosticTraceCollector, TraceCollector, TraceDetailLevel,
+};
 use crate::model::{ContextBudget, ContextItem, OverflowStrategy};
 use crate::placer::Placer;
 use crate::scorer::Scorer;
@@ -124,30 +132,308 @@ impl Pipeline {
         budget: &ContextBudget,
     ) -> Result<Vec<ContextItem>, CupelError> {
         // Stage 1: Classify
-        let (pinned, scoreable) = classify::classify(items, budget)?;
+        let (pinned, scoreable, _) = classify::classify(items, budget)?;
 
         // Stage 2: Score
         let scored = score::score_items(&scoreable, self.scorer.as_ref());
 
         // Stage 3: Deduplicate
-        let deduped = deduplicate::deduplicate(scored, self.deduplication);
+        let (deduped, _) = deduplicate::deduplicate(scored, self.deduplication);
 
         // Stage 4: Sort
         let sorted = sort::sort_scored(deduped);
 
         // Stage 5: Slice
-        let pinned_tokens: i64 = pinned.iter().map(|i| i.tokens()).sum();
+        let pinned_tokens: i64 = pinned.iter().map(|i: &ContextItem| i.tokens()).sum();
         let sliced = slice::slice_items(&sorted, budget, pinned_tokens, self.slicer.as_ref());
 
         // Stage 6: Place
-        place::place_items(
+        let (result, _) = place::place_items(
             &pinned,
             &sliced,
             &sorted,
             budget,
             self.overflow_strategy,
             self.placer.as_ref(),
-        )
+        )?;
+        Ok(result)
+    }
+
+    /// Executes the pipeline and records each stage's timing, item counts, inclusion
+    /// and exclusion decisions into `collector`.
+    ///
+    /// `run_traced` is the primary observability surface. It is equivalent to [`Pipeline::run`]
+    /// but emits five [`TraceEvent`]s (one per stage) and per-item
+    /// [`record_included`](crate::diagnostics::trace_collector::TraceCollector::record_included) /
+    /// [`record_excluded`](crate::diagnostics::trace_collector::TraceCollector::record_excluded)
+    /// calls into `collector`.
+    ///
+    /// Use a [`DiagnosticTraceCollector`] to capture a full [`SelectionReport`], or a
+    /// [`NullTraceCollector`](crate::diagnostics::trace_collector::NullTraceCollector)
+    /// to run with zero diagnostic overhead (the compiler optimises all instrumentation away).
+    ///
+    /// See also [`dry_run`](Pipeline::dry_run) for the common case of "run and return a report".
+    ///
+    /// # Errors
+    ///
+    /// Returns the same errors as [`Pipeline::run`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use cupel::{
+    ///     Pipeline, ContextItemBuilder, ContextBudget,
+    ///     RecencyScorer, GreedySlice, ChronologicalPlacer,
+    /// };
+    /// use cupel::diagnostics::trace_collector::{DiagnosticTraceCollector, TraceDetailLevel};
+    /// use chrono::Utc;
+    ///
+    /// let pipeline = Pipeline::builder()
+    ///     .scorer(Box::new(RecencyScorer))
+    ///     .slicer(Box::new(GreedySlice))
+    ///     .placer(Box::new(ChronologicalPlacer))
+    ///     .build()?;
+    ///
+    /// let items = vec![
+    ///     ContextItemBuilder::new("hello world", 10)
+    ///         .timestamp(Utc::now())
+    ///         .build()?,
+    /// ];
+    /// let budget = ContextBudget::new(4096, 3000, 1024, HashMap::new(), 0.0)?;
+    ///
+    /// let mut collector = DiagnosticTraceCollector::new(TraceDetailLevel::Item);
+    /// let result = pipeline.run_traced(&items, &budget, &mut collector)?;
+    /// let report = collector.into_report();
+    ///
+    /// assert_eq!(report.included.len(), 1);
+    /// assert_eq!(report.excluded.len(), 0);
+    /// # Ok::<(), cupel::CupelError>(())
+    /// ```
+    pub fn run_traced<C: TraceCollector>(
+        &self,
+        items: &[ContextItem],
+        budget: &ContextBudget,
+        collector: &mut C,
+    ) -> Result<Vec<ContextItem>, CupelError> {
+        collector.set_candidates(items.len(), items.iter().map(|i| i.tokens()).sum());
+
+        // Stage 1: Classify
+        let t = Instant::now();
+        let (pinned, scoreable, neg_items) = classify::classify(items, budget)?;
+        if collector.is_enabled() {
+            for item in &neg_items {
+                collector.record_excluded(
+                    item.clone(),
+                    0.0,
+                    ExclusionReason::NegativeTokens { tokens: item.tokens() },
+                );
+            }
+            collector.record_stage_event(TraceEvent {
+                stage: PipelineStage::Classify,
+                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                item_count: pinned.len() + scoreable.len(),
+                message: None,
+            });
+        }
+
+        // Stage 2: Score
+        let t = Instant::now();
+        let scored = score::score_items(&scoreable, self.scorer.as_ref());
+        if collector.is_enabled() {
+            collector.record_stage_event(TraceEvent {
+                stage: PipelineStage::Score,
+                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                item_count: scored.len(),
+                message: None,
+            });
+        }
+
+        // Stage 3: Deduplicate
+        let t = Instant::now();
+        let (deduped, ded_excluded) = deduplicate::deduplicate(scored, self.deduplication);
+        if collector.is_enabled() {
+            for si in &ded_excluded {
+                collector.record_excluded(
+                    si.item.clone(),
+                    si.score,
+                    ExclusionReason::Deduplicated {
+                        deduplicated_against: si.item.content().to_owned(),
+                    },
+                );
+            }
+            collector.record_stage_event(TraceEvent {
+                stage: PipelineStage::Deduplicate,
+                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                item_count: deduped.len(),
+                message: None,
+            });
+        }
+
+        // Stage 4: Sort
+        let sorted = sort::sort_scored(deduped);
+
+        // Build score lookup for inclusion recording later
+        let score_lookup: std::collections::HashMap<&str, f64> =
+            sorted.iter().map(|si| (si.item.content(), si.score)).collect();
+
+        // Compute effective budget parameters needed for PinnedOverride detection
+        let pinned_tokens: i64 = pinned.iter().map(|i: &ContextItem| i.tokens()).sum();
+        let effective_budget = slice::compute_effective_budget(budget, pinned_tokens);
+        let effective_target = effective_budget.target_tokens();
+
+        // Stage 5: Slice
+        let t = Instant::now();
+        let sliced = slice::slice_items(&sorted, budget, pinned_tokens, self.slicer.as_ref());
+        if collector.is_enabled() {
+            let sliced_total: i64 = sliced.iter().map(|i| i.tokens()).sum();
+            let available_tokens = effective_target - sliced_total;
+
+            // Track which sliced items have been "consumed" when matching sorted items
+            let mut sliced_count: std::collections::HashMap<&str, usize> =
+                std::collections::HashMap::new();
+            for item in &sliced {
+                *sliced_count.entry(item.content()).or_insert(0) += 1;
+            }
+
+            for si in &sorted {
+                let content = si.item.content();
+                if let Some(count) = sliced_count.get_mut(content) {
+                    if *count > 0 {
+                        *count -= 1;
+                        continue;
+                    }
+                }
+                // This item was excluded by the slice stage
+                let reason = if pinned_tokens > 0
+                    && si.item.tokens() > effective_target
+                    && si.item.tokens() <= budget.target_tokens() - budget.output_reserve()
+                {
+                    ExclusionReason::PinnedOverride {
+                        displaced_by: pinned
+                            .first()
+                            .map(|p| p.content().to_owned())
+                            .unwrap_or_default(),
+                    }
+                } else {
+                    ExclusionReason::BudgetExceeded {
+                        item_tokens: si.item.tokens(),
+                        available_tokens,
+                    }
+                };
+                collector.record_excluded(si.item.clone(), si.score, reason);
+            }
+
+            collector.record_stage_event(TraceEvent {
+                stage: PipelineStage::Slice,
+                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                item_count: sliced.len(),
+                message: None,
+            });
+        }
+
+        // Stage 6: Place
+        let t = Instant::now();
+        let (result, truncated) = place::place_items(
+            &pinned,
+            &sliced,
+            &sorted,
+            budget,
+            self.overflow_strategy,
+            self.placer.as_ref(),
+        )?;
+        if collector.is_enabled() {
+            for (item, score) in &truncated {
+                let available_tokens = budget.target_tokens()
+                    - result.iter().map(|i| i.tokens()).sum::<i64>();
+                collector.record_excluded(
+                    item.clone(),
+                    *score,
+                    ExclusionReason::BudgetExceeded {
+                        item_tokens: item.tokens(),
+                        available_tokens,
+                    },
+                );
+            }
+            collector.record_stage_event(TraceEvent {
+                stage: PipelineStage::Place,
+                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                item_count: result.len(),
+                message: None,
+            });
+            for item in &result {
+                let (score, reason) = if item.pinned() {
+                    (1.0, InclusionReason::Pinned)
+                } else if item.tokens() == 0 {
+                    (
+                        score_lookup.get(item.content()).copied().unwrap_or(0.0),
+                        InclusionReason::ZeroToken,
+                    )
+                } else {
+                    (
+                        score_lookup.get(item.content()).copied().unwrap_or(0.0),
+                        InclusionReason::Scored,
+                    )
+                };
+                collector.record_included(item.clone(), score, reason);
+            }
+        }
+
+        Ok(result)
+    }
+
+    /// Runs the pipeline and returns a full [`SelectionReport`] without side effects.
+    ///
+    /// Equivalent to calling [`run_traced`](Pipeline::run_traced) with a
+    /// [`DiagnosticTraceCollector`] at [`TraceDetailLevel::Item`] and discarding the
+    /// `Vec<ContextItem>`. This is the most convenient entry point when you want to
+    /// inspect the pipeline's decisions (inclusion/exclusion reasons, stage timings,
+    /// per-item scores) without needing the selected items directly.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same errors as [`Pipeline::run`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use cupel::{
+    ///     Pipeline, ContextItemBuilder, ContextBudget,
+    ///     RecencyScorer, GreedySlice, ChronologicalPlacer,
+    /// };
+    /// use chrono::Utc;
+    ///
+    /// let pipeline = Pipeline::builder()
+    ///     .scorer(Box::new(RecencyScorer))
+    ///     .slicer(Box::new(GreedySlice))
+    ///     .placer(Box::new(ChronologicalPlacer))
+    ///     .build()?;
+    ///
+    /// let items = vec![
+    ///     ContextItemBuilder::new("message a", 10)
+    ///         .timestamp(Utc::now())
+    ///         .build()?,
+    ///     ContextItemBuilder::new("message b", 5000)
+    ///         .timestamp(Utc::now() - chrono::Duration::hours(1))
+    ///         .build()?,
+    /// ];
+    /// let budget = ContextBudget::new(4096, 200, 0, HashMap::new(), 0.0)?;
+    ///
+    /// let report = pipeline.dry_run(&items, &budget)?;
+    /// assert_eq!(report.total_candidates, 2);
+    /// assert_eq!(report.included.len(), 1);
+    /// assert_eq!(report.excluded.len(), 1);
+    /// # Ok::<(), cupel::CupelError>(())
+    /// ```
+    pub fn dry_run(
+        &self,
+        items: &[ContextItem],
+        budget: &ContextBudget,
+    ) -> Result<SelectionReport, CupelError> {
+        let mut collector = DiagnosticTraceCollector::new(TraceDetailLevel::Item);
+        self.run_traced(items, budget, &mut collector)?;
+        Ok(collector.into_report())
     }
 }
 

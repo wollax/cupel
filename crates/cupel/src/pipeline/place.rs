@@ -4,8 +4,15 @@ use crate::CupelError;
 use crate::model::{ContextBudget, ContextItem, OverflowStrategy, ScoredItem};
 use crate::placer::Placer;
 
+/// Result type for [`place_items`]: `(placed_items, truncated_items_with_scores)`.
+type PlaceResult = Result<(Vec<ContextItem>, Vec<(ContextItem, f64)>), CupelError>;
+
 /// Merges pinned items with sliced items, handles overflow, and delegates to
 /// the placer for final ordering.
+///
+/// Returns `(placed, truncated)` where `truncated` is a vec of `(item, score)`
+/// pairs for any items dropped by `Truncate` overflow handling. `truncated` is
+/// always empty unless `OverflowStrategy::Truncate` fires.
 ///
 /// Pinned items are assigned score 1.0. Overflow detection compares against the
 /// ORIGINAL `targetTokens` (not the effective budget used for slicing).
@@ -16,7 +23,7 @@ pub(crate) fn place_items(
     budget: &ContextBudget,
     overflow_strategy: OverflowStrategy,
     placer: &dyn Placer,
-) -> Result<Vec<ContextItem>, CupelError> {
+) -> PlaceResult {
     // Build content -> score map (first occurrence = highest score since sorted desc)
     let mut score_map: HashMap<&str, f64> = HashMap::with_capacity(sorted_scored.len());
     for si in sorted_scored {
@@ -45,19 +52,29 @@ pub(crate) fn place_items(
     // Step 2: Overflow detection — compare against ORIGINAL targetTokens
     let merged_tokens: i64 = merged.iter().map(|si| si.item.tokens()).sum();
 
+    let truncated: Vec<ScoredItem>;
     if merged_tokens > budget.target_tokens() {
-        merged = handle_overflow(merged, budget.target_tokens(), overflow_strategy)?;
+        let (kept, dropped) =
+            handle_overflow(merged, budget.target_tokens(), overflow_strategy)?;
+        merged = kept;
+        truncated = dropped;
+    } else {
+        truncated = vec![];
     }
 
     // Step 3: Delegate to placer for final ordering
-    Ok(placer.place(&merged))
+    let result = placer.place(&merged);
+    let truncated_with_scores: Vec<(ContextItem, f64)> =
+        truncated.into_iter().map(|si| (si.item, si.score)).collect();
+
+    Ok((result, truncated_with_scores))
 }
 
 fn handle_overflow(
     mut merged: Vec<ScoredItem>,
     target_tokens: i64,
     strategy: OverflowStrategy,
-) -> Result<Vec<ScoredItem>, CupelError> {
+) -> Result<(Vec<ScoredItem>, Vec<ScoredItem>), CupelError> {
     match strategy {
         OverflowStrategy::Throw => {
             let merged_tokens: i64 = merged.iter().map(|si| si.item.tokens()).sum();
@@ -76,6 +93,7 @@ fn handle_overflow(
             });
 
             let mut kept = Vec::new();
+            let mut dropped = Vec::new();
             let mut current_tokens: i64 = 0;
 
             for si in merged {
@@ -83,14 +101,16 @@ fn handle_overflow(
                 if fits {
                     current_tokens += si.item.tokens();
                     kept.push(si);
+                } else {
+                    dropped.push(si);
                 }
             }
 
-            Ok(kept)
+            Ok((kept, dropped))
         }
         OverflowStrategy::Proceed => {
             // Accept over-budget selection
-            Ok(merged)
+            Ok((merged, vec![]))
         }
     }
 }

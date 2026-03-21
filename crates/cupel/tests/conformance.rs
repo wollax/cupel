@@ -13,8 +13,8 @@ mod conformance {
     use cupel::{
         ChronologicalPlacer, CompositeScorer, ContextItem, ContextItemBuilder, ContextKind,
         FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice, Placer, PriorityScorer,
-        QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer, ScoredItem, Scorer,
-        Slicer, TagScorer, UShapedPlacer,
+        QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer, ScoredItem,
+        Scorer, Slicer, TagScorer, UShapedPlacer,
     };
 
     /// Load a TOML test vector from a path relative to the conformance/required/ directory.
