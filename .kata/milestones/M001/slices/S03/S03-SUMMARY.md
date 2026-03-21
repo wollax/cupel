@@ -3,43 +3,46 @@ id: S03
 parent: M001
 milestone: M001
 provides:
-  - Pipeline::run_traced<C: TraceCollector> — full 5-stage diagnostics (Classify, Score, Deduplicate, Slice, Place) with per-item inclusion/exclusion reasons and stage timing
-  - Pipeline::dry_run — convenience wrapper returning SelectionReport via DiagnosticTraceCollector at Item detail level; discards Vec<ContextItem>
-  - Classify stage diagnostics: NegativeTokens exclusion with token value
-  - Deduplicate stage diagnostics: Deduplicated exclusion with deduplicated_against content
-  - Slice stage diagnostics: PinnedOverride (D023 rule) or BudgetExceeded with available_tokens (D025)
-  - Place stage diagnostics: BudgetExceeded for truncated items; InclusionReason (Scored/Pinned/ZeroToken) for each result item
-  - run_pipeline_diagnostics_test conformance harness — parses [expected.diagnostics.*] TOML sections and asserts SelectionReport fields
-  - Five new conformance tests covering all five diagnostics vectors (NegativeTokens, Deduplicated, PinnedOverride, Scored, BudgetExceeded)
-  - ClassifyResult and PlaceResult type aliases fixing pre-existing clippy::type_complexity violations
+  - Pipeline::run_traced<C: TraceCollector> — traces all 5 stages with timing, item counts, and per-item inclusion/exclusion reasons
+  - Pipeline::dry_run — convenience wrapper returning SelectionReport via DiagnosticTraceCollector::Item
+  - run() updated to destructure new tuple returns from classify/deduplicate/place_items
+  - Classify stage: negative-token items emitted as ExclusionReason::NegativeTokens{tokens}
+  - Deduplicate stage: removed duplicates emitted as ExclusionReason::Deduplicated{deduplicated_against}
+  - Slice stage: unselected items emitted as BudgetExceeded or PinnedOverride (D023 rule applied)
+  - Place stage: truncated items emitted as BudgetExceeded; each result item recorded with InclusionReason
+  - run_pipeline_diagnostics_test harness helper — parses [expected.diagnostics.*] TOML sections and asserts SelectionReport
+  - 5 diagnostics conformance test functions: diag_negative_tokens, diag_deduplicated, diag_pinned_override, diag_scored_inclusion, diagnostics_budget_exceeded
+  - ClassifyResult and PlaceResult type aliases (clippy::type_complexity fix in classify.rs and place.rs)
 requires:
   - slice: S01
-    provides: TraceEvent, ExclusionReason (all variants), InclusionReason, SelectionReport, IncludedItem, ExcludedItem, PipelineStage — all diagnostic data types
+    provides: TraceEvent, ExclusionReason, InclusionReason, SelectionReport, IncludedItem, ExcludedItem, PipelineStage — all diagnostic data types
   - slice: S02
-    provides: TraceCollector trait (is_enabled, record_stage_event, record_item_event, record_included, record_excluded, set_candidates), NullTraceCollector, DiagnosticTraceCollector, TraceDetailLevel, into_report()
+    provides: TraceCollector trait, NullTraceCollector, DiagnosticTraceCollector, TraceDetailLevel, into_report() — all collector infrastructure
 affects:
   - S04
+  - S05
+  - S07
 key_files:
   - crates/cupel/src/pipeline/mod.rs
+  - crates/cupel/tests/conformance/pipeline.rs
   - crates/cupel/src/pipeline/classify.rs
   - crates/cupel/src/pipeline/place.rs
-  - crates/cupel/tests/conformance/pipeline.rs
 key_decisions:
-  - "D022 — stage function return types extended to expose excluded items directly (no external diffing needed)"
-  - "D023 — PinnedOverride detection rule: pinned_tokens > 0 && item.tokens() > effective_target && item.tokens() <= budget.target_tokens() - budget.output_reserve()"
-  - "D024 — dry_run discards Vec<ContextItem>; callers needing both call run_traced directly"
-  - "D025 — BudgetExceeded available_tokens = effective_target - sum(sliced_item.tokens())"
-  - "D026 — ClassifyResult and PlaceResult type aliases satisfy clippy::type_complexity after T01 extended return types"
-  - "is_enabled() guard pattern: wrap entire diagnostic block in if collector.is_enabled() to avoid allocations in NullTraceCollector path"
-  - "score_lookup HashMap<&str, f64> built from sorted items after Sort stage for O(1) score access during Place inclusion recording"
+  - "D022: stage function return type extensions (classify/deduplicate/place_items return excluded items directly to run_traced)"
+  - "D023: PinnedOverride detection rule at Slice stage (pinned_tokens > 0 && item fits in unreserved budget)"
+  - "D024: dry_run discards Vec<ContextItem> — convenience API for explain-why use case"
+  - "D025: BudgetExceeded available_tokens = effective_target - sum(sliced_item.tokens())"
+  - "D026: ClassifyResult and PlaceResult type aliases to satisfy clippy::type_complexity"
+  - "is_enabled() guard pattern: wrap entire diagnostic block in if collector.is_enabled() to protect NullTraceCollector zero-cost path"
+  - "score_lookup HashMap<&str, f64> built from sorted items before Slice stage for O(1) score access during Place inclusion recording"
 patterns_established:
-  - "run_pipeline_diagnostics_test pattern: load vector → build pipeline/budget via shared helpers → run_traced → into_report → assert summary, included[], excluded[] in order with epsilon score check + variant-specific field checks"
-  - "exclusion_reason_tag / inclusion_reason_tag: convert #[non_exhaustive] enums to &'static str for conformance vector comparison without serde dependency"
-  - "is_enabled() guard: wraps entire diagnostic block (record_* calls + record_stage_event) — avoids all allocations in NullTraceCollector monomorphization path"
+  - "is_enabled() guard: wrap entire record_* block (not just TraceEvent construction) in if collector.is_enabled() — avoids all allocations in NullTraceCollector path"
+  - "run_pipeline_diagnostics_test pattern: load vector → build pipeline/budget via shared helpers → run_traced → into_report → assert summary, included[], excluded[] in order with epsilon score + variant field checks"
+  - "exclusion_reason_tag / inclusion_reason_tag: convert #[non_exhaustive] enums to &'static str for vector comparison without serde dependency"
 observability_surfaces:
-  - "cargo test --test conformance -- pipeline::diag --nocapture — runs only the 5 diagnostics tests with full assertion messages (expected vs actual with field names)"
-  - "pipeline.dry_run(&items, &budget) — returns SelectionReport with events (5 TraceEvents), included, excluded, total_candidates, total_tokens_considered"
-  - "cargo doc --no-deps → Pipeline type shows run_traced and dry_run with doctests"
+  - "pipeline.dry_run(&items, &budget) — returns SelectionReport with 5 TraceEvents, included[], excluded[], total_candidates, total_tokens_considered"
+  - "cargo test --test conformance -- pipeline::diag --nocapture — runs only the 5 new diagnostics tests with per-field assertion messages"
+  - "cargo doc --no-deps --open — Pipeline type shows run_traced and dry_run with doctests"
 drill_down_paths:
   - .kata/milestones/M001/slices/S03/tasks/T01-SUMMARY.md
   - .kata/milestones/M001/slices/S03/tasks/T02-SUMMARY.md
@@ -54,70 +57,72 @@ completed_at: 2026-03-21T00:00:00Z
 
 ## What Happened
 
-**T01** extended three internal stage functions to expose excluded items in their return values (`classify` → three-tuple with neg-token items, `deduplicate` → survivors + excluded, `place_items` → placed + truncated-with-scores), then implemented `run_traced` and `dry_run` in `pipeline/mod.rs`. The stage function extensions had already been applied in a prior session, so T01 only required changes to `mod.rs`: adding diagnostics imports, updating `run()` to destructure the new tuple returns, implementing `run_traced` with per-stage `is_enabled()` guards, and implementing `dry_run` as a one-liner wrapper.
+**T01** extended three internal stage functions to return excluded items as part of their output, then added the two new public pipeline methods. The stage function extensions (`classify` → three-tuple, `deduplicate` → two-tuple, `place_items` → two-tuple with truncated items) were already in place from a prior session, so T01's only changes were in `pipeline/mod.rs`: adding diagnostics imports, updating `run()` to destructure new return types, implementing `run_traced<C: TraceCollector>` with full 5-stage trace instrumentation, and implementing `dry_run` as a one-liner wrapper. The `score_lookup` HashMap is built from `sorted` items after the Score stage for O(1) score access during Place recording. The is_enabled() guard wraps entire diagnostic blocks to preserve the NullTraceCollector zero-cost invariant.
 
-**T02** extended the conformance harness with `run_pipeline_diagnostics_test` and five test functions. The helper reuses the existing budget/pipeline/items construction pattern from `run_pipeline_test`, then calls `pipeline.run_traced` with a `DiagnosticTraceCollector` at `TraceDetailLevel::Item` and asserts against all `[expected.diagnostics.*]` TOML sections — summary counts, included items (content, score, reason), and excluded items (content, score, reason, variant-specific fields). T02 also fixed two pre-existing `clippy::type_complexity` violations in `classify.rs` and `place.rs` introduced by T01's extended return types, adding `ClassifyResult` and `PlaceResult` type aliases.
+**T02** added the conformance harness extension: `exclusion_reason_tag`, `inclusion_reason_tag`, and `run_pipeline_diagnostics_test` in `tests/conformance/pipeline.rs`, plus 5 new test functions covering all five diagnostics vectors. The helper reuses existing budget/pipeline/items construction, calls `run_traced` with `DiagnosticTraceCollector::new(TraceDetailLevel::Item)`, and asserts every field defined in the vector's `[expected.diagnostics.*]` sections including variant-specific data fields (NegativeTokens.tokens, Deduplicated.deduplicated_against, BudgetExceeded.item_tokens/available_tokens, PinnedOverride.displaced_by). T02 also fixed two pre-existing `clippy::type_complexity` lints in classify.rs and place.rs with `ClassifyResult` and `PlaceResult` type aliases, which was required to satisfy the zero-warning clippy gate.
 
 ## Verification
 
-- `cargo test --test conformance -- pipeline` → **10/10 passed** (5 original + 5 new diagnostics vectors)
-- `cargo test --lib` → **29/29 unit tests passed**
-- `cargo clippy --all-targets -- -D warnings` → **zero warnings/errors**
-- `cargo doc --no-deps` → **zero warnings/errors**
-- `grep -E "pub fn run_traced|pub fn dry_run" src/pipeline/mod.rs` → **both methods present**
+- `cargo test --test conformance -- pipeline` → 10/10 passed (5 existing + 5 new diagnostics), zero failures
+- `cargo test --lib` → 29/29 unit tests passed, zero failures
+- `cargo clippy --all-targets -- -D warnings` → zero warnings/errors
+- `cargo doc --no-deps` → zero warnings/errors
+- `grep -E "pub fn run_traced|pub fn dry_run" src/pipeline/mod.rs` → both methods present
 
 ## Requirements Advanced
 
-- R001 — `run_traced` and `dry_run` now exist on `Pipeline`; all five diagnostics conformance vectors pass end-to-end against the real implementation
+- R001 — `run_traced` and `dry_run` now exist in the Rust crate; all 5 diagnostics conformance vectors pass. R001 is now fully implemented; final validation pending S04 serde integration and S05 CI hardening, but the runtime behavior is proven.
 
 ## Requirements Validated
 
-- R001 — Rust diagnostics parity fully validated: `TraceCollector` trait, `NullTraceCollector`, `DiagnosticTraceCollector`, `SelectionReport`, `run_traced()`, and `dry_run()` all exist and are conformance-verified. The only remaining R001 work is serde (S04), which is additive.
+- None validated in this slice. R001 advances to implementation-complete but full validation requires S04 (serde round-trip) to confirm end-to-end pipeline.
 
 ## New Requirements Surfaced
 
-- none
+- None.
 
 ## Requirements Invalidated or Re-scoped
 
-- none
+- None.
 
 ## Deviations
 
-- Stage functions (`classify`, `deduplicate`, `place_items`) had already been extended with the correct return types before T01 started — only `pipeline/mod.rs` needed changes.
-- Pre-existing `clippy::type_complexity` violations in `classify.rs` and `place.rs` were fixed in T02 (not T01) since they only became blocking at the clippy gate check.
-- Diagnostics imports were not added to `conformance.rs` (as the task plan suggested) — they are only needed in `pipeline.rs` where they are already imported directly; adding them to the parent module created unused-import warnings.
+- **Stage functions pre-extended**: The extended return types for `classify`, `deduplicate`, and `place_items` were already in place from a prior session. T01 only needed to update `pipeline/mod.rs`.
+- **T02 conformance.rs import unchanged**: Task plan called for adding diagnostics imports to `conformance.rs` (parent module), but they are only needed in `pipeline.rs` and adding them to the parent created unused-import warnings. Imports remain in `pipeline.rs` only.
+- **ClassifyResult/PlaceResult type aliases**: Not in the original task plan; required to satisfy the zero-warning clippy gate after stage function return types were extended.
 
 ## Known Limitations
 
-- Serde on `SelectionReport` and related types is deferred to S04 — callers cannot yet JSON-serialize diagnostic reports.
-- `TraceDetailLevel::Stage` variant exists but `run_traced` always records item-level events; stage-only recording is enforced by callers through `DiagnosticTraceCollector::new(TraceDetailLevel::Stage)` which simply disables item-level record calls inside the collector.
+- R001 not yet fully validated: `SelectionReport` and all diagnostic types lack serde support until S04. Callers cannot persist or transmit diagnostic reports until S04 ships.
+- The `is_enabled()` zero-cost invariant is enforced by code convention (guards in run_traced), not by compiler-verified zero-allocation proof. A future micro-benchmark test could confirm no allocations occur in the NullTraceCollector path.
 
 ## Follow-ups
 
-- S04: add `#[derive(Serialize, Deserialize)]` behind the `serde` feature to all diagnostic types; implement custom serde for `ExclusionReason` (adjacent-tagged format; stub `cfg_attr` annotations in place from S01).
+- S04: add `#[derive(Serialize, Deserialize)]` behind `serde` feature to all diagnostic types; serde round-trip test on `SelectionReport`
+- S05: add `cargo clippy --all-targets -- -D warnings` and `cargo-deny` unmaintained warning to CI
+- S07: resolve remaining Rust quality issues; KnapsackSlice DP guard (`CupelError::TableTooLarge`)
 
 ## Files Created/Modified
 
-- `crates/cupel/src/pipeline/mod.rs` — run() updated for new tuple returns; run_traced and dry_run added with doc comments and doctests; diagnostics imports added
-- `crates/cupel/src/pipeline/classify.rs` — ClassifyResult type alias; classify() return type updated to use it
-- `crates/cupel/src/pipeline/place.rs` — PlaceResult type alias; place_items() return type updated to use it
-- `crates/cupel/tests/conformance/pipeline.rs` — exclusion_reason_tag, inclusion_reason_tag, run_pipeline_diagnostics_test, and 5 new #[test] functions added
+- `crates/cupel/src/pipeline/mod.rs` — `run_traced` and `dry_run` added; `run()` updated for new tuple returns; diagnostics imports added
+- `crates/cupel/tests/conformance/pipeline.rs` — `exclusion_reason_tag`, `inclusion_reason_tag`, `run_pipeline_diagnostics_test`, and 5 new `#[test]` functions added
+- `crates/cupel/src/pipeline/classify.rs` — `ClassifyResult` type alias added; `classify()` return type updated
+- `crates/cupel/src/pipeline/place.rs` — `PlaceResult` type alias added; `place_items()` return type updated
 
 ## Forward Intelligence
 
 ### What the next slice should know
-- S04 (serde) starts with stub `cfg_attr` annotations on `ExclusionReason` in `src/diagnostics/mod.rs` from S01 — look for `// custom serde impl in S04` comments to find the exact locations.
-- `DiagnosticTraceCollector` stores excluded items as `Vec<(ExcludedItem, usize)>` (with insertion index for stable score-desc sort tiebreak); `into_report()` strips the index. This internal representation is relevant when S04 adds serde to the collector output.
-- The `score_lookup` in `run_traced` is `HashMap<&str, f64>` keyed on content — this works because content strings are unique within `sorted`; if that invariant ever breaks, the lookup needs to change.
+- `SelectionReport`, `TraceEvent`, `ExclusionReason`, `InclusionReason` all lack `#[derive(Serialize, Deserialize)]` — this is the primary S04 deliverable. The cfg_attr stubs added in S01 are in place; S04 fills them in.
+- `DiagnosticTraceCollector::into_report()` consumes the collector (`self`) — callers cannot call `run_traced` and then inspect the collector separately; they must call `into_report()` to extract the `SelectionReport`.
+- The conformance harness in `tests/conformance/pipeline.rs` is the authoritative integration test surface. When S04 adds serde, a separate serde round-trip test file is the right home (not adding to pipeline.rs).
 
 ### What's fragile
-- `score_lookup` keyed on content: relies on content uniqueness in the `sorted` vec post-deduplication — Deduplicate stage guarantees this, but if the pipeline order changes, this assumption breaks.
-- PinnedOverride detection rule (D023): the condition `item.tokens() <= budget.target_tokens() - budget.output_reserve()` is a point-in-time spec interpretation; verified against `diag-pinned-override.toml` but may need revisiting if the spec evolves.
+- `score_lookup` HashMap uses `&str` keys from `item.content()` — if two items have identical content but different scores (which should not happen after deduplication), only one score survives. The deduplication stage guarantees this won't occur in practice, but the assumption is implicit.
+- The PinnedOverride detection rule (D023) is tied to the exact form of `effective_target` as computed in the Slice stage. If `effective_target` computation changes, the rule boundary must be re-verified against the `diag-pinned-override.toml` vector.
 
 ### Authoritative diagnostics
-- `cargo test --test conformance -- pipeline::diag --nocapture` — runs only the 5 diagnostics tests with full assertion output including expected vs actual field values; fastest way to diagnose any regression in the SelectionReport shape.
-- `cargo doc --no-deps` — zero-warning gate on doc correctness; run this first if doc links appear broken.
+- `cargo test --test conformance -- pipeline::diag --nocapture` — runs only the 5 diagnostics tests with full field-level assertion messages; this is the primary signal for any S03-related failures
+- `cargo test --test conformance -- pipeline` — all 10 pipeline conformance tests; fast end-to-end check
 
 ### What assumptions changed
-- Stage functions already had extended return types when T01 started — only `pipeline/mod.rs` needed changes; the task plan assumed all four files would need editing.
+- Stage functions were assumed to need extension in T01 — they were already extended, reducing T01 scope to only `pipeline/mod.rs` changes.

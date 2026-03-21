@@ -60,7 +60,7 @@ This milestone is complete only when all are true:
 - [x] **S02: TraceCollector Trait & Implementations** `risk:medium` `depends:[S01]`
   > After this: `TraceCollector` trait, `NullTraceCollector` (zero-cost), and `DiagnosticTraceCollector` (buffered recording with `TraceDetailLevel`) are implemented, tested, and documented.
 
-- [ ] **S03: Pipeline run_traced & DryRun** `risk:medium` `depends:[S01,S02]`
+- [x] **S03: Pipeline run_traced & DryRun** `risk:medium` `depends:[S01,S02]`
   > After this: `pipeline.run_traced(&mut collector)` and `pipeline.dry_run(items)` exist in Rust; all diagnostics conformance vectors pass in CI.
 
 - [ ] **S04: Diagnostics Serde Integration** `risk:low` `depends:[S01,S02,S03]`
