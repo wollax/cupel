@@ -36,10 +36,10 @@ jobs:
         run: cargo fmt --check --manifest-path crates/cupel/Cargo.toml
 
       - name: Clippy (default features)
-        run: cargo clippy --manifest-path crates/cupel/Cargo.toml -- -D warnings
+        run: cargo clippy --all-targets --manifest-path crates/cupel/Cargo.toml -- -D warnings
 
       - name: Clippy (serde)
-        run: cargo clippy --features serde --manifest-path crates/cupel/Cargo.toml -- -D warnings
+        run: cargo clippy --features serde --all-targets --manifest-path crates/cupel/Cargo.toml -- -D warnings
 
       - name: Test (default features)
         run: cargo test --manifest-path crates/cupel/Cargo.toml

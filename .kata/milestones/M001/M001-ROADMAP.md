@@ -66,7 +66,7 @@ This milestone is complete only when all are true:
 - [x] **S04: Diagnostics Serde Integration** `risk:low` `depends:[S01,S02,S03]`
   > After this: all diagnostic types (`TraceEvent`, `ExclusionReason`, `InclusionReason`, `SelectionReport`) serialize/deserialize correctly under `--features serde`; serde round-trip tests pass.
 
-- [ ] **S05: CI Quality Hardening** `risk:low` `depends:[]`
+- [x] **S05: CI Quality Hardening** `risk:low` `depends:[]`
   > After this: `cargo clippy --all-targets -- -D warnings` and `cargo-deny` with unmaintained warning run in CI; no pre-existing warnings are introduced.
 
 - [ ] **S06: .NET Quality Hardening** `risk:medium` `depends:[]`

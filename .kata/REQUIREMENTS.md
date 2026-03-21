@@ -28,14 +28,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R003 — CI coverage: clippy --all-targets + cargo-deny unmaintained
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Rust CI must run `cargo clippy --all-targets` to lint integration tests, examples, and benchmarks; `deny.toml` must flag unmaintained crates as warnings
 - Why it matters: Current CI misses lint on test/example code; unmaintained crates are a supply-chain risk
 - Source: user
 - Primary owning slice: M001/S05
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Issues: `2026-03-14-clippy-all-targets.md`, `2026-03-14-cargo-deny-unmaintained-warn.md`
+- Validation: validated — all four `cargo clippy` invocations in `ci-rust.yml` and `release-rust.yml` now include `--all-targets`; `deny.toml` has `unmaintained = "workspace"` under `[advisories]`; both local clippy checks (default + serde) and `cargo deny check` exit 0
+- Notes: Issues: `2026-03-14-clippy-all-targets.md`, `2026-03-14-cargo-deny-unmaintained-warn.md`. Note: cargo-deny 0.19.0 uses scope values for `unmaintained` (not severity values) — `"workspace"` used instead of `"warn"` (see D030)
 
 ### R004 — .NET codebase quality hardening
 - Class: quality-attribute
@@ -203,7 +203,7 @@ This file is the explicit capability and coverage contract for the project.
 |---|---|---|---|---|---|
 | R001 | core-capability | active | M001/S03 | S01, S02, S04 | unmapped |
 | R002 | quality-attribute | active | M001/S07 | S06 | unmapped |
-| R003 | quality-attribute | active | M001/S05 | none | unmapped |
+| R003 | quality-attribute | validated | M001/S05 | none | validated |
 | R004 | quality-attribute | active | M001/S06 | none | unmapped |
 | R005 | quality-attribute | active | M001/S07 | none | unmapped |
 | R006 | quality-attribute | validated | M001/S04 | S01 | validated |
