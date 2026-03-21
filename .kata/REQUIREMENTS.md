@@ -28,13 +28,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R042 — Metadata convention system spec
 - Class: differentiator
-- Status: active
+- Status: validated
 - Description: Define the `"cupel:<key>"` metadata namespace in the spec, establish first-class conventions (`cupel:trust` float64 [0,1] and `cupel:source-type` string enum), and write the `MetadataTrustScorer` spec chapter with conformance vector outlines. No implementation.
 - Why it matters: Without a canonical namespace, every caller invents their own trust-key schema; a `MetadataTrustScorer` built on ad hoc keys is useless across projects. Reserving the namespace now enables the ecosystem to converge before anyone serializes production data with conflicting key names.
 - Source: user (brainstorm March 15 — radical ideas, survived 2 rounds)
 - Primary owning slice: M002/S04
 - Supporting slices: none
-- Validation: unmapped
+- Validation: validated — `spec/src/scorers/metadata-trust.md` exists with `"cupel:"` namespace reserved normatively (MUST NOT); `cupel:trust` (float64 [0,1], string storage, configurable defaultScore, explicit parse-failure/non-finite handling) and `cupel:source-type` (open string, 4 RECOMMENDED values) conventions defined; 5 conformance vector outlines included; no TBD fields; `grep -ci "\bTBD\b"` → 0; `grep -q "metadata-trust" spec/src/SUMMARY.md` passes; `grep -q "MetadataTrustScorer" spec/src/scorers.md` passes; cargo test (35+78 doctests passed) and dotnet test (583 passed) both green
 - Notes: Trust is a scoring input, not a filter. No trust gates (silent exclusion) in this spec.
 
 ### R043 — Cupel.Testing vocabulary design
@@ -288,7 +288,7 @@ This file is the explicit capability and coverage contract for the project.
 | R032 | anti-feature | out-of-scope | none | none | n/a |
 | R040 | differentiator | validated | M002/S03 | M002/S01 | validated |
 | R041 | quality-attribute | validated | M002/S02 | none | validated |
-| R042 | differentiator | active | M002/S04 | none | unmapped |
+| R042 | differentiator | validated | M002/S04 | none | validated |
 | R043 | differentiator | active | M002/S05 | none | unmapped |
 | R044 | quality-attribute | active | M002/S06 | none | unmapped |
 | R045 | quality-attribute | active | M002/S01 | none | unmapped |

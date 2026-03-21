@@ -62,7 +62,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Count-Based Quota Design** `risk:high` `depends:[S01]`
   > After this: a design decision record in `.planning/design/count-quota-design.md` resolves all 5 open questions — algorithm, tag non-exclusivity, pinned interaction, conflict detection, knapsack path — with pseudocode and no remaining TBD fields.
 
-- [ ] **S04: Metadata Convention System Spec** `risk:low` `depends:[]`
+- [x] **S04: Metadata Convention System Spec** `risk:low` `depends:[]`
   > After this: `spec/src/scorers/metadata-trust.md` exists and is linked from `SUMMARY.md`; `"cupel:<key>"` namespace reserved; `cupel:trust` and `cupel:source-type` conventions specified; `MetadataTrustScorer` spec chapter complete.
 
 - [ ] **S05: Cupel.Testing Vocabulary Design** `risk:medium` `depends:[S01]`

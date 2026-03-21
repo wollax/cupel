@@ -32,6 +32,7 @@ Score(item: ContextItem, allItems: list of ContextItem) -> float64
 | [ReflexiveScorer](scorers/reflexive.md) | `futureRelevanceHint` | [0.0, 1.0] | Passthrough of caller-provided hint |
 | [CompositeScorer](scorers/composite.md) | (delegates to children) | [0.0, 1.0] | Weighted average of child scorers |
 | [ScaledScorer](scorers/scaled.md) | (delegates to inner) | [0.0, 1.0] | Min-max normalization of an inner scorer |
+| [MetadataTrustScorer](scorers/metadata-trust.md) | `metadata["cupel:trust"]` | [0.0, 1.0] | Passthrough of caller-provided trust value from metadata |
 
 ## Scorer Categories
 
@@ -42,6 +43,7 @@ Absolute scorers examine only the item being scored; the `allItems` parameter is
 - **KindScorer** — dictionary lookup
 - **TagScorer** — weighted tag matching
 - **ReflexiveScorer** — passthrough of `futureRelevanceHint`
+- **MetadataTrustScorer** — passthrough of caller-provided trust value from `metadata["cupel:trust"]`
 
 ### Relative Scorers
 

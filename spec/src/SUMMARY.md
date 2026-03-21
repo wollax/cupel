@@ -24,6 +24,7 @@
   - [ReflexiveScorer](scorers/reflexive.md)
   - [CompositeScorer](scorers/composite.md)
   - [ScaledScorer](scorers/scaled.md)
+  - [MetadataTrustScorer](scorers/metadata-trust.md)
 - [Slicers](slicers.md)
   - [GreedySlice](slicers/greedy.md)
   - [KnapsackSlice](slicers/knapsack.md)
