@@ -17,13 +17,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R002 — KnapsackSlice DP table size guard (Rust + .NET)
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: `KnapsackSlice` must validate that `capacity × items` does not exceed 50 million cells before allocating the DP table, returning an error (`CupelError::TableTooLarge`) if exceeded
 - Why it matters: Without a guard, a caller can trivially cause an OOM crash with large token budgets and large item counts
 - Source: user
 - Primary owning slice: M001/S07
 - Supporting slices: M001/S06
-- Validation: unmapped
+- Validation: validated — `CupelError::TableTooLarge { candidates, capacity, cells }` added; `KnapsackSlice::slice` returns `Err(TableTooLarge)` when `(capacity as u64) * (n as u64) > 50_000_000`; `knapsack_table_too_large` unit test passes; `Slicer::slice` returns `Result` throughout pipeline; .NET guard validated in S06
 - Notes: Rust slice: `crates/cupel/src/slicer/knapsack.rs`; .NET slice: `src/Wollax.Cupel/Slicing/KnapsackSlice.cs`. Requires `CupelError::TableTooLarge` variant (Rust) — `#[non_exhaustive]` on CupelError already in place (RAPI-01).
 
 ### R003 — CI coverage: clippy --all-targets + cargo-deny unmaintained
@@ -50,13 +50,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R005 — Rust codebase quality hardening
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Batch-resolve high-signal Rust issues: CompositeScorer cycle detection is misleading (document or remove), UShapedPlacer/QuotaSlice panic on invariant violation, test coverage gaps, doc comment improvements
 - Why it matters: Existing panic paths are correctness concerns; misleading cycle detection creates false confidence
 - Source: user
 - Primary owning slice: M001/S07
 - Supporting slices: none
-- Validation: unmapped
+- Validation: validated — CompositeScorer DFS cycle detection removed; `Scorer::as_any` eliminated from trait and all 8 impls; `UShapedPlacer::place` refactored to explicit left/right vecs with no Vec<Option> or .expect(); 15 new unit tests added (UShapedPlacer, TagScorer, PriorityScorer, ScaledScorer, ReflexiveScorer, Pipeline); `cargo clippy --all-targets -- -D warnings` clean
 - Notes: High-signal issues: `2026-03-14-composite-scorer-cycle-detection-ineffective.md`, `2026-03-14-u-shaped-placer-expect-on-option-vec.md`, `2026-03-14-quota-slice-expect-on-sub-budget.md`, `2026-03-14-unbounded-scaled-nesting-depth.md`
 
 ### R006 — Diagnostics serde coverage
@@ -202,10 +202,10 @@ This file is the explicit capability and coverage contract for the project.
 | ID | Class | Status | Primary owner | Supporting | Proof |
 |---|---|---|---|---|---|
 | R001 | core-capability | active | M001/S03 | S01, S02, S04 | unmapped |
-| R002 | quality-attribute | active | M001/S07 | S06 | unmapped |
+| R002 | quality-attribute | validated | M001/S07 | S06 | validated |
 | R003 | quality-attribute | validated | M001/S05 | none | validated |
 | R004 | quality-attribute | validated | M001/S06 | none | validated |
-| R005 | quality-attribute | active | M001/S07 | none | unmapped |
+| R005 | quality-attribute | validated | M001/S07 | none | validated |
 | R006 | quality-attribute | validated | M001/S04 | S01 | validated |
 | R010 | core-capability | validated | M001 phase 23 | none | validated |
 | R011 | quality-attribute | validated | M001 phase 23 | none | validated |
@@ -221,7 +221,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 5
-- Mapped to slices: 5
-- Validated: 6
+- Active requirements: 1 (R001 — pending S07 validation of run_traced, deferred to post-S07 check)
+- Mapped to slices: 1
+- Validated: 10
 - Unmapped active requirements: 0

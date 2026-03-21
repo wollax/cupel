@@ -72,7 +72,7 @@ This milestone is complete only when all are true:
 - [x] **S06: .NET Quality Hardening** `risk:medium` `depends:[]`
   > After this: ~15-20 high-signal .NET issues resolved (naming, XML docs, test gaps, defensive coding); .NET test suite passes with no regressions; `KnapsackSlice` DP guard added to .NET.
 
-- [ ] **S07: Rust Quality Hardening** `risk:medium` `depends:[S05]`
+- [x] **S07: Rust Quality Hardening** `risk:medium` `depends:[S05]`
   > After this: ~10-15 high-signal Rust issues resolved (CompositeScorer cycle detection, UShapedPlacer/QuotaSlice panic paths, test gaps); `KnapsackSlice` DP guard added to Rust (`CupelError::TableTooLarge`); `cargo clippy --all-targets` clean.
 
 ## Boundary Map

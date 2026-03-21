@@ -145,7 +145,7 @@ impl Pipeline {
 
         // Stage 5: Slice
         let pinned_tokens: i64 = pinned.iter().map(|i: &ContextItem| i.tokens()).sum();
-        let sliced = slice::slice_items(&sorted, budget, pinned_tokens, self.slicer.as_ref());
+        let sliced = slice::slice_items(&sorted, budget, pinned_tokens, self.slicer.as_ref())?;
 
         // Stage 6: Place
         let (result, _) = place::place_items(
@@ -284,7 +284,7 @@ impl Pipeline {
 
         // Stage 5: Slice
         let t = Instant::now();
-        let sliced = slice::slice_items(&sorted, budget, pinned_tokens, self.slicer.as_ref());
+        let sliced = slice::slice_items(&sorted, budget, pinned_tokens, self.slicer.as_ref())?;
         if collector.is_enabled() {
             let sliced_total: i64 = sliced.iter().map(|i| i.tokens()).sum();
             let available_tokens = effective_target - sliced_total;
@@ -536,5 +536,50 @@ impl PipelineBuilder {
             deduplication: self.deduplication,
             overflow_strategy: self.overflow_strategy,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use super::*;
+    use crate::model::ContextItemBuilder;
+    use crate::placer::ChronologicalPlacer;
+    use crate::scorer::RecencyScorer;
+    use crate::slicer::GreedySlice;
+
+    fn minimal_pipeline() -> Pipeline {
+        Pipeline::builder()
+            .scorer(Box::new(RecencyScorer))
+            .slicer(Box::new(GreedySlice))
+            .placer(Box::new(ChronologicalPlacer))
+            .build()
+            .unwrap()
+    }
+
+    #[test]
+    fn pipeline_single_item() {
+        let pipeline = minimal_pipeline();
+        let item = ContextItemBuilder::new("only item", 10).build().unwrap();
+        let budget = ContextBudget::new(4096, 200, 0, HashMap::new(), 0.0).unwrap();
+
+        let result = pipeline.run(&[item], &budget).unwrap();
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].content(), "only item");
+    }
+
+    #[test]
+    fn pipeline_all_negative_token_items() {
+        // Items with negative token counts are filtered out at the Classify stage
+        let pipeline = minimal_pipeline();
+        let items = vec![
+            ContextItemBuilder::new("neg-a", -1).build().unwrap(),
+            ContextItemBuilder::new("neg-b", -5).build().unwrap(),
+        ];
+        let budget = ContextBudget::new(4096, 200, 0, HashMap::new(), 0.0).unwrap();
+
+        let result = pipeline.run(&items, &budget).unwrap();
+        assert!(result.is_empty(), "expected empty result; got {}", result.len());
     }
 }

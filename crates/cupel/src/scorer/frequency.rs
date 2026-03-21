@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use crate::model::ContextItem;
 use crate::scorer::Scorer;
 
@@ -51,10 +49,6 @@ impl Scorer for FrequencyScorer {
         }
 
         matching_items as f64 / (all_items.len() - 1) as f64
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
     }
 }
 

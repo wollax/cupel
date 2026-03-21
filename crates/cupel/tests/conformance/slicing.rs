@@ -20,7 +20,7 @@ fn run_slicing_test(vector_path: &str) {
     let budget = ContextBudget::new(max_tokens, target_tokens, 0, HashMap::new(), 0.0)
         .expect("budget should be valid");
 
-    let selected = slicer.slice(&scored_items, &budget);
+    let selected = slicer.slice(&scored_items, &budget).expect("conformance vector slicing should not error");
     let actual_contents: Vec<String> = selected.iter().map(|i| i.content().to_owned()).collect();
 
     let expected_contents: Vec<String> = vector["expected"]["selected_contents"]

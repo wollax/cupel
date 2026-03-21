@@ -70,8 +70,6 @@ pub use reflexive::ReflexiveScorer;
 pub use scaled::ScaledScorer;
 pub use tag::TagScorer;
 
-use std::any::Any;
-
 use crate::model::ContextItem;
 
 /// A scorer computes a relevance score for a context item relative to all scoreable items.
@@ -96,11 +94,7 @@ use crate::model::ContextItem;
 /// assert!(hi > lo);
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
-pub trait Scorer: Any + Send + Sync {
+pub trait Scorer: Send + Sync {
     /// Computes a relevance score for `item` given the full list of scoreable items.
     fn score(&self, item: &ContextItem, all_items: &[ContextItem]) -> f64;
-
-    /// Returns `self` as `&dyn Any` for downcasting (used by cycle detection).
-    #[doc(hidden)]
-    fn as_any(&self) -> &dyn Any;
 }

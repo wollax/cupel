@@ -9,13 +9,11 @@ on:
         type: boolean
         default: false
 
-permissions:
-  contents: write
-  id-token: write
-
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,6 +55,9 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     needs: test
     if: ${{ inputs.dry-run != true }}
     environment: release

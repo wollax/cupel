@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use crate::model::ContextItem;
 use crate::scorer::Scorer;
 
@@ -48,9 +46,5 @@ impl Scorer for RecencyScorer {
         }
 
         rank as f64 / (count_with_timestamp - 1) as f64
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
     }
 }

@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use crate::model::ContextItem;
 use crate::scorer::Scorer;
 
@@ -48,8 +46,40 @@ impl Scorer for PriorityScorer {
 
         rank as f64 / (count_with_priority - 1) as f64
     }
+}
 
-    fn as_any(&self) -> &dyn Any {
-        self
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::ContextItemBuilder;
+
+    #[test]
+    fn priority_scorer_scores_in_range() {
+        // 5 items with priorities 1..=5; all scores in [0.0, 1.0];
+        // highest priority (5) → 1.0, lowest priority (1) → 0.0
+        let items: Vec<ContextItem> = (1..=5)
+            .map(|p| ContextItemBuilder::new(p.to_string().as_str(), 5).priority(p).build().unwrap())
+            .collect();
+
+        for item in &items {
+            let score = PriorityScorer.score(item, &items);
+            assert!((0.0..=1.0).contains(&score), "score {score} out of range for priority {:?}", item.priority());
+        }
+
+        // Item with priority 5 should score 1.0
+        let top = PriorityScorer.score(&items[4], &items);
+        assert_eq!(top, 1.0);
+
+        // Item with priority 1 should score 0.0
+        let bottom = PriorityScorer.score(&items[0], &items);
+        assert_eq!(bottom, 0.0);
+    }
+
+    #[test]
+    fn priority_scorer_item_without_priority() {
+        // Item with no priority → score == 0.0
+        let item = ContextItemBuilder::new("no-priority", 5).build().unwrap();
+        let score = PriorityScorer.score(&item, std::slice::from_ref(&item));
+        assert_eq!(score, 0.0);
     }
 }

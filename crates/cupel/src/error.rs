@@ -39,6 +39,15 @@ pub enum CupelError {
     #[error("invalid slicer configuration: {0}")]
     SlicerConfig(String),
 
+    /// Never emitted. Structural cycles are impossible with owned `Box<dyn Scorer>` children.
+    /// Reserved for future use.
     #[error("cycle detected: scorer appears in its own dependency graph")]
     CycleDetected,
+
+    #[error("KnapsackSlice DP table exceeds the 50,000,000-cell limit: candidates={candidates}, capacity={capacity}, cells={cells}")]
+    TableTooLarge {
+        candidates: usize,
+        capacity: usize,
+        cells: u64,
+    },
 }

@@ -17,7 +17,7 @@ Given candidates and a budget, return the optimal context selection with full ex
 - Dual-language CI/CD (path-filtered GitHub Actions), OIDC trusted publishing
 - Optional serde feature with validation-on-deserialize for ContextBudget
 
-**v1.2 in progress (M001/S01–S06 complete, S07 remaining):**
+**v1.2 complete (M001 all 7 slices done, v1.2.0 tag pending manual publish):**
 - RAPI-01 through RAPI-05 done (non_exhaustive, derives, ContextKind factory methods, unreserved_capacity)
 - Diagnostics spec chapter written (TraceCollector, Events, ExclusionReasons, SelectionReport)
 - Conformance vector drift guard in CI; misleading vector comments fixed
@@ -27,6 +27,7 @@ Given candidates and a budget, return the optimal context selection with full ex
 - S04: All diagnostic types serde-complete; internally-tagged wire format; R006 validated
 - S05: `cargo clippy --all-targets` and `cargo-deny` unmaintained check in CI; R003 validated
 - S06: 20 .NET triage items resolved — KnapsackSlice DP guard, epsilon fix, naming/error/enum hardening, interface contract docs, 6 new tests (net +5); 658 .NET tests pass; R004 validated
+- S07: `CupelError::TableTooLarge` + KnapsackSlice 50M-cell guard; `Slicer::slice → Result`; CompositeScorer DFS + `as_any` removed; `UShapedPlacer` explicit left/right vecs; 15 new unit tests; release-rust.yml job-scoped permissions; R002 + R005 validated
 
 ## Architecture / Key Patterns
 
@@ -46,4 +47,4 @@ See `.kata/REQUIREMENTS.md` for the explicit capability contract, requirement st
 
 ## Milestone Sequence
 
-- [ ] M001: v1.2 Rust Parity & Quality Hardening — Close diagnostics gap between Rust and .NET, harden API surface, batch quality issues; ship v1.2
+- [x] M001: v1.2 Rust Parity & Quality Hardening — Close diagnostics gap between Rust and .NET, harden API surface, batch quality issues; ship v1.2 (all 7 slices complete; v1.2.0 tag pending manual publish)
