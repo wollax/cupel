@@ -17,5 +17,5 @@ public enum SlicerType
 
     /// <summary>Online streaming selection via configurable micro-batches.</summary>
     [JsonStringEnumMemberName("stream")]
-    Stream
+    Stream = 2
 }

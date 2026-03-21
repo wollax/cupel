@@ -1,14 +1,14 @@
 # Kata State
 
 **Active Milestone:** M001 — v1.2 Rust Parity & Quality Hardening
-**Active Slice:** S06 — .NET Quality Hardening (next)
-**Active Task:** (none — S05 done, S06 not started)
-**Phase:** Between slices (S05 complete; next: S06 .NET Quality Hardening or S07 Rust Quality Hardening)
-**Slice Branch:** kata/root/M001/S05 (will create kata/root/M001/S06 when S06 starts)
+**Active Slice:** S07 — Rust Quality Hardening
+**Active Task:** (S07 not yet started)
+**Phase:** Executing (S06 done; S07 next)
+**Slice Branch:** kata/root/M001/S06 (merging; S07 branch will be created)
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Start S06 (.NET Quality Hardening) — batch-resolve ~15-20 high-signal .NET issues (naming, XML docs, test gaps, KnapsackSlice DP guard). S07 (Rust Quality Hardening) depends on S05 baseline and can run after S05 merge.
-**Last Updated:** 2026-03-21 (S05 complete — SUMMARY, UAT, ROADMAP, REQUIREMENTS updated)
-**Requirements Status:** 4 active · 7 validated · 3 deferred · 3 out of scope
+**Next Action:** Execute S07 — Rust Quality Hardening (depends on S05 baseline — S05 already merged)
+**Last Updated:** 2026-03-21 (S06 complete — 20 triage items resolved; 658 tests pass; R004 validated)
+**Requirements Status:** 3 active · 8 validated · 3 deferred · 3 out of scope
 
 ## Completed Slices This Milestone
 
@@ -17,16 +17,18 @@
 - [x] S03 — Pipeline run_traced & DryRun (2026-03-21): run_traced + dry_run implemented; all 10 pipeline conformance tests pass; zero clippy/doc warnings
 - [x] S04 — Diagnostics Serde Integration (2026-03-21): all diagnostic types serde-complete; 16 new integration tests; internally-tagged wire format; R006 validated
 - [x] S05 — CI Quality Hardening (2026-03-21): --all-targets on all 4 clippy steps in both CI workflows; unmaintained = "workspace" in deny.toml; cargo deny check exits 0; R003 validated
+- [x] S06 — .NET Quality Hardening (2026-03-21): 20 triage items resolved; KnapsackSlice DP guard; epsilon fix; naming/error/enum hardening; interface contract docs; 6 new tests (net +5); 658 tests pass; R004 validated
 
 ## Remaining Slices
 
-- [ ] S06 — .NET Quality Hardening (depends:[] — can start immediately)
-- [ ] S07 — Rust Quality Hardening (depends:S05 — S05 baseline clean, can start after S05 merge)
+- [ ] S07 — Rust Quality Hardening (depends:S05 — S05 baseline clean; CompositeScorer, UShapedPlacer, QuotaSlice panic paths, CupelError::TableTooLarge + Rust KnapsackSlice guard, test gaps)
 
 ## Recent Decisions
 
-- D029: Vec<(T, usize)> hidden-index fields: serialize_with/deserialize_with free functions strip/reconstruct index
-- D030: cargo-deny 0.19.0 `unmaintained` field uses scope values (workspace/all/transitive/none), not severity values; `"workspace"` used instead of plan's `"warn"`
+- D031: KnapsackSlice OOM guard pattern — long cast on first operand, `>` not `>=`, diagnostic message with candidates/capacity/cells
+- D032: Error messages must not name internal types — use only public API surface
+- D033: Interface contract docs use interface types (ITraceCollector), not concrete implementations
+- D034: QuotaBuilder epsilon applied only to total-sum check, not per-kind comparisons
 
 ## Blockers
 

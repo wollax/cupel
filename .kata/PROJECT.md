@@ -17,14 +17,16 @@ Given candidates and a budget, return the optimal context selection with full ex
 - Dual-language CI/CD (path-filtered GitHub Actions), OIDC trusted publishing
 - Optional serde feature with validation-on-deserialize for ContextBudget
 
-**v1.2 in progress (M001/S01–S04 complete):**
+**v1.2 in progress (M001/S01–S06 complete, S07 remaining):**
 - RAPI-01 through RAPI-05 done (non_exhaustive, derives, ContextKind factory methods, unreserved_capacity)
 - Diagnostics spec chapter written (TraceCollector, Events, ExclusionReasons, SelectionReport)
 - Conformance vector drift guard in CI; misleading vector comments fixed
-- S01: All 8 diagnostic types implemented in Rust (`TraceEvent`, `ExclusionReason`, `InclusionReason`, `SelectionReport`, etc.) with 5 conformance vectors
-- S02: `TraceCollector` trait, `NullTraceCollector` ZST, `DiagnosticTraceCollector` with `into_report` — all re-exported from crate root; 12 behavioral contract tests pass
-- S03: `Pipeline::run_traced()` and `Pipeline::dry_run()` implemented; all diagnostics conformance vectors pass; 29 unit + 33 conformance tests green
-- S04: All diagnostic types serde-complete behind `--features serde`; internally-tagged wire format (`{"reason":"..."}`) matching spec; 49 serde integration tests pass; R006 validated
+- S01: All 8 diagnostic types implemented in Rust with 5 conformance vectors
+- S02: `TraceCollector` trait, `NullTraceCollector` ZST, `DiagnosticTraceCollector` — all re-exported; 12 behavioral contract tests pass
+- S03: `Pipeline::run_traced()` and `Pipeline::dry_run()` implemented; all diagnostics conformance vectors pass
+- S04: All diagnostic types serde-complete; internally-tagged wire format; R006 validated
+- S05: `cargo clippy --all-targets` and `cargo-deny` unmaintained check in CI; R003 validated
+- S06: 20 .NET triage items resolved — KnapsackSlice DP guard, epsilon fix, naming/error/enum hardening, interface contract docs, 6 new tests (net +5); 658 .NET tests pass; R004 validated
 
 ## Architecture / Key Patterns
 

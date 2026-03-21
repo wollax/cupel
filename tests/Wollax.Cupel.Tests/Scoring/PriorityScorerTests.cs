@@ -116,4 +116,24 @@ public class PriorityScorerTests
         await Assert.That(score1).IsEqualTo(0.0);
         await Assert.That(score2).IsEqualTo(0.0);
     }
+
+    [Test]
+    public async Task ScoresAreInZeroToOneRange()
+    {
+        var items = new List<ContextItem>
+        {
+            CreateItem(content: "a", priority: 1),
+            CreateItem(content: "b", priority: 5),
+            CreateItem(content: "c", priority: 10),
+            CreateItem(content: "d", priority: 100),
+            CreateItem(content: "e") // null priority
+        };
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            var score = _scorer.Score(items[i], items);
+            await Assert.That(score).IsGreaterThanOrEqualTo(0.0);
+            await Assert.That(score).IsLessThanOrEqualTo(1.0);
+        }
+    }
 }

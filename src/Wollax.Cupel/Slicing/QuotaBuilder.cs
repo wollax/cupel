@@ -85,7 +85,7 @@ public sealed class QuotaBuilder
             totalRequired += kvp.Value;
         }
 
-        if (totalRequired > 100)
+        if (totalRequired > 100.0 + 1e-9)
         {
             throw new ArgumentException(
                 $"Sum of all Require values ({totalRequired}%) exceeds 100%.");

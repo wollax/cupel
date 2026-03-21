@@ -29,7 +29,7 @@ public sealed class CupelPipeline
     internal IPlacer Placer => _placer;
     internal IAsyncSlicer? AsyncSlicer => _asyncSlicer;
     internal bool DeduplicationEnabled => _deduplicationEnabled;
-    internal OverflowStrategy OverflowStrategyValue => _overflowStrategy;
+    internal OverflowStrategy OverflowStrategy => _overflowStrategy;
 
     internal CupelPipeline(
         IScorer scorer,

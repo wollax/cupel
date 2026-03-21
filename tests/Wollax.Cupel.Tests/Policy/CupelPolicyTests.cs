@@ -230,6 +230,16 @@ public class CupelPolicyTests
     }
 
     [Test]
+    public async Task Validation_StreamBatchSizeWithKnapsackSlicer_Throws()
+    {
+        await Assert.That(() => new CupelPolicy(
+                MinimalScorers(),
+                slicerType: SlicerType.Knapsack,
+                streamBatchSize: 10))
+            .ThrowsExactly<ArgumentException>();
+    }
+
+    [Test]
     public async Task Validation_QuotasWithStreamSlicer_Throws()
     {
         var quotas = new List<QuotaEntry> { new(ContextKind.Message, minPercent: 30) };

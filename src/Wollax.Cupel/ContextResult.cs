@@ -32,7 +32,7 @@ public sealed record ContextResult
 
     /// <summary>
     /// Diagnostic report of the selection process.
-    /// Null when tracing was not requested for this pipeline execution.
+    /// <c>null</c> when tracing is disabled for the pipeline run.
     /// </summary>
     public SelectionReport? Report { get; init; }
 }

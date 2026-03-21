@@ -39,13 +39,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R004 — .NET codebase quality hardening
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Batch-resolve high-signal .NET issues: XML doc gaps, naming inconsistencies (OverflowStrategyValue → OverflowStrategy), defensive coding improvements, test coverage gaps (scorer test coverage, missing edge-case tests)
 - Why it matters: 90 open issues; letting them accumulate makes each subsequent release harder
 - Source: user
 - Primary owning slice: M001/S06
 - Supporting slices: none
-- Validation: unmapped
+- Validation: validated — all 20 triage items resolved in S06: OverflowStrategyValue → OverflowStrategy rename, QuotaBuilder epsilon fix, caller-facing error messages, enum integer anchors, ContextItem XML docs, interface contract docs (ITraceCollector constancy, ISlicer sort precondition, ContextResult.Report nullability, SelectionReport reference), 6 new tests (net +5 after duplicate removal); `dotnet build` 0 errors/warnings; 658 tests pass
 - Notes: High-signal issues: `2026-03-14-overflow-strategy-value-naming.md`, `scorer-test-gaps.md`, `2026-03-13-phase4-pr-review-suggestions.md`, `007-contextitem-xml-docs.md`, `phase02-review-*.md`
 
 ### R005 — Rust codebase quality hardening
@@ -204,7 +204,7 @@ This file is the explicit capability and coverage contract for the project.
 | R001 | core-capability | active | M001/S03 | S01, S02, S04 | unmapped |
 | R002 | quality-attribute | active | M001/S07 | S06 | unmapped |
 | R003 | quality-attribute | validated | M001/S05 | none | validated |
-| R004 | quality-attribute | active | M001/S06 | none | unmapped |
+| R004 | quality-attribute | validated | M001/S06 | none | validated |
 | R005 | quality-attribute | active | M001/S07 | none | unmapped |
 | R006 | quality-attribute | validated | M001/S04 | S01 | validated |
 | R010 | core-capability | validated | M001 phase 23 | none | validated |
@@ -221,7 +221,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 6
-- Mapped to slices: 6
-- Validated: 5
+- Active requirements: 5
+- Mapped to slices: 5
+- Validated: 6
 - Unmapped active requirements: 0

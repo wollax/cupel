@@ -123,4 +123,36 @@ public class TagScorerTests
 
         await Assert.That(parameterlessCtor).IsNull();
     }
+
+    [Test]
+    public async Task TagScorer_CaseInsensitiveMatch()
+    {
+        var weights = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["important"] = 1.0
+        };
+        var scorer = new TagScorer(weights);
+        var item = CreateItem(tags: ["IMPORTANT"]);
+        var allItems = new List<ContextItem> { item };
+
+        var score = scorer.Score(item, allItems);
+
+        await Assert.That(score).IsGreaterThan(0.0);
+    }
+
+    [Test]
+    public async Task TagScorer_ZeroTotalWeight_ReturnsZeroScore()
+    {
+        var weights = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["important"] = 0.0
+        };
+        var scorer = new TagScorer(weights);
+        var item = CreateItem(tags: ["important"]);
+        var allItems = new List<ContextItem> { item };
+
+        var score = scorer.Score(item, allItems);
+
+        await Assert.That(score).IsEqualTo(0.0);
+    }
 }

@@ -69,7 +69,7 @@ This milestone is complete only when all are true:
 - [x] **S05: CI Quality Hardening** `risk:low` `depends:[]`
   > After this: `cargo clippy --all-targets -- -D warnings` and `cargo-deny` with unmaintained warning run in CI; no pre-existing warnings are introduced.
 
-- [ ] **S06: .NET Quality Hardening** `risk:medium` `depends:[]`
+- [x] **S06: .NET Quality Hardening** `risk:medium` `depends:[]`
   > After this: ~15-20 high-signal .NET issues resolved (naming, XML docs, test gaps, defensive coding); .NET test suite passes with no regressions; `KnapsackSlice` DP guard added to .NET.
 
 - [ ] **S07: Rust Quality Hardening** `risk:medium` `depends:[S05]`

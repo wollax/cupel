@@ -2,7 +2,7 @@ namespace Wollax.Cupel.Diagnostics;
 
 /// <summary>
 /// Detailed report of the selection process.
-/// Populated when a <see cref="DiagnosticTraceCollector"/> is used.
+/// Populated when an <see cref="ITraceCollector"/> with tracing enabled is used.
 /// </summary>
 public sealed record SelectionReport
 {
