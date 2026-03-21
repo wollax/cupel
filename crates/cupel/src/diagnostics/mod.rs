@@ -1,5 +1,8 @@
 //! Diagnostic types for pipeline observability.
 //!
+//! Re-exports: [`TraceDetailLevel`], [`TraceCollector`], [`NullTraceCollector`],
+//! [`DiagnosticTraceCollector`] from the [`trace_collector`] submodule.
+//!
 //! These types form the explainability core of the pipeline — they answer
 //! "what happened during a run?" and "why was this item included or excluded?".
 //! The primary entry point is [`SelectionReport`], which is produced by a
@@ -264,3 +267,6 @@ pub struct SelectionReport {
     /// Sum of `tokens` across all items in both `included` and `excluded`.
     pub total_tokens_considered: i64,
 }
+
+pub mod trace_collector;
+pub use trace_collector::{TraceDetailLevel, TraceCollector, NullTraceCollector, DiagnosticTraceCollector};

@@ -17,10 +17,12 @@ Given candidates and a budget, return the optimal context selection with full ex
 - Dual-language CI/CD (path-filtered GitHub Actions), OIDC trusted publishing
 - Optional serde feature with validation-on-deserialize for ContextBudget
 
-**v1.2 in progress (phases 23-25 complete):**
+**v1.2 in progress (M001/S01–S02 complete):**
 - RAPI-01 through RAPI-05 done (non_exhaustive, derives, ContextKind factory methods, unreserved_capacity)
 - Diagnostics spec chapter written (TraceCollector, Events, ExclusionReasons, SelectionReport)
 - Conformance vector drift guard in CI; misleading vector comments fixed
+- S01: All 8 diagnostic types implemented in Rust (`TraceEvent`, `ExclusionReason`, `InclusionReason`, `SelectionReport`, etc.) with 5 conformance vectors
+- S02: `TraceCollector` trait, `NullTraceCollector` ZST, `DiagnosticTraceCollector` with `into_report` — all re-exported from crate root; 12 behavioral contract tests pass, zero clippy/doc warnings
 
 ## Architecture / Key Patterns
 

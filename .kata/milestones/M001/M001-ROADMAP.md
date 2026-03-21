@@ -57,7 +57,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Diagnostics Data Types** `risk:low` `depends:[]`
   > After this: `TraceEvent`, `ExclusionReason`, `InclusionReason`, and `SelectionReport` types exist in the Rust crate with full doc comments — `cargo test` and `cargo doc` pass; diagnostics conformance vectors authored in `spec/conformance/`.
 
-- [ ] **S02: TraceCollector Trait & Implementations** `risk:medium` `depends:[S01]`
+- [x] **S02: TraceCollector Trait & Implementations** `risk:medium` `depends:[S01]`
   > After this: `TraceCollector` trait, `NullTraceCollector` (zero-cost), and `DiagnosticTraceCollector` (buffered recording with `TraceDetailLevel`) are implemented, tested, and documented.
 
 - [ ] **S03: Pipeline run_traced & DryRun** `risk:medium` `depends:[S01,S02]`

@@ -10,8 +10,9 @@ pub mod scorer;
 pub mod slicer;
 
 pub use diagnostics::{
-    ExcludedItem, ExclusionReason, IncludedItem, InclusionReason, OverflowEvent, PipelineStage,
-    SelectionReport, TraceEvent,
+    DiagnosticTraceCollector, ExcludedItem, ExclusionReason, IncludedItem, InclusionReason,
+    NullTraceCollector, OverflowEvent, PipelineStage, SelectionReport, TraceCollector,
+    TraceDetailLevel, TraceEvent,
 };
 pub use error::CupelError;
 pub use model::{
