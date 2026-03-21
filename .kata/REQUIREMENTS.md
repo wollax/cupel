@@ -4,15 +4,19 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Active
 
+(none — all M001 requirements validated)
+
+## Validated (M001)
+
 ### R001 — Rust diagnostics parity: TraceCollector + SelectionReport
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: The Rust crate must expose a `TraceCollector` trait (with `NullTraceCollector` and `DiagnosticTraceCollector`), `TraceEvent`, `ExclusionReason`, `InclusionReason`, `SelectionReport`, a `run_traced()` pipeline method, and a `DryRun` capability — matching the diagnostics spec chapter
 - Why it matters: The .NET implementation has full explainability (SelectionReport, DryRun). Without Rust parity, the Rust crate is a second-class citizen that cannot serve agent orchestration use cases requiring "why was this item excluded?"
 - Source: user
 - Primary owning slice: M001/S03
 - Supporting slices: M001/S01, M001/S02, M001/S04
-- Validation: unmapped
+- Validation: validated — TraceCollector trait + NullTraceCollector ZST + DiagnosticTraceCollector in crate root; Pipeline::run_traced() and Pipeline::dry_run() implemented; all 5 diagnostics conformance vectors pass; cargo test --features serde → 35 passed including SelectionReport round-trip; cargo doc --no-deps → 0 warnings
 - Notes: Spec chapter exists in `spec/src/diagnostics/`; conformance vectors in `spec/conformance/`; per-invocation ownership model (not stored on pipeline)
 
 ### R002 — KnapsackSlice DP table size guard (Rust + .NET)
@@ -70,7 +74,7 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: validated — `cargo test --features serde` passes with wire-format assertions for all variants, round-trips for all 8 ExclusionReason and 3 InclusionReason variants, SelectionReport full round-trip, validation-rejection test, and graceful unknown-variant test; validation-on-deserialize pattern applied matching ContextBudget
 - Notes: Must follow validation-on-deserialize pattern established for ContextBudget
 
-## Validated
+## Validated (prior milestones)
 
 ### R010 — ContextBudget.unreserved_capacity() helper (Rust + .NET)
 - Class: core-capability
@@ -201,7 +205,7 @@ This file is the explicit capability and coverage contract for the project.
 
 | ID | Class | Status | Primary owner | Supporting | Proof |
 |---|---|---|---|---|---|
-| R001 | core-capability | active | M001/S03 | S01, S02, S04 | unmapped |
+| R001 | core-capability | validated | M001/S03 | S01, S02, S04 | validated |
 | R002 | quality-attribute | validated | M001/S07 | S06 | validated |
 | R003 | quality-attribute | validated | M001/S05 | none | validated |
 | R004 | quality-attribute | validated | M001/S06 | none | validated |
@@ -221,7 +225,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 1 (R001 — pending S07 validation of run_traced, deferred to post-S07 check)
-- Mapped to slices: 1
-- Validated: 10
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 11 (R001–R006, R010–R014)
 - Unmapped active requirements: 0
