@@ -56,7 +56,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Post-v1.2 Brainstorm Sprint** `risk:low` `depends:[]`
   > After this: a fresh `.planning/brainstorms/<date>-brainstorm/` directory with SUMMARY.md committed; new ideas catalogued; deferred items from March 15 brainstorm re-evaluated against v1.2 reality.
 
-- [ ] **S02: Spec Editorial Debt** `risk:low` `depends:[]`
+- [x] **S02: Spec Editorial Debt** `risk:low` `depends:[]`
   > After this: all ~8-10 spec/phase24 issues from `.planning/issues/open/` are closed; event ordering, item_count sentinel, observer callback normative status, greedy zero-token note, knapsack floor/truncation note, UShapedPlacer pinned edge, composite pseudocode, ScaledScorer nesting warning are all addressed in `spec/src/`.
 
 - [ ] **S03: Count-Based Quota Design** `risk:high` `depends:[S01]`

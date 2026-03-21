@@ -6,7 +6,7 @@ A ContextItem is an immutable record representing a single piece of context in t
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `content` | string | Yes | — | The textual content of this context item. Must be non-null and non-empty. |
+| `content` | string | Yes | — | The textual content of the item. Non-null and non-empty. |
 | `tokens` | integer | Yes | — | The token count for this context item, as provided by the caller. Items with negative token counts are excluded during [classification](../pipeline/classify.md). |
 | `kind` | [ContextKind](enumerations.md#contextkind) | No | `"Message"` | The kind of context item. Used by [KindScorer](../scorers/kind.md) and [QuotaSlice](../slicers/quota.md). |
 | `source` | [ContextSource](enumerations.md#contextsource) | No | `"Chat"` | The origin of this context item. |

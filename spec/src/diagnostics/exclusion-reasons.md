@@ -53,6 +53,47 @@ Reserved variants are defined but not emitted by any built-in pipeline stage. Th
 }
 ```
 
+Reserved variant examples:
+
+**JSON example — ScoredTooLow:**
+
+```json
+{
+  "reason": "ScoredTooLow",
+  "score": 0.12,
+  "threshold": 0.25
+}
+```
+
+**JSON example — QuotaCapExceeded:**
+
+```json
+{
+  "reason": "QuotaCapExceeded",
+  "kind": "ToolOutput",
+  "cap": 3,
+  "actual": 4
+}
+```
+
+**JSON example — QuotaRequireDisplaced:**
+
+```json
+{
+  "reason": "QuotaRequireDisplaced",
+  "displaced_by_kind": "SystemPrompt"
+}
+```
+
+**JSON example — Filtered:**
+
+```json
+{
+  "reason": "Filtered",
+  "filter_name": "max_age_filter"
+}
+```
+
 Wire format: the `reason` field is a string discriminator. Variant-specific fields appear as sibling fields alongside `reason`. Fields that belong to other variants are omitted — absent fields are never represented as nulls. Both `ExclusionReason` and `InclusionReason` use this same envelope format: `{ "reason": "<VariantName>", ...fields }`. For `InclusionReason`, which carries no fields, the envelope contains only the `reason` discriminator.
 
 ## InclusionReason

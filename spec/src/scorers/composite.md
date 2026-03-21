@@ -51,7 +51,8 @@ CONSTRUCT-COMPOSITE(entries):
 
     DETECT-CYCLES(entries)
 
-    // Store scorers and normalizedWeights
+    self.scorers           <- [entries[i].scorer for i in 0..length(entries)]
+    self.normalizedWeights <- normalizedWeights
 ```
 
 ### Weight Normalization

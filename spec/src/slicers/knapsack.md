@@ -89,6 +89,8 @@ Scores (float64 in [0.0, 1.0]) are converted to integers for the DP table:
 integerValue = max(0, floor(score * 10000))
 ```
 
+> **Implementation note:** For non-negative scores (which all Cupel scores are, since scorers return values in [0.0, 1.0]), `floor` and truncation-toward-zero (C-style integer truncation) produce identical results. Either operation is conformant.
+
 This provides 4 decimal digits of score precision. Items with very small positive scores (< 0.0001) are treated as value 0.
 
 ### Weight Discretization

@@ -17,14 +17,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R041 — Spec quality debt closure
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Close ~8-10 open spec editorial issues: event ordering within pipeline stages, item_count sentinel disambiguation, observer callback normative status, GreedySlice zero-token item ordering note, KnapsackSlice floor vs truncation-toward-zero note, UShapedPlacer pinned edge case table row, CompositeScorer pseudocode storage assignment, ScaledScorer nesting depth warning.
 - Why it matters: The spec is publicly served as an mdBook. Ambiguous ordering guarantees block conformance test vector authoring; misleading algorithm descriptions mislead new language binding implementors.
 - Source: user
 - Primary owning slice: M002/S02
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Issues tracked in `.planning/issues/open/` with `spec` prefix. S02 batch-closes them.
+- Validation: validated — all 20 spec/phase24 issue files closed; 13 spec files updated with ordering rules, normative alignment, algorithm clarifications, and reserved variant examples; cargo test (35 passed) and dotnet test (583 passed) both green; TOML drift guard satisfied
+- Notes: Actual issue count was 20 (not ~8-10); `spec-workflow-checksum-verification.md` intentionally deferred (CI security concern, out of S02 scope).
 
 ### R042 — Metadata convention system spec
 - Class: differentiator
@@ -287,7 +287,7 @@ This file is the explicit capability and coverage contract for the project.
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
 | R040 | differentiator | active | M002/S03 | M002/S01 | unmapped |
-| R041 | quality-attribute | active | M002/S02 | none | unmapped |
+| R041 | quality-attribute | validated | M002/S02 | none | validated |
 | R042 | differentiator | active | M002/S04 | none | unmapped |
 | R043 | differentiator | active | M002/S05 | none | unmapped |
 | R044 | quality-attribute | active | M002/S06 | none | unmapped |
