@@ -1,64 +1,55 @@
 # Kata State
 
 **Active Milestone:** M002 — v1.3 Design Sprint
-**Active Slice:** S01 — Post-v1.2 Brainstorm Sprint (next to start)
-**Active Task:** (none — S01 not yet started)
+**Active Slice:** (none — S01 complete; advancing to S02)
+**Active Task:** (none)
 **Phase:** Planning
-**Slice Branch:** (to be created: kata/root/M002/S01)
+**Slice Branch:** kata/root/M002/S01
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Start S01 — run post-v1.2 brainstorm (explorer/challenger pairs, 2-3 pairs, following .planning/brainstorms/ format)
-**Last Updated:** 2026-03-21 (M002 planned — 6 design-only slices; context, roadmap, requirements written)
-**Requirements Status:** 6 active (R040–R045, all M002) · 11 validated (R001–R006, R010–R014) · 3 deferred · 3 out of scope
+**Next Action:** Start S02 — Spec Editorial Debt (standalone; closes ~8-10 open spec/phase24 issues)
+**Last Updated:** 2026-03-21 (S01 complete — 4 explorer/challenger pairs committed; 9 brainstorm files; 5 deferred items re-evaluated; 13 M003+ backlog candidates; S01-SUMMARY.md + S01-UAT.md written; S01 marked [x] in roadmap; D044–D048 added to DECISIONS.md)
+**Requirements Status:** R045 validated; 5 active (R040–R044) · 12 validated (R001–R006, R010–R014, R045) · 3 deferred · 3 out of scope
 
-## Completed Slices This Milestone
+## Completed Slices This Milestone (M002)
 
-- [x] S01 — Diagnostics Data Types (2026-03-17): all 8 types, 5 conformance vectors, zero drift
-- [x] S02 — TraceCollector Trait & Implementations (2026-03-17): all 4 types, 12 behavioral contract tests, zero clippy/doc warnings
-- [x] S03 — Pipeline run_traced & DryRun (2026-03-21): run_traced + dry_run implemented; all 10 pipeline conformance tests pass; zero clippy/doc warnings
-- [x] S04 — Diagnostics Serde Integration (2026-03-21): all diagnostic types serde-complete; 16 new integration tests; internally-tagged wire format; R006 validated
-- [x] S05 — CI Quality Hardening (2026-03-21): --all-targets on all 4 clippy steps in both CI workflows; unmaintained = "workspace" in deny.toml; cargo deny check exits 0; R003 validated
-- [x] S06 — .NET Quality Hardening (2026-03-21): 20 triage items resolved; KnapsackSlice DP guard; epsilon fix; naming/error/enum hardening; interface contract docs; 6 new tests (net +5); 658 tests pass; R004 validated
-- [x] S07 — Rust Quality Hardening (2026-03-21): TableTooLarge guard + Slicer::slice→Result; CompositeScorer DFS + as_any removed; UShapedPlacer explicit left/right vecs; 15 new unit tests; release-rust.yml job-level permissions; R002 + R005 validated; 35 tests pass; all clippy/deny checks clean
+- [x] S01 — Post-v1.2 Brainstorm Sprint (2026-03-21): 9 brainstorm files committed; 4 explorer/challenger pairs; S03/S05/S06 downstream inputs written; 5 deferred items re-evaluated; 13 M003+ backlog candidates; 113 Rust + 583 .NET tests pass; R045 validated
 
 ## M002 Slices
 
-- [ ] S01 — Post-v1.2 Brainstorm Sprint (next)
-- [ ] S02 — Spec Editorial Debt
-- [ ] S03 — Count-Based Quota Design (high risk)
-- [ ] S04 — Metadata Convention System Spec
-- [ ] S05 — Cupel.Testing Vocabulary Design
-- [ ] S06 — Future Features Spec Chapters
+- [x] S01 — Post-v1.2 Brainstorm Sprint (complete)
+- [ ] S02 — Spec Editorial Debt (standalone; risk:low)
+- [ ] S03 — Count-Based Quota Design (high risk; depends:S01 ✅)
+- [ ] S04 — Metadata Convention System Spec (standalone; risk:low)
+- [ ] S05 — Cupel.Testing Vocabulary Design (depends:S01 ✅; risk:medium)
+- [ ] S06 — Future Features Spec Chapters (depends:S01 ✅, S03; risk:medium)
 
-## Milestone DoD Status
+## Milestone DoD Status (M002)
 
-- [x] All 7 slices complete with summaries
-- [x] `cargo test` passes (35 passed, 0 failed)
-- [x] `cargo clippy --all-targets -- -D warnings` passes (0 warnings)
-- [x] `cargo deny check` passes (advisories/bans/licenses/sources ok)
-- [x] Diagnostics conformance vectors in `spec/conformance/` and `crates/cupel/conformance/`, all passing in CI
-- [x] .NET test suite (663 total across all projects) passes with no regressions
-- [x] KnapsackSlice DP guard in both .NET (S06) and Rust (S07)
-- [x] M001-SUMMARY.md written with verified success criteria
-- [ ] v1.2.0 tag (pending manual publish step)
+- [x] S01 complete with summary
+- [ ] S02 complete with summary
+- [ ] S03 complete with summary (count-quota design record, no TBD fields)
+- [ ] S04 complete with summary (MetadataTrustScorer spec chapter)
+- [ ] S05 complete with summary (testing vocabulary ≥10 patterns)
+- [ ] S06 complete with summary (DecayScorer, OTel, budget simulation spec chapters)
+- [ ] All R041 spec issues closed (removed from .planning/issues/open/)
+- [ ] All new spec chapters reachable via spec/src/SUMMARY.md
+- [ ] Brainstorm output committed to .planning/brainstorms/ — ✅ (S01)
+- [ ] cargo test passes
+- [ ] dotnet test passes
 
-## Recent Decisions
+## S02 Starting Context
 
-- D035: `Slicer::slice → Result` semver break accepted for v1.2.0 (all built-in impls in-crate; compile-time-visible)
-- D036: `CupelError::CycleDetected` kept as reserved/never-emitted variant (removing it would break downstream match arms)
-- D037: `UShapedPlacer` refactored to explicit left/right vecs (no `Vec<Option>` or `.expect()`)
-- D038: Scorer unit tests use `std::slice::from_ref(&item)` for single-item `all_items` — required for clippy::cloned_ref_to_slice_refs under -D warnings
+S02 is standalone (no S01 dependency). Key inputs:
+- `.planning/issues/open/` — all `spec` and `phase24` prefixed issues
+- `spec/src/` — files to edit: events.md, trace-collector.md, slicers/greedy.md, slicers/knapsack.md, placers/u-shaped.md, scorers/composite.md, scorers/scaled.md
 
-## M001 Final Verification Results
+## Recent Decisions (M002/S01)
 
-- `cargo test` → 35 passed, 0 failed ✅
-- `cargo test --features serde` → 35 passed, 0 failed ✅
-- `cargo clippy --all-targets -- -D warnings` → 0 warnings, exit 0 ✅
-- `cargo clippy --features serde --all-targets -- -D warnings` → 0 warnings, exit 0 ✅
-- `cargo deny check` → advisories/bans/licenses/sources ok ✅
-- conformance drift → `diff -rq spec/conformance/ crates/cupel/conformance/` → no output ✅
-- 5 diagnostics conformance tests pass ✅
-- .NET tests → 663 total (583+15+47+13+5), 0 failures ✅
-- R001 through R006 all validated ✅
+- D044: Multi-budget DryRun API variant rejected (microseconds vs permanent coupling)
+- D045: BudgetUtilization + KindDiversity in Wollax.Cupel core, not separate analytics package
+- D046: CountRequireUnmet is SelectionReport-level field, not per-item ExclusionReason
+- D047: Rust TimeProvider trait — minimal (Send+Sync, fn now() → DateTime<Utc>), Box<dyn> at construction
+- D048: FindMinBudgetFor return type is int?/Option<i32>; null/None = not found within ceiling
 
 ## Blockers
 

@@ -53,7 +53,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Post-v1.2 Brainstorm Sprint** `risk:low` `depends:[]`
+- [x] **S01: Post-v1.2 Brainstorm Sprint** `risk:low` `depends:[]`
   > After this: a fresh `.planning/brainstorms/<date>-brainstorm/` directory with SUMMARY.md committed; new ideas catalogued; deferred items from March 15 brainstorm re-evaluated against v1.2 reality.
 
 - [ ] **S02: Spec Editorial Debt** `risk:low` `depends:[]`
