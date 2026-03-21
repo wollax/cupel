@@ -9,7 +9,10 @@
 
 use std::collections::HashMap;
 
-use cupel::{ContextBudget, ContextItemBuilder, ContextKind, ContextSource};
+use cupel::{
+    ContextBudget, ContextItemBuilder, ContextKind, ContextSource, Pipeline, RecencyScorer,
+    GreedySlice, ChronologicalPlacer,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // -- Part 1: ContextItem roundtrip -------------------------------------------------
@@ -101,6 +104,70 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     println!("\nValidation-on-deserialize ensures invalid data never enters the pipeline.");
+
+    // -- Part 4: SelectionReport roundtrip -----------------------------------------
+    //
+    // Run a real two-item pipeline via `dry_run` and serialize the resulting
+    // SelectionReport to pretty JSON. This demonstrates the end-to-end workflow:
+    //   build items → run pipeline → get SelectionReport → serialize → inspect.
+    //
+    // The JSON output shows the internally-tagged `"reason"` discriminator:
+    //   {"reason":"BudgetExceeded","item_tokens":...,"available_tokens":...}
+    // which is the spec-compliant wire format documented in
+    //   spec/src/diagnostics/exclusion-reasons.md
+
+    println!("\n=== SelectionReport roundtrip ===\n");
+
+    let pipeline = Pipeline::builder()
+        .scorer(Box::new(RecencyScorer))
+        .slicer(Box::new(GreedySlice))
+        .placer(Box::new(ChronologicalPlacer))
+        .build()?;
+
+    // One small item that fits, one large item that doesn't.
+    let items = vec![
+        ContextItemBuilder::new("System: you are a helpful assistant", 20)
+            .pinned(true)
+            .build()?,
+        ContextItemBuilder::new("User: tell me about the history of computing", 15).build()?,
+        ContextItemBuilder::new(
+            "Context: [very long document that won't fit in a 50-token budget]",
+            2000,
+        )
+        .build()?,
+    ];
+
+    // Tight budget so the large document gets excluded.
+    let budget = ContextBudget::new(50, 40, 0, HashMap::new(), 0.0)?;
+
+    let report = pipeline.dry_run(&items, &budget)?;
+
+    println!("Pipeline run complete:");
+    println!("  total_candidates = {}", report.total_candidates);
+    println!("  included         = {}", report.included.len());
+    println!("  excluded         = {}", report.excluded.len());
+    println!();
+
+    let report_json = serde_json::to_string_pretty(&report)?;
+    println!("Serialized SelectionReport:\n{report_json}\n");
+
+    // Deserialize back — validates the round-trip and the total_candidates invariant.
+    let restored: cupel::SelectionReport = serde_json::from_str(&report_json)?;
+    println!("Round-trip verified:");
+    println!("  total_candidates = {}", restored.total_candidates);
+    println!("  included         = {}", restored.included.len());
+    println!("  excluded         = {}", restored.excluded.len());
+    if let Some(exc) = restored.excluded.first() {
+        let reason_json = serde_json::to_string(&exc.reason)?;
+        println!("  first excluded reason (wire format) = {reason_json}");
+        assert!(
+            reason_json.contains(r#""reason":"#),
+            "reason must use internally-tagged wire format"
+        );
+    }
+
+    println!("\nSelectionReport serializes exclusion reasons with the spec-compliant");
+    println!(r#"internally-tagged envelope: {{"reason":"VariantName",...}}"#);
 
     Ok(())
 }

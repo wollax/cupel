@@ -90,13 +90,13 @@ pub struct OverflowEvent {
 ///
 /// # Serialization
 ///
-/// The wire format uses an adjacent-tagged envelope:
-/// `{ "reason": "<VariantName>", ...fields }`. A custom serde implementation
-/// is planned for S04; this type carries `cfg_attr` stubs only.
-// custom serde impl in S04 — adjacent-tagged wire format
+/// The wire format uses an internally-tagged envelope:
+/// `{ "reason": "<VariantName>", ...fields }`.
+// S04: internally-tagged via #[serde(tag = "reason")]
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(tag = "reason"))]
 pub enum ExclusionReason {
     /// Item did not fit within the remaining token budget.
     ///
@@ -173,6 +173,14 @@ pub enum ExclusionReason {
         /// Name of the filter predicate that excluded this item.
         filter_name: String,
     },
+
+    /// Unknown variant — present for forward-compatibility with future spec versions.
+    ///
+    /// Emitted during deserialization when the `reason` field does not match any
+    /// known variant. Never emitted by built-in pipeline stages.
+    #[doc(hidden)]
+    #[cfg_attr(feature = "serde", serde(other))]
+    _Unknown,
 }
 
 // ── InclusionReason ───────────────────────────────────────────────────────────
@@ -185,6 +193,7 @@ pub enum ExclusionReason {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(tag = "reason"))]
 pub enum InclusionReason {
     /// Included based on its computed relevance score within the token budget.
     Scored,
@@ -253,6 +262,7 @@ pub struct ExcludedItem {
 /// both `included` and `excluded`.
 #[non_exhaustive]
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct SelectionReport {
     /// All recorded trace events in insertion (stage) order.
     pub events: Vec<TraceEvent>,
@@ -266,6 +276,41 @@ pub struct SelectionReport {
     pub total_candidates: usize,
     /// Sum of `tokens` across all items in both `included` and `excluded`.
     pub total_tokens_considered: i64,
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for SelectionReport {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::Deserialize;
+
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct RawSelectionReport {
+            events: Vec<TraceEvent>,
+            included: Vec<IncludedItem>,
+            excluded: Vec<ExcludedItem>,
+            total_candidates: usize,
+            total_tokens_considered: i64,
+        }
+
+        let raw = RawSelectionReport::deserialize(deserializer)?;
+        let expected = raw.included.len() + raw.excluded.len();
+        if raw.total_candidates != expected {
+            return Err(serde::de::Error::custom(format!(
+                "total_candidates {} does not equal included.len() {} + excluded.len() {}",
+                raw.total_candidates,
+                raw.included.len(),
+                raw.excluded.len(),
+            )));
+        }
+        Ok(SelectionReport {
+            events: raw.events,
+            included: raw.included,
+            excluded: raw.excluded,
+            total_candidates: raw.total_candidates,
+            total_tokens_considered: raw.total_tokens_considered,
+        })
+    }
 }
 
 pub mod trace_collector;

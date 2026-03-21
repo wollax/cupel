@@ -4,8 +4,9 @@ use std::collections::HashMap;
 
 use chrono::{TimeZone, Utc};
 use cupel::{
-    ContextBudget, ContextItem, ContextItemBuilder, ContextKind, ContextSource, OverflowStrategy,
-    QuotaEntry, ScoredItem,
+    ContextBudget, ContextItem, ContextItemBuilder, ContextKind, ContextSource, DiagnosticTraceCollector,
+    ExclusionReason, InclusionReason, OverflowStrategy, QuotaEntry,
+    ScoredItem, SelectionReport, TraceCollector, TraceDetailLevel,
 };
 
 // ---------------------------------------------------------------------------
@@ -410,5 +411,229 @@ fn context_budget_reserved_slots_string_keys() {
     assert!(
         slots.contains_key("Document"),
         "reserved_slots keys should be strings, got: {slots:?}"
+    );
+}
+
+// ---------------------------------------------------------------------------
+// 6. Diagnostics serde tests
+// ---------------------------------------------------------------------------
+
+// --- 6a. Wire-format assertions ---
+
+#[test]
+fn exclusion_reason_budget_exceeded_wire_format() {
+    let reason = ExclusionReason::BudgetExceeded {
+        item_tokens: 100,
+        available_tokens: 50,
+    };
+    let json = serde_json::to_string(&reason).unwrap();
+    // Must use internally-tagged envelope: {"reason":"BudgetExceeded",...}
+    // NOT the adjacently-tagged {"BudgetExceeded":{"item_tokens":...}} form.
+    assert!(
+        json.contains(r#""reason":"BudgetExceeded""#),
+        "expected internally-tagged wire format, got: {json}"
+    );
+    assert!(
+        json.contains("item_tokens"),
+        "expected item_tokens field in JSON, got: {json}"
+    );
+    // Confirm the outer-key form is absent.
+    assert!(
+        !json.contains(r#""BudgetExceeded":"#),
+        "unexpected adjacently-tagged format detected in: {json}"
+    );
+}
+
+#[test]
+fn inclusion_reason_scored_wire_format() {
+    let reason = InclusionReason::Scored;
+    let json = serde_json::to_string(&reason).unwrap();
+    // Unit variant must produce {"reason":"Scored"}, NOT the bare string "Scored".
+    assert_eq!(
+        json,
+        r#"{"reason":"Scored"}"#,
+        "expected internally-tagged wire format"
+    );
+}
+
+// --- 6b. ExclusionReason round-trips ---
+
+#[test]
+fn roundtrip_exclusion_budget_exceeded() {
+    let original = ExclusionReason::BudgetExceeded {
+        item_tokens: 100,
+        available_tokens: 50,
+    };
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: ExclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+#[test]
+fn roundtrip_exclusion_negative_tokens() {
+    let original = ExclusionReason::NegativeTokens { tokens: -5 };
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: ExclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+#[test]
+fn roundtrip_exclusion_deduplicated() {
+    let original = ExclusionReason::Deduplicated {
+        deduplicated_against: "abc-123".to_string(),
+    };
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: ExclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+#[test]
+fn roundtrip_exclusion_pinned_override() {
+    let original = ExclusionReason::PinnedOverride {
+        displaced_by: "pinned-item-id".to_string(),
+    };
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: ExclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+#[test]
+fn roundtrip_exclusion_scored_too_low() {
+    let original = ExclusionReason::ScoredTooLow {
+        score: 0.12,
+        threshold: 0.5,
+    };
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: ExclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+#[test]
+fn roundtrip_exclusion_quota_cap_exceeded() {
+    let original = ExclusionReason::QuotaCapExceeded {
+        kind: "Document".to_string(),
+        cap: 10,
+        actual: 15,
+    };
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: ExclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+#[test]
+fn roundtrip_exclusion_quota_require_displaced() {
+    let original = ExclusionReason::QuotaRequireDisplaced {
+        displaced_by_kind: "Message".to_string(),
+    };
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: ExclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+#[test]
+fn roundtrip_exclusion_filtered() {
+    let original = ExclusionReason::Filtered {
+        filter_name: "ProfanityFilter".to_string(),
+    };
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: ExclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+// --- 6c. InclusionReason round-trips ---
+
+#[test]
+fn roundtrip_inclusion_scored() {
+    let original = InclusionReason::Scored;
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: InclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+#[test]
+fn roundtrip_inclusion_pinned() {
+    let original = InclusionReason::Pinned;
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: InclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+#[test]
+fn roundtrip_inclusion_zero_token() {
+    let original = InclusionReason::ZeroToken;
+    let json = serde_json::to_string(&original).unwrap();
+    let restored: InclusionReason = serde_json::from_str(&json).unwrap();
+    assert_eq!(restored, original);
+}
+
+// --- 6d. SelectionReport and DiagnosticTraceCollector ---
+
+#[test]
+fn roundtrip_selection_report_full() {
+    // Build a SelectionReport via DiagnosticTraceCollector.
+    let included_item = ContextItemBuilder::new("included content", 50).build().unwrap();
+    let excluded_item = ContextItemBuilder::new("excluded content", 9999).build().unwrap();
+
+    let mut collector = DiagnosticTraceCollector::new(TraceDetailLevel::Item);
+    collector.record_included(included_item, 0.9, InclusionReason::Scored);
+    collector.record_excluded(
+        excluded_item,
+        0.5,
+        ExclusionReason::BudgetExceeded {
+            item_tokens: 9999,
+            available_tokens: 50,
+        },
+    );
+    collector.set_candidates(2, 10049);
+    let report = collector.into_report();
+
+    let json = serde_json::to_string(&report).unwrap();
+    let restored: SelectionReport = serde_json::from_str(&json).unwrap();
+
+    assert_eq!(restored.total_candidates, 2);
+    assert_eq!(restored.included.len(), 1);
+    assert_eq!(restored.excluded.len(), 1);
+    assert_eq!(restored.included[0].item.content(), "included content");
+    assert_eq!(restored.excluded[0].item.content(), "excluded content");
+    assert_eq!(
+        restored.excluded[0].reason,
+        ExclusionReason::BudgetExceeded {
+            item_tokens: 9999,
+            available_tokens: 50,
+        }
+    );
+}
+
+#[test]
+fn reject_selection_report_total_candidates_mismatch() {
+    // total_candidates claims 99 but included + excluded = 2.
+    let json = r#"{
+        "events": [],
+        "included": [{"item":{"content":"x","tokens":1},"score":0.5,"reason":{"reason":"Scored"}}],
+        "excluded": [{"item":{"content":"y","tokens":2},"score":0.1,"reason":{"reason":"BudgetExceeded","item_tokens":2,"available_tokens":0}}],
+        "total_candidates": 99,
+        "total_tokens_considered": 3
+    }"#;
+    let result = serde_json::from_str::<SelectionReport>(json);
+    assert!(
+        result.is_err(),
+        "expected Err for total_candidates mismatch, got Ok"
+    );
+    let err_msg = result.unwrap_err().to_string();
+    assert!(
+        err_msg.contains("total_candidates"),
+        "error message should mention total_candidates, got: {err_msg}"
+    );
+}
+
+#[test]
+fn exclusion_reason_unknown_variant_graceful() {
+    // A future spec variant not known to this version must deserialize to _Unknown.
+    let result =
+        serde_json::from_str::<ExclusionReason>(r#"{"reason":"FutureVariantFromSpec3"}"#);
+    let reason = result.expect("deserialization of unknown variant must not panic or error");
+    assert!(
+        matches!(reason, ExclusionReason::_Unknown),
+        "expected ExclusionReason::_Unknown, got: {reason:?}"
     );
 }

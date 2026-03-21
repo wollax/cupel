@@ -63,7 +63,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Pipeline run_traced & DryRun** `risk:medium` `depends:[S01,S02]`
   > After this: `pipeline.run_traced(&mut collector)` and `pipeline.dry_run(items)` exist in Rust; all diagnostics conformance vectors pass in CI.
 
-- [ ] **S04: Diagnostics Serde Integration** `risk:low` `depends:[S01,S02,S03]`
+- [x] **S04: Diagnostics Serde Integration** `risk:low` `depends:[S01,S02,S03]`
   > After this: all diagnostic types (`TraceEvent`, `ExclusionReason`, `InclusionReason`, `SelectionReport`) serialize/deserialize correctly under `--features serde`; serde round-trip tests pass.
 
 - [ ] **S05: CI Quality Hardening** `risk:low` `depends:[]`

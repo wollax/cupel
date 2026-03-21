@@ -61,13 +61,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R006 — Diagnostics serde coverage
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: All diagnostic types (`SelectionReport`, `TraceEvent`, `ExclusionReason`, `InclusionReason`) must support Serialize/Deserialize behind the `serde` feature flag
 - Why it matters: Consistent with existing crate convention (ContextItem, ContextBudget have serde); callers need to persist or transmit diagnostic reports
 - Source: user
 - Primary owning slice: M001/S04
 - Supporting slices: M001/S01
-- Validation: unmapped
+- Validation: validated — `cargo test --features serde` passes with wire-format assertions for all variants, round-trips for all 8 ExclusionReason and 3 InclusionReason variants, SelectionReport full round-trip, validation-rejection test, and graceful unknown-variant test; validation-on-deserialize pattern applied matching ContextBudget
 - Notes: Must follow validation-on-deserialize pattern established for ContextBudget
 
 ## Validated
@@ -206,7 +206,7 @@ This file is the explicit capability and coverage contract for the project.
 | R003 | quality-attribute | active | M001/S05 | none | unmapped |
 | R004 | quality-attribute | active | M001/S06 | none | unmapped |
 | R005 | quality-attribute | active | M001/S07 | none | unmapped |
-| R006 | quality-attribute | active | M001/S04 | S01 | unmapped |
+| R006 | quality-attribute | validated | M001/S04 | S01 | validated |
 | R010 | core-capability | validated | M001 phase 23 | none | validated |
 | R011 | quality-attribute | validated | M001 phase 23 | none | validated |
 | R012 | core-capability | validated | M001 phase 23 | none | validated |

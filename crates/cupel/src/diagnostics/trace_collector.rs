@@ -141,6 +141,30 @@ impl TraceCollector for NullTraceCollector {
     // defaults, which are already no-ops.
 }
 
+// ── DiagnosticTraceCollector serde helpers ────────────────────────────────────
+
+#[cfg(feature = "serde")]
+fn ser_excluded_items<S: serde::Serializer>(
+    items: &Vec<(ExcludedItem, usize)>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    use serde::ser::SerializeSeq;
+    let mut seq = serializer.serialize_seq(Some(items.len()))?;
+    for (item, _) in items {
+        seq.serialize_element(item)?;
+    }
+    seq.end()
+}
+
+#[cfg(feature = "serde")]
+fn de_excluded_items<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Vec<(ExcludedItem, usize)>, D::Error> {
+    use serde::Deserialize;
+    let items = Vec::<ExcludedItem>::deserialize(deserializer)?;
+    Ok(items.into_iter().enumerate().map(|(i, item)| (item, i)).collect())
+}
+
 // ── DiagnosticTraceCollector ──────────────────────────────────────────────────
 
 /// Callback type invoked synchronously after each recorded [`TraceEvent`].
@@ -159,10 +183,8 @@ type TraceEventCallback = Box<dyn Fn(&TraceEvent)>;
 ///
 /// # Serde note
 ///
-/// The `serde` derive stubs are present but the output will be **incorrect
-/// until S04**, when a custom adjacent-tagged implementation is added for
-/// [`ExclusionReason`]. Do not rely on the serialized form for this type
-/// before S04 lands.
+/// Serde support is complete as of S04. The `callback` field is always
+/// skipped — callbacks cannot be serialized.
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DiagnosticTraceCollector {
@@ -170,6 +192,7 @@ pub struct DiagnosticTraceCollector {
     included: Vec<IncludedItem>,
     /// Each entry pairs an `ExcludedItem` with its insertion index, which is
     /// used to implement a stable descending-score sort in `into_report`.
+    #[cfg_attr(feature = "serde", serde(serialize_with = "ser_excluded_items", deserialize_with = "de_excluded_items"))]
     excluded: Vec<(ExcludedItem, usize)>,
     total_candidates: usize,
     total_tokens_considered: i64,
