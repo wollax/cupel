@@ -29,6 +29,14 @@ Given candidates and a budget, return the optimal context selection with full ex
 - S06: 20 .NET triage items resolved — KnapsackSlice DP guard, epsilon fix, naming/error/enum hardening, interface contract docs, 6 new tests (net +5); 658 .NET tests pass; R004 validated
 - S07: `CupelError::TableTooLarge` + KnapsackSlice 50M-cell guard; `Slicer::slice → Result`; CompositeScorer DFS + `as_any` removed; `UShapedPlacer` explicit left/right vecs; 15 new unit tests; release-rust.yml job-scoped permissions; R002 + R005 validated
 
+**M002: v1.3 Design Sprint — COMPLETE (all 6 slices done, 2026-03-21):**
+- S01: Post-v1.2 brainstorm — 9 files committed to `.planning/brainstorms/2026-03-21T09-00-brainstorm/`; 13 M003+ backlog candidates; downstream inputs for S03/S05/S06; R045 validated
+- S02: Spec editorial debt — 20 spec/phase24 issue files closed; 13 spec files updated (ordering rules, normative alignment, algorithm clarifications); R041 validated
+- S03: Count-based quota design — `.planning/design/count-quota-design.md` with 6 DI rulings, COUNT-DISTRIBUTE-BUDGET pseudocode, 0 TBD fields; R040 validated
+- S04: Metadata convention system spec — `spec/src/scorers/metadata-trust.md` written; `"cupel:"` namespace reserved; `cupel:trust` + `cupel:source-type` conventions defined; MetadataTrustScorer chapter with 5 conformance vectors; R042 validated
+- S05: Cupel.Testing vocabulary design — `spec/src/testing/vocabulary.md` with 13 fully-specified named assertion patterns; PD-1 through PD-4 locked; R043 validated
+- S06: Future features spec chapters — `spec/src/scorers/decay.md` (DECAY-SCORE pseudocode, 3 curve factories, mandatory TimeProvider); `spec/src/integrations/opentelemetry.md` (5-Activity OTel hierarchy, 3 verbosity tiers, pre-stability disclaimer); `spec/src/analytics/budget-simulation.md` (GetMarginalItems, FindMinBudgetFor, DryRun determinism MUST); all 0 TBD fields; R044 validated
+
 ## Architecture / Key Patterns
 
 - **Tech stack**: C# / .NET 10 + Rust (Edition 2024, MSRV 1.85)
@@ -48,4 +56,5 @@ See `.kata/REQUIREMENTS.md` for the explicit capability contract, requirement st
 ## Milestone Sequence
 
 - [x] M001: v1.2 Rust Parity & Quality Hardening — Close diagnostics gap between Rust and .NET, harden API surface, batch quality issues; ship v1.2 (all 7 slices complete; v1.2.0 tag pending manual publish)
-- [ ] M002: v1.3 Design Sprint — Resolve deferred design problems (count-based quotas, Cupel.Testing vocabulary, metadata convention system, future features specs) and close spec quality debt; produce spec chapters and design decision records ready for v1.3 implementation (S01–S05 complete; S06 pending)
+- [x] M002: v1.3 Design Sprint — Resolve deferred design problems (count-based quotas, Cupel.Testing vocabulary, metadata convention system, future features specs) and close spec quality debt; produce spec chapters and design decision records ready for v1.3 implementation (all 6 slices complete, 2026-03-21)
+- [ ] M003: v1.3 Implementation Sprint — Implement all M002-designed features: DecayScorer, Cupel.Testing vocabulary, OTel bridge, budget simulation extension methods, CountQuotaSlice decorator, MetadataTrustScorer

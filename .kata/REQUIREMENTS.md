@@ -50,25 +50,25 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R044 — Future features spec chapters (DecayScorer, OTel, budget simulation)
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Produce spec chapters for three deferred features: (a) `DecayScorer` — algorithm, TimeProvider injection pattern, null-timestamp policy, three curve factory methods, conformance vector outlines; (b) OpenTelemetry verbosity levels — exact `cupel.*` attributes per verbosity tier, pre-stability disclaimer; (c) budget simulation API contracts — `GetMarginalItems` and `FindMinBudgetFor` with monotonicity precondition spec. No implementation.
 - Why it matters: Each spec chapter is the prerequisite blocking implementation. Starting implementation without spec means the API surface gets driven by Rust/C# type system constraints rather than semantic clarity — a pattern explicitly rejected in the M001 brainstorm.
 - Source: user (brainstorm March 15 — high-value features)
 - Primary owning slice: M002/S06
 - Supporting slices: none
-- Validation: unmapped
+- Validation: validated — `spec/src/scorers/decay.md` (DECAY-SCORE pseudocode, 3 curve factories, mandatory TimeProvider per D042/D047, nullTimestampScore, 5 conformance vector outlines, 0 TBD fields), `spec/src/integrations/opentelemetry.md` (5-Activity hierarchy per D068, 3 verbosity tiers with exact cupel.* attribute tables, pre-stability disclaimer per D043, cardinality table, 0 TBD fields), and `spec/src/analytics/budget-simulation.md` (DryRun determinism MUST, GetMarginalItems with explicit budget param per D069, FindMinBudgetFor with binary search + int?/Option<i32> return per D048, QuotaSlice + CountQuotaSlice guards, 0 TBD fields) all exist and are reachable via SUMMARY.md; `grep -ci "\bTBD\b"` → 0 across all three; cargo test (113 passed) and dotnet test (583 passed) both green
 - Notes: DecayScorer feeds R020; OTel feeds R022; budget simulation is a new requirement (no prior R-number). TimeProvider is mandatory (not optional) — no silent default to TimeProvider.System.
 
 ### R045 — Fresh brainstorm: post-v1.2 ideas
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Run a new explorer/challenger brainstorm session (following the established .planning/brainstorms/ format) against the current v1.2 codebase state. Surface new ideas not yet in the backlog, validate or retire existing deferred ideas in light of v1.2 completion, and produce a refined idea register.
 - Why it matters: The last brainstorm (March 15) was conducted before diagnostics parity shipped. With SelectionReport and run_traced now live, the landscape has shifted — new ideas around analytics, testing, and ecosystem become more concrete.
 - Source: user
 - Primary owning slice: M002/S01
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Brainstorm output feeds count-quota design (S03) and future features spec (S06) by surfacing new angles on those problems.
+- Validation: validated — `.planning/brainstorms/2026-03-21T09-00-brainstorm/` committed with SUMMARY.md and future-features-report.md; brainstorm fed design inputs to S03 (count-quota angles) and S06 (DecayScorer curves, OTel verbosity, budget simulation patterns); cargo test and dotnet test both green
+- Notes: Brainstorm output fed count-quota design (S03) and future features spec (S06) by surfacing new angles on those problems.
 
 ## Validated (M001)
 
@@ -290,12 +290,12 @@ This file is the explicit capability and coverage contract for the project.
 | R041 | quality-attribute | validated | M002/S02 | none | validated |
 | R042 | differentiator | validated | M002/S04 | none | validated |
 | R043 | differentiator | validated | M002/S05 | none | validated |
-| R044 | quality-attribute | active | M002/S06 | none | unmapped |
-| R045 | quality-attribute | active | M002/S01 | none | unmapped |
+| R044 | quality-attribute | validated | M002/S06 | none | validated |
+| R045 | quality-attribute | validated | M002/S01 | none | validated |
 
 ## Coverage Summary
 
-- Active requirements: 4 (R042–R045, all M002; R041 validated in S02, R043 validated in S05)
-- Mapped to slices: 4
-- Validated: 13 (R001–R006, R010–R014, R040–R043)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 19 (R001–R006, R010–R014, R040–R045)
 - Unmapped active requirements: 0

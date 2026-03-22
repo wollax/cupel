@@ -25,6 +25,7 @@
   - [CompositeScorer](scorers/composite.md)
   - [ScaledScorer](scorers/scaled.md)
   - [MetadataTrustScorer](scorers/metadata-trust.md)
+  - [DecayScorer](scorers/decay.md)
 - [Slicers](slicers.md)
   - [GreedySlice](slicers/greedy.md)
   - [KnapsackSlice](slicers/knapsack.md)
@@ -37,6 +38,14 @@
   - [Events](diagnostics/events.md)
   - [Exclusion Reasons](diagnostics/exclusion-reasons.md)
   - [SelectionReport](diagnostics/selection-report.md)
+
+# Integrations
+
+- [OpenTelemetry](integrations/opentelemetry.md)
+
+# Analytics
+
+- [Budget Simulation](analytics/budget-simulation.md)
 
 # Conformance
 

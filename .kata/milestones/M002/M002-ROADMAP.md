@@ -68,7 +68,7 @@ This milestone is complete only when all are true:
 - [x] **S05: Cupel.Testing Vocabulary Design** `risk:medium` `depends:[S01]`
   > After this: `spec/src/testing/vocabulary.md` defines ≥10 named assertion patterns over `SelectionReport`; each pattern specifies what it asserts, tolerance/edge cases, and error message format; no ambiguous "high-scoring" or similar undefined terms remain.
 
-- [ ] **S06: Future Features Spec Chapters** `risk:medium` `depends:[S01,S03]`
+- [x] **S06: Future Features Spec Chapters** `risk:medium` `depends:[S01,S03]`
   > After this: `spec/src/scorers/decay.md`, `spec/src/integrations/opentelemetry.md`, and `spec/src/analytics/budget-simulation.md` exist and are reachable from `SUMMARY.md`; DecayScorer algorithm and curves fully specified; OTel attributes per verbosity tier defined; `GetMarginalItems`/`FindMinBudgetFor` API contracts written with monotonicity spec.
 
 ## Boundary Map

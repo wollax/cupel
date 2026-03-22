@@ -1,14 +1,14 @@
 # Kata State
 
-**Active Milestone:** M002 — v1.3 Design Sprint
-**Active Slice:** S06 — Future Features Spec Chapters
-**Active Task:** —
-**Phase:** Planning (S05 complete; S06 not yet started)
-**Slice Branch:** kata/root/M002/S05 (to be merged; S06 branch TBD)
+**Active Milestone:** M002 — v1.3 Design Sprint (COMPLETE)
+**Active Slice:** (none — all slices complete)
+**Active Task:** (none)
+**Phase:** Done (M002 all 6 slices complete; awaiting human review of S06 spec chapters per UAT gate)
+**Slice Branch:** kata/root/M002/S06
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Start S06 (DecayScorer, OTel, budget simulation spec chapters)
-**Last Updated:** 2026-03-21 (S05 complete — 13 patterns in vocabulary.md; 0 TBD; 15 error message formats; both test suites green; R043 validated)
-**Requirements Status:** R044, R045 active; 13 validated (R001–R006, R010–R014, R040–R043) · 3 deferred · 3 out of scope
+**Next Action:** Human review of spec chapters (S06-UAT.md); then M002 DoD checklist sign-off; then M003 planning
+**Last Updated:** 2026-03-21 (S06 done — decay.md, opentelemetry.md, budget-simulation.md written; R044 validated; M002 all 6 slices complete)
+**Requirements Status:** 19 validated (R001–R006, R010–R014, R040–R045) · 3 deferred (R020, R021, R022) · 3 out of scope (R030, R031, R032) · 0 active
 
 ## Completed Slices This Milestone (M002)
 
@@ -17,6 +17,7 @@
 - [x] S03 — Count-Based Quota Design (2026-03-21): `.planning/design/count-quota-design.md` written; all 6 DI rulings settled; COUNT-DISTRIBUTE-BUDGET pseudocode; 5 conformance vector outlines; 0 TBD fields; 35 Rust + 583 .NET tests pass; R040 validated
 - [x] S04 — Metadata Convention System Spec (2026-03-21): `spec/src/scorers/metadata-trust.md` written; `"cupel:"` namespace reserved normatively; `cupel:trust`/`cupel:source-type` conventions defined; MetadataTrustScorer algorithm with configurable `defaultScore`; 5 conformance vector outlines; 0 TBD fields; SUMMARY.md + scorers.md updated; 35 Rust + 583 .NET tests pass; R042 validated
 - [x] S05 — Cupel.Testing Vocabulary Design (2026-03-21): `spec/src/testing/vocabulary.md` written with 13 fully-specified named assertion patterns over SelectionReport; PD-1 through PD-4 locked; Placer dependency caveat on ordering assertions; ExcludeItemWithBudgetDetails .NET language-asymmetry note; D041 snapshot prohibition noted; 0 TBD fields; 15 error message formats; SUMMARY.md updated with Testing section; 35 Rust + 583 .NET tests pass; R043 validated
+- [x] S06 — Future Features Spec Chapters (2026-03-21): `spec/src/scorers/decay.md` (DECAY-SCORE pseudocode, Exponential/Step/Window curve factories, mandatory TimeProvider per D042/D047, nullTimestampScore default 0.5, 5 conformance vector outlines); `spec/src/integrations/opentelemetry.md` (5-Activity hierarchy per D068, 3 CupelVerbosity tiers with exact cupel.* attribute tables, pre-stability disclaimer per D043, cardinality table); `spec/src/analytics/budget-simulation.md` (DryRun determinism MUST, GetMarginalItems with explicit ContextBudget param per D069, FindMinBudgetFor binary search with int? return per D048, QuotaSlice + CountQuotaSlice guards); all 0 TBD fields; 3 SUMMARY.md sections added; 113 Rust + 583 .NET tests pass; R044 validated
 
 ## M002 Slices
 
@@ -25,53 +26,37 @@
 - [x] S03 — Count-Based Quota Design (complete)
 - [x] S04 — Metadata Convention System Spec (complete)
 - [x] S05 — Cupel.Testing Vocabulary Design (complete)
-- [ ] S06 — Future Features Spec Chapters (depends:S01 ✅, S03 ✅; risk:medium)
+- [x] S06 — Future Features Spec Chapters (complete)
 
 ## Milestone DoD Status (M002)
 
-- [x] S01 complete with summary
-- [x] S02 complete with summary
-- [x] S03 complete with summary (count-quota design record, no TBD fields, R040 validated)
-- [x] S04 complete with summary (MetadataTrustScorer spec chapter, R042 validated)
-- [x] S05 complete with summary (13 patterns, 0 TBD, both test suites green, R043 validated)
-- [ ] S06 complete with summary (DecayScorer, OTel, budget simulation spec chapters)
-- [x] All R041 spec issues closed (removed from .planning/issues/open/) — only deferred checksum issue remains
-- [x] All new spec chapters reachable via spec/src/SUMMARY.md — ✅ (S04: metadata-trust.md; S05: testing/vocabulary.md)
-- [x] Brainstorm output committed to .planning/brainstorms/ — ✅ (S01)
-- [x] cargo test passes (35 Rust passed)
-- [x] dotnet test passes (583 .NET passed)
+- [x] All 6 slices marked [x] with summaries
+- [x] All R041 spec issues closed (removed from .planning/issues/open/) — only deferred checksum issue remains (D050, out of scope)
+- [x] Count-quota design record has no TBD fields (.planning/design/count-quota-design.md, 0 TBD)
+- [x] All new spec chapters reachable via spec/src/SUMMARY.md — metadata-trust.md, testing/vocabulary.md, scorers/decay.md, integrations/opentelemetry.md, analytics/budget-simulation.md
+- [x] Brainstorm output committed to .planning/brainstorms/ (2026-03-21T09-00-brainstorm/)
+- [x] cargo test passes (113 Rust passed, 1 ignored)
+- [x] dotnet test passes (583 .NET passed, 0 failed)
+- [ ] Human review of S06 spec chapters (UAT gate per S06-UAT.md — final sign-off before M002 declared done)
 
-## S06 Starting Context
+## Recent Decisions (M002/S06)
 
-S06 depends on S01 ✅ and S03 ✅. Produces three spec chapters:
-
-1. **`spec/src/scorers/decay.md`** — DecayScorer: algorithm, TimeProvider injection (mandatory), three curve factories (Exponential, Step, Window), null-timestamp policy, 5 conformance vector outlines, Rust TimeProvider trait note
-2. **`spec/src/integrations/opentelemetry.md`** — OTel verbosity: StageOnly / StageAndExclusions / Full tiers; exact `cupel.*` attribute names per tier; pre-stability disclaimer; cardinality warning
-3. **`spec/src/analytics/budget-simulation.md`** — Budget simulation: `GetMarginalItems` (single DryRun diff); `FindMinBudgetFor` (binary search ~10-15 invocations, monotonicity precondition); QuotaSlice incompatibility guard
-
-Key S03 output to consume:
-- `.planning/design/count-quota-design.md` section 5 (KnapsackSlice guard via D052) → reference in `FindMinBudgetFor + CountQuotaSlice` incompatibility note
-
-Key S01 outputs to consume:
-- `.planning/brainstorms/2026-03-21-brainstorm/decay-scorer-design.md` — fresh angles on DecayScorer curves
-- `.planning/brainstorms/2026-03-21-brainstorm/otel-verbosity-design.md` — fresh angles on OTel attribute names and tiers
-
-## S05 Key Outputs (for reference)
-
-- `spec/src/testing/vocabulary.md` — 13 fully-specified assertion patterns; PD-1/PD-2/PD-3/PD-4 locked; language-asymmetry note on ExcludeItemWithBudgetDetails
-- `spec/src/SUMMARY.md` updated with `# Testing` section
-- D065: predicate type = IncludedItem/ExcludedItem (not raw ContextItem)
-- D066: SelectionReport.Should() entry point; SelectionReportAssertionException as dedicated type
-
-## Recent Decisions (M002/S05)
-
-- D061: S05 verification strategy — contract-level only (grep + test suite)
-- D062: HaveBudgetUtilizationAbove denominator = budget.MaxTokens (not TargetTokens)
-- D063: S05 targets 13 patterns (10 baseline + 3 additions)
-- D064: floating-point threshold comparisons use exact >= / <= with no epsilon
-- D065: predicate type is IncludedItem/ExcludedItem, not raw ContextItem
-- D066: Should() entry point; SelectionReportAssertionChain; SelectionReportAssertionException dedicated type
+- D067: S06 verification strategy — contract-level only (grep + test suite)
+- D068: OTel stage count = 5 Activities (Sort omitted per events.md precedent)
+- D069: GetMarginalItems budget parameter = explicit ContextBudget + slackTokens int
+- D070: Step curve windows type — ordered list youngest-to-oldest, strict `>` comparison
+- D071: Window curve boundary — half-open `[0, maxAge)`, age == maxAge returns 0.0
 
 ## Blockers
 
-- (none)
+- (none — pending human UAT review, not a technical blocker)
+
+## M003 Outlook
+
+M003 will implement all M002-designed features:
+- DecayScorer (R020) — against spec/src/scorers/decay.md
+- Cupel.Testing package (R021) — against spec/src/testing/vocabulary.md
+- OTel bridge companion package (R022) — against spec/src/integrations/opentelemetry.md
+- Budget simulation extension methods — against spec/src/analytics/budget-simulation.md
+- CountQuotaSlice decorator — against .planning/design/count-quota-design.md
+- MetadataTrustScorer — against spec/src/scorers/metadata-trust.md
