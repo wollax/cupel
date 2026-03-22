@@ -39,13 +39,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R043 — Cupel.Testing vocabulary design
 - Class: differentiator
-- Status: active
+- Status: validated
 - Description: Define 10-15 named assertion patterns over `SelectionReport` as a vocabulary spec section: what each assertion checks, tolerance/edge cases, error message format on failure. Output is a spec-ready vocabulary document — no implementation. This is the prerequisite for the Cupel.Testing NuGet package (R021).
 - Why it matters: The testing vocabulary must be designed before implementation begins — shipping a testing package with ambiguous assertion semantics (e.g. "what is high-scoring?" in `PlaceHighScorersAtEdges`) creates an unstable API surface from day one.
 - Source: user (brainstorm March 15 — high-value, design-phase requirement)
 - Primary owning slice: M002/S05
 - Supporting slices: none
-- Validation: unmapped
+- Validation: validated — `spec/src/testing/vocabulary.md` exists with 13 named assertion patterns (≥10 required); each pattern specifies what it asserts, tolerance/edge cases, tie-breaking behavior, and error message format; no undefined terms remain (`grep -ci "\bTBD\b"` → 0; "high-scoring" → 0); `PlaceItemAtEdge` defines "edge" as position 0 or count−1 exactly; `HaveBudgetUtilizationAbove` denominator locked to `budget.MaxTokens`; all predicate-bearing methods use `IncludedItem`/`ExcludedItem` per PD-1; D041 snapshot prohibition honoured with explicit rationale; `ExcludeItemWithBudgetDetails` language asymmetry (.NET flat enum) documented; chapter reachable via `spec/src/SUMMARY.md`; cargo test (35 passed) and dotnet test (583 passed) both green
 - Notes: No FluentAssertions dependency; no snapshot testing (ordering stability not yet guaranteed). Vocabulary design output feeds R021 implementation.
 
 ### R044 — Future features spec chapters (DecayScorer, OTel, budget simulation)
@@ -289,13 +289,13 @@ This file is the explicit capability and coverage contract for the project.
 | R040 | differentiator | validated | M002/S03 | M002/S01 | validated |
 | R041 | quality-attribute | validated | M002/S02 | none | validated |
 | R042 | differentiator | validated | M002/S04 | none | validated |
-| R043 | differentiator | active | M002/S05 | none | unmapped |
+| R043 | differentiator | validated | M002/S05 | none | validated |
 | R044 | quality-attribute | active | M002/S06 | none | unmapped |
 | R045 | quality-attribute | active | M002/S01 | none | unmapped |
 
 ## Coverage Summary
 
-- Active requirements: 5 (R041–R045, all M002)
-- Mapped to slices: 5
-- Validated: 12 (R001–R006, R010–R014, R040)
+- Active requirements: 4 (R042–R045, all M002; R041 validated in S02, R043 validated in S05)
+- Mapped to slices: 4
+- Validated: 13 (R001–R006, R010–R014, R040–R043)
 - Unmapped active requirements: 0

@@ -44,6 +44,10 @@
 - [Test Vector Format](conformance/format.md)
 - [Running the Suite](conformance/running.md)
 
+# Testing
+
+- [Cupel.Testing Vocabulary](testing/vocabulary.md)
+
 # Appendix
 
 - [Changelog](changelog.md)

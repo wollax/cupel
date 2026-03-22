@@ -65,7 +65,7 @@ This milestone is complete only when all are true:
 - [x] **S04: Metadata Convention System Spec** `risk:low` `depends:[]`
   > After this: `spec/src/scorers/metadata-trust.md` exists and is linked from `SUMMARY.md`; `"cupel:<key>"` namespace reserved; `cupel:trust` and `cupel:source-type` conventions specified; `MetadataTrustScorer` spec chapter complete.
 
-- [ ] **S05: Cupel.Testing Vocabulary Design** `risk:medium` `depends:[S01]`
+- [x] **S05: Cupel.Testing Vocabulary Design** `risk:medium` `depends:[S01]`
   > After this: `spec/src/testing/vocabulary.md` defines ≥10 named assertion patterns over `SelectionReport`; each pattern specifies what it asserts, tolerance/edge cases, and error message format; no ambiguous "high-scoring" or similar undefined terms remain.
 
 - [ ] **S06: Future Features Spec Chapters** `risk:medium` `depends:[S01,S03]`
