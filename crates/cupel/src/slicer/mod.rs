@@ -36,10 +36,12 @@
 //! # Ok::<(), cupel::CupelError>(())
 //! ```
 
+mod count_quota;
 mod greedy;
 mod knapsack;
 mod quota;
 
+pub use count_quota::{CountQuotaEntry, CountQuotaSlice, ScarcityBehavior};
 pub use greedy::GreedySlice;
 pub use knapsack::KnapsackSlice;
 pub use quota::{QuotaEntry, QuotaSlice};
@@ -65,4 +67,15 @@ use crate::CupelError;
 pub trait Slicer: Send + Sync {
     /// Selects items from `sorted` that fit within `budget`.
     fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError>;
+
+    /// Returns `true` if this slicer is a [`KnapsackSlice`].
+    ///
+    /// Used by [`CountQuotaSlice`] to reject knapsack inner slicers at construction
+    /// time, since the two-phase count algorithm is incompatible with knapsack's
+    /// global optimization.
+    ///
+    /// The default implementation returns `false`.
+    fn is_knapsack(&self) -> bool {
+        false
+    }
 }

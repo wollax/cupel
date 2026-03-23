@@ -1,0 +1,67 @@
+[test]
+name = "CountQuotaSlice: tag non-exclusivity — require 1 of each of two kinds, 1 multi-kind item satisfies both"
+stage = "slicing"
+slicer = "count_quota"
+
+# Budget: 1000 tokens.
+# Policy: require_count=1 for "critical", require_count=1 for "urgent".
+# NOTE: CountQuotaSlice operates per ContextKind. A ContextItem has one kind.
+# "Non-exclusivity" here means: one item of kind "critical" satisfies the critical
+# requirement, and a separate item of kind "urgent" satisfies the urgent requirement.
+# Both requirements are satisfied independently without either displacing the other.
+#
+# Items:
+#   item-critical (kind="critical", score=0.9, 100t) — satisfies critical require
+#   item-urgent   (kind="urgent",   score=0.8, 100t) — satisfies urgent require
+#   item-extra    (kind="critical", score=0.5, 100t) — extra candidate, passes to Phase 2
+#
+# Phase 1 (Count-Satisfy):
+#   "critical": require 1 → commits item-critical (0.9). satisfied=1=require.
+#   "urgent":   require 1 → commits item-urgent (0.8).   satisfied=1=require.
+#   pre_alloc_tokens = 200. residual budget = 800.
+#
+# Phase 2 (Budget-Distribute): remaining = [item-extra (0.5, 100t)].
+#   GreedySlice selects item-extra (fits in 800t residual).
+#
+# Cap enforcement: cap defaults to require_count (no extra cap configured).
+#   critical: cap=4, count=1 after Phase 1. item-extra: count → 2 <= 4. Pass.
+#
+# Expected: all 3 items selected. No shortfalls. No cap exclusions.
+
+[config]
+inner_slicer = "greedy"
+scarcity_behavior = "degrade"
+
+[[config.entries]]
+kind = "critical"
+require_count = 1
+cap_count = 4
+
+[[config.entries]]
+kind = "urgent"
+require_count = 1
+cap_count = 4
+
+[budget]
+target_tokens = 1000
+
+[[scored_items]]
+content = "item-critical"
+tokens = 100
+score = 0.9
+kind = "critical"
+
+[[scored_items]]
+content = "item-urgent"
+tokens = 100
+score = 0.8
+kind = "urgent"
+
+[[scored_items]]
+content = "item-extra"
+tokens = 100
+score = 0.5
+kind = "critical"
+
+[expected]
+selected_contents = ["item-critical", "item-urgent", "item-extra"]

@@ -268,6 +268,7 @@ impl DiagnosticTraceCollector {
             excluded,
             total_candidates: self.total_candidates,
             total_tokens_considered: self.total_tokens_considered,
+            count_requirement_shortfalls: Vec::new(),
         }
     }
 

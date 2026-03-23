@@ -10,6 +10,26 @@
 
 use crate::model::{ContextBudget, ContextItem};
 
+// ── CountRequirementShortfall ─────────────────────────────────────────────────
+
+/// Records a shortfall when [`crate::CountQuotaSlice`] could not satisfy a `require_count`
+/// constraint due to insufficient candidates.
+///
+/// A non-empty `count_requirement_shortfalls` on [`SelectionReport`] indicates
+/// degraded selection under `ScarcityBehavior::Degrade`. The pipeline continues;
+/// callers should inspect this list to detect unmet count requirements.
+#[non_exhaustive]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct CountRequirementShortfall {
+    /// The context kind that could not be fully satisfied.
+    pub kind: String,
+    /// The configured minimum count that was not met.
+    pub required_count: usize,
+    /// The number of items of this kind that were actually selected (< `required_count`).
+    pub satisfied_count: usize,
+}
+
 // ── PipelineStage ─────────────────────────────────────────────────────────────
 
 /// A stage in the fixed five-stage pipeline.
@@ -174,6 +194,30 @@ pub enum ExclusionReason {
         filter_name: String,
     },
 
+    /// Item's kind exceeded the configured count cap for [`crate::CountQuotaSlice`].
+    ///
+    /// Emitted during Phase 2 of `CountQuotaSlice::slice` when additional candidates
+    /// of a kind would exceed the configured `cap_count`. The `count` field equals the
+    /// cap at the point of exclusion (i.e., `count == cap`).
+    CountCapExceeded {
+        /// The context kind that reached its cap.
+        kind: String,
+        /// The configured maximum item count for this kind.
+        cap: usize,
+        /// The running count of items of this kind already selected when this item was excluded.
+        count: usize,
+    },
+
+    /// All candidates of a kind were exhausted before satisfying `require_count`.
+    ///
+    /// Reserved for use by [`crate::CountQuotaSlice`]. Currently informational — the primary
+    /// mechanism for reporting unmet count requirements is
+    /// [`SelectionReport::count_requirement_shortfalls`].
+    CountRequireCandidatesExhausted {
+        /// The context kind whose candidate pool was exhausted.
+        kind: String,
+    },
+
     /// Unknown variant — present for forward-compatibility with future spec versions.
     ///
     /// Emitted during deserialization when the `reason` field does not match any
@@ -260,6 +304,10 @@ pub struct ExcludedItem {
 /// `total_candidates` equals `included.len() + excluded.len()`.
 /// `total_tokens_considered` equals the sum of `tokens` across all items in
 /// both `included` and `excluded`.
+///
+/// `count_requirement_shortfalls` is populated by [`crate::CountQuotaSlice`] when
+/// scarcity caused a `require_count` to go unmet. An empty list means all
+/// count requirements were fully satisfied.
 #[non_exhaustive]
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
@@ -276,6 +324,14 @@ pub struct SelectionReport {
     pub total_candidates: usize,
     /// Sum of `tokens` across all items in both `included` and `excluded`.
     pub total_tokens_considered: i64,
+    /// Shortfalls recorded by [`crate::CountQuotaSlice`] when a `require_count`
+    /// could not be fully satisfied due to insufficient candidates.
+    ///
+    /// An empty list indicates all count requirements were met (or no
+    /// `CountQuotaSlice` was used in this pipeline run). Populated only
+    /// under `ScarcityBehavior::Degrade`.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub count_requirement_shortfalls: Vec<CountRequirementShortfall>,
 }
 
 #[cfg(feature = "serde")]
@@ -284,13 +340,14 @@ impl<'de> serde::Deserialize<'de> for SelectionReport {
         use serde::Deserialize;
 
         #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
         struct RawSelectionReport {
             events: Vec<TraceEvent>,
             included: Vec<IncludedItem>,
             excluded: Vec<ExcludedItem>,
             total_candidates: usize,
             total_tokens_considered: i64,
+            #[serde(default)]
+            count_requirement_shortfalls: Vec<CountRequirementShortfall>,
         }
 
         let raw = RawSelectionReport::deserialize(deserializer)?;
@@ -309,6 +366,7 @@ impl<'de> serde::Deserialize<'de> for SelectionReport {
             excluded: raw.excluded,
             total_candidates: raw.total_candidates,
             total_tokens_considered: raw.total_tokens_considered,
+            count_requirement_shortfalls: raw.count_requirement_shortfalls,
         })
     }
 }

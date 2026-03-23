@@ -29,5 +29,11 @@ public enum ExclusionReason
 
     /// <summary>Item was excluded by a filter predicate.</summary>
     /// <remarks>Reserved for future use. Not currently emitted by any built-in pipeline stage.</remarks>
-    Filtered
+    Filtered,
+
+    /// <summary>Item was excluded because its kind reached the configured count cap.</summary>
+    CountCapExceeded,
+
+    /// <summary>All candidates of this kind were exhausted before satisfying the required count.</summary>
+    CountRequireCandidatesExhausted
 }

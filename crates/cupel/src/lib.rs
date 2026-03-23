@@ -10,9 +10,9 @@ pub mod scorer;
 pub mod slicer;
 
 pub use diagnostics::{
-    DiagnosticTraceCollector, ExcludedItem, ExclusionReason, IncludedItem, InclusionReason,
-    NullTraceCollector, OverflowEvent, PipelineStage, SelectionReport, TraceCollector,
-    TraceDetailLevel, TraceEvent,
+    CountRequirementShortfall, DiagnosticTraceCollector, ExcludedItem, ExclusionReason,
+    IncludedItem, InclusionReason, NullTraceCollector, OverflowEvent, PipelineStage,
+    SelectionReport, TraceCollector, TraceDetailLevel, TraceEvent,
 };
 pub use error::CupelError;
 pub use model::{
@@ -26,4 +26,7 @@ pub use scorer::{
     PriorityScorer, RecencyScorer, ReflexiveScorer, ScaledScorer, Scorer, SystemTimeProvider,
     TagScorer, TimeProvider,
 };
-pub use slicer::{GreedySlice, KnapsackSlice, QuotaEntry, QuotaSlice, Slicer};
+pub use slicer::{
+    CountQuotaEntry, CountQuotaSlice, GreedySlice, KnapsackSlice,
+    QuotaEntry, QuotaSlice, ScarcityBehavior, Slicer,
+};

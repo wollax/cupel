@@ -31,7 +31,9 @@ public class OverflowEventTests
         await Assert.That(values).Contains(ExclusionReason.NegativeTokens);
         await Assert.That(values).Contains(ExclusionReason.PinnedOverride);
         await Assert.That(values).Contains(ExclusionReason.Filtered);
-        await Assert.That(values.Length).IsEqualTo(8);
+        await Assert.That(values).Contains(ExclusionReason.CountCapExceeded);
+        await Assert.That(values).Contains(ExclusionReason.CountRequireCandidatesExhausted);
+        await Assert.That(values.Length).IsEqualTo(10);
     }
 
     [Test]

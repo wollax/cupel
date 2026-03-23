@@ -60,6 +60,10 @@ impl KnapsackSlice {
 }
 
 impl Slicer for KnapsackSlice {
+    fn is_knapsack(&self) -> bool {
+        true
+    }
+
     fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError> {
         if sorted.is_empty() || budget.target_tokens() <= 0 {
             return Ok(Vec::new());

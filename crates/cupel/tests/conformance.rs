@@ -12,10 +12,10 @@ mod conformance {
 
     use cupel::{
         ChronologicalPlacer, CompositeScorer, ContextItem, ContextItemBuilder, ContextKind,
-        DecayCurve, DecayScorer, FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice,
-        MetadataTrustScorer, Placer, PriorityScorer, QuotaEntry, QuotaSlice, RecencyScorer,
-        ReflexiveScorer, ScaledScorer, ScoredItem, Scorer, Slicer, TagScorer, TimeProvider,
-        UShapedPlacer,
+        CountQuotaEntry, CountQuotaSlice, DecayCurve, DecayScorer, FrequencyScorer, GreedySlice,
+        KindScorer, KnapsackSlice, MetadataTrustScorer, Placer, PriorityScorer, QuotaEntry,
+        QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer, ScarcityBehavior, ScoredItem,
+        Scorer, Slicer, TagScorer, TimeProvider, UShapedPlacer,
     };
 
     struct FixedTimeProvider(DateTime<Utc>);
@@ -350,6 +350,50 @@ mod conformance {
                     .collect();
 
                 Box::new(QuotaSlice::new(quotas, inner).unwrap())
+            }
+            "count_quota" => {
+                let cfg = config.expect("count_quota slicer needs config");
+                let inner_type = cfg
+                    .get("inner_slicer")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("greedy");
+                let inner = build_slicer_by_type(inner_type, None);
+
+                let scarcity_str = cfg
+                    .get("scarcity_behavior")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("degrade");
+                let scarcity = match scarcity_str {
+                    "degrade" => ScarcityBehavior::Degrade,
+                    "throw" => ScarcityBehavior::Throw,
+                    other => panic!("unknown scarcity_behavior: {other}"),
+                };
+
+                let entries_arr = cfg
+                    .get("entries")
+                    .and_then(|v| v.as_array())
+                    .expect("count_quota needs config.entries");
+
+                let entries: Vec<CountQuotaEntry> = entries_arr
+                    .iter()
+                    .map(|e| {
+                        let kind = e["kind"].as_str().expect("entry missing kind");
+                        let require_count = e["require_count"]
+                            .as_integer()
+                            .expect("entry missing require_count") as usize;
+                        let cap_count = e["cap_count"]
+                            .as_integer()
+                            .expect("entry missing cap_count") as usize;
+                        CountQuotaEntry::new(
+                            ContextKind::new(kind).unwrap(),
+                            require_count,
+                            cap_count,
+                        )
+                        .unwrap()
+                    })
+                    .collect();
+
+                Box::new(CountQuotaSlice::new(entries, inner, scarcity).unwrap())
             }
             other => panic!("unknown slicer type: {other}"),
         }
