@@ -1,30 +1,30 @@
 # Kata State
 
-**Active Milestone:** M003 — v1.3 Implementation Sprint
-**Active Slice:** None — all 6 slices complete
+**Active Milestone:** M004 — v1.4 Diagnostics & Simulation Parity
+**Active Slice:** None — planning complete, ready to start S01
 **Active Task:** None
-**Phase:** Completing milestone
-**Slice Branch:** kata/M003/S05 (pending squash-merge to main)
+**Phase:** Ready to plan S01
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Squash-merge S05 to main, then write milestone summary and close M003.
-**Last Updated:** 2026-03-23 (S05 complete)
+**Next Action:** Plan S01 (SelectionReport structural equality) — decompose into tasks, write S01-PLAN.md and task plans, then execute.
+**Last Updated:** 2026-03-23 (M004 roadmap written)
 
-## M003 Progress
+## M004 Progress
 
 | Slice | Title | Status |
 |-------|-------|--------|
-| S01 | DecayScorer — Rust + .NET implementation | ✅ complete |
-| S02 | MetadataTrustScorer — Rust + .NET implementation | ✅ complete |
-| S03 | CountQuotaSlice — Rust + .NET implementation | ✅ complete |
-| S04 | Core analytics + Cupel.Testing package | ✅ complete |
-| S05 | OTel bridge companion package | ✅ complete |
-| S06 | Budget simulation + tiebreaker + spec alignment | ✅ complete |
+| S01 | SelectionReport structural equality | ⏳ not started |
+| S02 | PolicySensitivityReport — fork diagnostic | ⏳ not started |
+| S03 | IQuotaPolicy abstraction + QuotaUtilization | ⏳ not started |
+| S04 | Snapshot testing in Cupel.Testing | ⏳ not started |
+| S05 | Rust budget simulation parity | ⏳ not started |
 
-## Verification Status
+## Recent Decisions
 
-- `dotnet test --configuration Release` — 737/737 passed
-- All S05 verification checks green (seam, OTel package, consumption, full suite)
-- R022 validated
+- D103: SelectionReport equality uses exact f64 comparison (no epsilon)
+- D104: PolicySensitivityReport returns labeled reports + structured diff
+- D105: QuotaUtilization uses IQuotaPolicy abstraction
+- D106: Snapshot testing uses JSON format with CUPEL_UPDATE_SNAPSHOTS=1 env var
+- D107: Rust snapshot testing out of scope (use insta crate)
 
 ## Blockers
 

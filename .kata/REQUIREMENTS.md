@@ -4,6 +4,61 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Active
 
+### R050 — SelectionReport structural equality
+- Class: core-capability
+- Status: active
+- Description: `SelectionReport`, `IncludedItem`, and `ExcludedItem` implement structural equality in both languages — `PartialEq`/`Eq` (Rust) + `IEquatable<T>` (.NET). Exact f64 comparison (no epsilon). Enables programmatic comparison of reports for fork diagnostics and snapshot testing.
+- Why it matters: Without structural equality, PolicySensitivityReport cannot diff reports programmatically, and snapshot testing cannot assert expected vs actual report equivalence. This is a load-bearing prerequisite for R051 and R053.
+- Source: brainstorm (March 21 — M003 candidate list)
+- Primary owning slice: M004/S01
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Rust `SelectionReport` currently derives `Debug, Clone` but not `PartialEq`. .NET uses `sealed record` which gets value equality for free on properties but needs explicit `IEquatable` for nested collections. Exact f64 equality is correct because deterministic pipelines produce identical scores.
+
+### R051 — PolicySensitivityReport — fork diagnostic
+- Class: differentiator
+- Status: active
+- Description: `RunPolicySensitivity(items, [(label, pipeline)])` executes multiple pipeline configurations over the same item set and returns both labeled `SelectionReport`s and a structured diff showing items that moved between included/excluded across variants. Both languages.
+- Why it matters: Developer-time tool for answering "which items swing when I change my pipeline configuration?" — the most common question when tuning context selection policies. Thin orchestration over existing `dry_run`; ~80 lines per language.
+- Source: brainstorm (March 15 — radical survivor; March 21 — promoted to M003-ready)
+- Primary owning slice: M004/S02
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Depends on R050 (equality) for diff computation. `dry_run` is live in both languages. Returns `[(label, SelectionReport)]` plus a structured diff (items that changed status between variants).
+
+### R052 — IQuotaPolicy abstraction + QuotaUtilization
+- Class: core-capability
+- Status: active
+- Description: Extract a shared `IQuotaPolicy` interface from `QuotaSlice` and `CountQuotaSlice` that exposes per-kind quota constraints. Add `QuotaUtilization(report, policy)` extension method returning per-kind utilization data. Both languages.
+- Why it matters: Callers tuning quota configurations need to know how close each kind is to its cap/require thresholds. Without a shared abstraction, each quota type needs its own utilization API.
+- Source: brainstorm (March 21 — `QuotaUtilization` candidate) + user (chose `IQuotaPolicy` over direct `CountQuotaSlice` config)
+- Primary owning slice: M004/S03
+- Supporting slices: none
+- Validation: unmapped
+- Notes: `IQuotaPolicy` must be backward-compatible — `QuotaSlice` and `CountQuotaSlice` implement it without breaking changes. Rust equivalent is a `QuotaPolicy` trait.
+
+### R053 — Snapshot testing in Cupel.Testing
+- Class: quality-attribute
+- Status: active
+- Description: Add snapshot assertion methods to `Wollax.Cupel.Testing` that serialize `SelectionReport` to JSON, compare against stored `.json` snapshot files, and support `CUPEL_UPDATE_SNAPSHOTS=1` environment variable for in-place snapshot updates. .NET only (Rust has `insta` crate).
+- Why it matters: Reduces test authoring cost for callers — instead of writing 10 chained assertions, take a snapshot and diff. Previously blocked on tiebreaker rule (shipped in M003/S06) and structural equality (R050).
+- Source: brainstorm (March 21 — unblocked after tiebreak shipped)
+- Primary owning slice: M004/S04
+- Supporting slices: none
+- Validation: unmapped
+- Notes: JSON format. Tiebreaker rule already shipped (D099). Depends on R050 for meaningful equality comparisons. Snapshot files stored alongside test files. Update workflow via env var, not CLI tool.
+
+### R054 — Rust budget simulation parity
+- Class: core-capability
+- Status: active
+- Description: Implement `get_marginal_items` and `find_min_budget_for` in the Rust `cupel` crate matching the .NET `BudgetSimulationExtensions` API. `find_min_budget_for` returns `Option<i32>`. Monotonicity guard for `QuotaSlice`/`CountQuotaSlice` inner slicers.
+- Why it matters: .NET has budget simulation since M003/S06; Rust callers are second-class without parity. Agent orchestrators using the Rust crate need "what's the minimum budget to include this item?" for adaptive budget strategies.
+- Source: brainstorm (March 21 — Rust parity orphan from M003/S06)
+- Primary owning slice: M004/S05
+- Supporting slices: none
+- Validation: unmapped
+- Notes: .NET implementation in `src/Wollax.Cupel/BudgetSimulationExtensions.cs`. Spec chapter in `spec/src/analytics/budget-simulation.md`. D069 (explicit budget param), D098 (API shape), D099 (tiebreak contract) all locked.
+
 ### R040 — Count-based quota design resolution
 - Class: differentiator
 - Status: validated
@@ -232,7 +287,38 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Deferred
 
-(none — all requirements are either validated or out of scope)
+### R055 — ProfiledPlacer companion package
+- Class: differentiator
+- Status: deferred
+- Description: Caller-provided LLM attention profiles for placement optimization; companion package separate from core
+- Why it matters: Would allow placement to account for model-specific attention patterns instead of the generic U-shaped heuristic
+- Source: brainstorm (March 15 — radical survivor)
+- Primary owning slice: none
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Three blockers unchanged: requires LLM attention statistics data, separate versioning story, and no confirmed demand. Revisit when attention profile data is available.
+
+### R056 — DryRunWithPolicy override
+- Class: core-capability
+- Status: deferred
+- Description: Policy-explicit variant of `dry_run` for fork diagnostic callers who want to test arbitrary pipeline configurations without constructing new Pipeline instances
+- Why it matters: Would simplify PolicySensitivityReport usage — callers wouldn't need to build separate Pipeline objects
+- Source: brainstorm (March 21)
+- Primary owning slice: none
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Defer until R051 (fork diagnostic) proves demand for this convenience API.
+
+### R057 — TimestampCoverageReport split form
+- Class: quality-attribute
+- Status: deferred
+- Description: Split `TimestampCoverage()` into separate Included and Excluded coverage metrics
+- Why it matters: Gives callers finer-grained timestamp coverage insight per selection group
+- Source: brainstorm (March 21)
+- Primary owning slice: none
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Follow-on only if demand observed after M003 analytics ship.
 
 ## Out of Scope
 
@@ -287,6 +373,11 @@ This file is the explicit capability and coverage contract for the project.
 | R020 | core-capability | validated | M003/S01 | M003/S06 | validated |
 | R021 | quality-attribute | validated | M003/S04 | none | validated |
 | R022 | operability | validated | M003/S05 | none | validated |
+| R050 | core-capability | active | M004/S01 | none | unmapped |
+| R051 | differentiator | active | M004/S02 | none | unmapped |
+| R052 | core-capability | active | M004/S03 | none | unmapped |
+| R053 | quality-attribute | active | M004/S04 | none | unmapped |
+| R054 | core-capability | active | M004/S05 | none | unmapped |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
@@ -299,7 +390,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 0
-- Mapped to slices: 0
+- Active requirements: 5 (R050–R054)
+- Mapped to slices: 5 (R050→M004/S01, R051→M004/S02, R052→M004/S03, R053→M004/S04, R054→M004/S05)
 - Validated: 23 (R001–R006, R010–R014, R020–R022, R040–R045)
 - Unmapped active requirements: 0
