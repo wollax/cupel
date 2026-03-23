@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>OpenTelemetry Activity bridge for Wollax.Cupel. Emits cupel.pipeline and cupel.stage.* Activities via System.Diagnostics.ActivitySource — no OpenTelemetry NuGet dependency required.</Description>
+    <Description>OpenTelemetry Activity bridge for Wollax.Cupel. Emits cupel.pipeline and cupel.stage.* Activities via System.Diagnostics.ActivitySource with three verbosity tiers. Depends on the OpenTelemetry SDK for TracerProviderBuilder registration; core Wollax.Cupel remains dependency-free.</Description>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 

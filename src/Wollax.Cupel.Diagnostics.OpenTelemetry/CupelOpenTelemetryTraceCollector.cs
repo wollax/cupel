@@ -155,11 +155,18 @@ public sealed class CupelOpenTelemetryTraceCollector : ITraceCollector, IDisposa
 
         rootActivity?.SetEndTime(rootEnd.UtcDateTime);
         rootActivity?.Stop();
+
+        _stages.Clear();
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// No-op. The underlying <see cref="CupelActivitySource.Source"/> is a process-wide
+    /// static singleton and must not be disposed by individual collector instances.
+    /// This method exists solely to satisfy <see cref="IDisposable"/> so callers can
+    /// use <c>using</c> patterns without risk.
+    /// </summary>
     public void Dispose()
     {
-        CupelActivitySource.Source.Dispose();
+        // Intentionally empty. See CupelActivitySource for lifecycle notes.
     }
 }

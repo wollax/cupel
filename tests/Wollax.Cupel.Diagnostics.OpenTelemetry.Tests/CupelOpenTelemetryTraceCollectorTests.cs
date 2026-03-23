@@ -261,4 +261,80 @@ public class CupelOpenTelemetryTraceCollectorTests
             a.Events.Any(e => e.Name == "cupel.exclusion"));
         await Assert.That(hasExclusionEvents).IsFalse();
     }
+
+    [Test]
+    public async Task Full_NeverEmitsItemContentOrRawMetadata()
+    {
+        // Arrange: items with distinctive content strings that must never appear in traces
+        var captured = new List<Activity>();
+        using var listener = CreateListener(captured);
+
+        var budget = new ContextBudget(1000, 500);
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(budget)
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var items = new[]
+        {
+            CreateItem("SECRET_CONTENT_ALPHA", tokens: 50),
+            CreateItem("SECRET_CONTENT_BETA", tokens: 60),
+        };
+
+        var tracer = new CupelOpenTelemetryTraceCollector(CupelVerbosity.Full);
+        pipeline.Execute(items, tracer);
+        var dryResult = pipeline.DryRun(items);
+        tracer.Complete(dryResult.Report!, budget);
+
+        // Assert: no Activity tag or event tag contains item content
+        foreach (var activity in captured)
+        {
+            foreach (var tag in activity.TagObjects)
+            {
+                var tagValue = tag.Value?.ToString() ?? "";
+                await Assert.That(tagValue.Contains("SECRET_CONTENT_ALPHA", StringComparison.Ordinal)).IsFalse();
+                await Assert.That(tagValue.Contains("SECRET_CONTENT_BETA", StringComparison.Ordinal)).IsFalse();
+            }
+
+            foreach (var evt in activity.Events)
+            {
+                foreach (var tag in evt.Tags)
+                {
+                    var tagValue = tag.Value?.ToString() ?? "";
+                    await Assert.That(tagValue.Contains("SECRET_CONTENT_ALPHA", StringComparison.Ordinal)).IsFalse();
+                    await Assert.That(tagValue.Contains("SECRET_CONTENT_BETA", StringComparison.Ordinal)).IsFalse();
+                }
+            }
+        }
+    }
+
+    [Test]
+    public async Task DoubleComplete_DoesNotEmitDuplicateActivities()
+    {
+        // Arrange
+        var captured = new List<Activity>();
+        using var listener = CreateListener(captured);
+
+        var budget = new ContextBudget(1000, 500);
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithBudget(budget)
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var items = new[] { CreateItem("item1", tokens: 50) };
+
+        var tracer = new CupelOpenTelemetryTraceCollector(CupelVerbosity.StageOnly);
+        pipeline.Execute(items, tracer);
+        var dryResult = pipeline.DryRun(items);
+
+        // Act: call Complete twice
+        tracer.Complete(dryResult.Report!, budget);
+        var countAfterFirst = captured.Count;
+
+        tracer.Complete(dryResult.Report!, budget);
+        var countAfterSecond = captured.Count;
+
+        // Assert: second Complete produces no additional Activities (stages were cleared)
+        await Assert.That(countAfterSecond).IsEqualTo(countAfterFirst);
+    }
 }

@@ -1,6 +1,6 @@
 # Wollax.Cupel.Diagnostics.OpenTelemetry
 
-OpenTelemetry bridge for the [Cupel](https://github.com/wollax/cupel) context-window construction pipeline. Emits structured `System.Diagnostics.Activity` traces from pipeline runs without taking a NuGet dependency on the OpenTelemetry SDK — the companion uses BCL `ActivitySource` exclusively.
+OpenTelemetry bridge for the [Cupel](https://github.com/wollax/cupel) context-window construction pipeline. Emits structured `System.Diagnostics.Activity` traces from pipeline runs with three verbosity tiers. Depends on the OpenTelemetry SDK for `TracerProviderBuilder` registration; the core `Wollax.Cupel` package remains dependency-free.
 
 ## Pre-Stability Disclaimer
 
