@@ -199,14 +199,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R020 — DecayScorer with TimeProvider injection
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Built-in time-decay scorer with injectable TimeProvider for testability; three curve types: Exponential(halfLife), Window(maxAge), Step(windows); mandatory TimeProvider injection per D042; conformance vectors in spec and crate
 - Why it matters: Common use case; RecencyScorer only does ordinal ranking, not true decay curves; time-decay is essential for agent memory scenarios where recency matters in absolute time, not just ordinal position
 - Source: user
 - Primary owning slice: M003/S01
 - Supporting slices: M003/S06
-- Validation: mapped — spec chapter in `spec/src/scorers/decay.md`; implementation target M003/S01
-- Notes: Spec chapter designed in M002/S06 (R044); D042 (mandatory TimeProvider), D047 (Rust trait shape), D070 (Step curve semantics), D071 (Window boundary semantics) all locked
+- Validation: validated — DecayScorer implemented in both Rust (`crates/cupel/src/scorer/decay.rs`) and .NET (`src/Wollax.Cupel/Scoring/DecayScorer.cs`); all three curve types (Exponential, Window, Step) with validated constructors; mandatory TimeProvider injection (Rust trait + .NET System.TimeProvider BCL); 5 conformance vectors in spec/conformance/ and crates/cupel/conformance/ (drift guard diff exits 0); `cargo test --all-targets` → 45+38 passed, 0 failed; `dotnet test` → 663 passed, 0 failed
+- Notes: Spec chapter designed in M002/S06 (R044); D042 (mandatory TimeProvider), D047 (Rust trait shape), D070 (Step curve semantics), D071 (Window boundary semantics) all locked; D075 (millisecond precision), D076 (age clamping), D077 (protected ctor in PublicAPI) established during implementation
 
 ### R021 — Cupel.Testing package
 - Class: quality-attribute
@@ -280,7 +280,7 @@ This file is the explicit capability and coverage contract for the project.
 | R012 | core-capability | validated | M001 phase 23 | none | validated |
 | R013 | quality-attribute | validated | M001 phase 25 | none | validated |
 | R014 | core-capability | validated | M001 phase 24 | none | validated |
-| R020 | core-capability | active | M003/S01 | M003/S06 | mapped |
+| R020 | core-capability | validated | M003/S01 | M003/S06 | validated |
 | R021 | quality-attribute | active | M003/S04 | none | mapped |
 | R022 | operability | active | M003/S05 | none | mapped |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
@@ -295,7 +295,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 3 (R020, R021, R022)
-- Mapped to slices: 3 (all active requirements mapped to M003 slices)
-- Validated: 19 (R001–R006, R010–R014, R040–R045)
+- Active requirements: 2 (R021, R022)
+- Mapped to slices: 2 (all active requirements mapped to M003 slices)
+- Validated: 20 (R001–R006, R010–R014, R020, R040–R045)
 - Unmapped active requirements: 0

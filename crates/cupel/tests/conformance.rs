@@ -12,10 +12,17 @@ mod conformance {
 
     use cupel::{
         ChronologicalPlacer, CompositeScorer, ContextItem, ContextItemBuilder, ContextKind,
-        FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice, Placer, PriorityScorer,
-        QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer, ScoredItem,
-        Scorer, Slicer, TagScorer, UShapedPlacer,
+        DecayCurve, DecayScorer, FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice,
+        Placer, PriorityScorer, QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer,
+        ScaledScorer, ScoredItem, Scorer, Slicer, TagScorer, TimeProvider, UShapedPlacer,
     };
+
+    struct FixedTimeProvider(DateTime<Utc>);
+    impl TimeProvider for FixedTimeProvider {
+        fn now(&self) -> DateTime<Utc> {
+            self.0
+        }
+    }
 
     /// Load a TOML test vector from a path relative to the conformance/required/ directory.
     pub fn load_vector(relative_path: &str) -> Value {
@@ -208,6 +215,71 @@ mod conformance {
                     .expect("scaled needs config.inner_scorer");
                 let inner = build_scorer_by_type(inner_type, None);
                 Box::new(ScaledScorer::new(inner))
+            }
+            "decay" => {
+                let cfg = config.expect("decay scorer needs config");
+
+                let ref_time = parse_toml_datetime(
+                    cfg.get("reference_time")
+                        .expect("decay config missing reference_time"),
+                );
+
+                let null_ts_score = cfg
+                    .get("null_timestamp_score")
+                    .and_then(|v| v.as_float())
+                    .unwrap_or(0.5);
+
+                let curve_cfg = cfg.get("curve").expect("decay config missing curve");
+                let curve_type = curve_cfg["type"]
+                    .as_str()
+                    .expect("decay config.curve missing type");
+
+                let curve = match curve_type {
+                    "exponential" => {
+                        let half_life_secs = curve_cfg["half_life_secs"]
+                            .as_float()
+                            .or_else(|| curve_cfg["half_life_secs"].as_integer().map(|i| i as f64))
+                            .expect("decay curve missing half_life_secs");
+                        let millis = (half_life_secs * 1_000.0) as i64;
+                        DecayCurve::exponential(chrono::Duration::milliseconds(millis)).unwrap()
+                    }
+                    "window" => {
+                        let max_age_secs = curve_cfg["max_age_secs"]
+                            .as_float()
+                            .or_else(|| curve_cfg["max_age_secs"].as_integer().map(|i| i as f64))
+                            .expect("decay curve missing max_age_secs");
+                        let millis = (max_age_secs * 1_000.0) as i64;
+                        DecayCurve::window(chrono::Duration::milliseconds(millis)).unwrap()
+                    }
+                    "step" => {
+                        let windows_arr = curve_cfg
+                            .get("windows")
+                            .and_then(|v| v.as_array())
+                            .expect("decay step curve missing windows");
+                        let windows: Vec<(chrono::Duration, f64)> = windows_arr
+                            .iter()
+                            .map(|w| {
+                                let max_age_secs = w["max_age_secs"]
+                                    .as_float()
+                                    .or_else(|| w["max_age_secs"].as_integer().map(|i| i as f64))
+                                    .expect("step window missing max_age_secs");
+                                let score = w["score"]
+                                    .as_float()
+                                    .or_else(|| w["score"].as_integer().map(|i| i as f64))
+                                    .expect("step window missing score");
+                                let millis = (max_age_secs * 1_000.0) as i64;
+                                (chrono::Duration::milliseconds(millis), score)
+                            })
+                            .collect();
+                        DecayCurve::step(windows).unwrap()
+                    }
+                    other => panic!("unknown decay curve type: {other}"),
+                };
+
+                Box::new(
+                    DecayScorer::new(Box::new(FixedTimeProvider(ref_time)), curve, null_ts_score)
+                        .unwrap(),
+                )
             }
             other => panic!("unknown scorer type: {other}"),
         }

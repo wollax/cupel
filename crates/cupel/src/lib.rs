@@ -22,7 +22,8 @@ pub use model::{
 pub use pipeline::{Pipeline, PipelineBuilder};
 pub use placer::{ChronologicalPlacer, Placer, UShapedPlacer};
 pub use scorer::{
-    CompositeScorer, FrequencyScorer, KindScorer, PriorityScorer, RecencyScorer, ReflexiveScorer,
-    ScaledScorer, Scorer, TagScorer,
+    CompositeScorer, DecayCurve, DecayScorer, FrequencyScorer, KindScorer, PriorityScorer,
+    RecencyScorer, ReflexiveScorer, ScaledScorer, Scorer, SystemTimeProvider, TagScorer,
+    TimeProvider,
 };
 pub use slicer::{GreedySlice, KnapsackSlice, QuotaEntry, QuotaSlice, Slicer};

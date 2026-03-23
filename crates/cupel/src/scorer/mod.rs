@@ -14,6 +14,7 @@
 //! | [`TagScorer`] | Absolute | `tags` | Boost items matching configured tags |
 //! | [`FrequencyScorer`] | Relative | `tags` | Promote items with common themes |
 //! | [`ReflexiveScorer`] | Absolute | `future_relevance_hint` | Pass through external relevance signals |
+//! | [`DecayScorer`] | Absolute | `timestamp` | Decay score by age (exponential, window, or step curve) |
 //! | [`CompositeScorer`] | Weighted avg | child scorers | Combine multiple strategies |
 //! | [`ScaledScorer`] | Min-max norm | inner scorer | Normalize scores to \[0, 1\] |
 //!
@@ -53,6 +54,7 @@
 //! ```
 
 mod composite;
+mod decay;
 mod frequency;
 mod kind;
 mod priority;
@@ -62,6 +64,7 @@ mod scaled;
 mod tag;
 
 pub use composite::CompositeScorer;
+pub use decay::{DecayCurve, DecayScorer, SystemTimeProvider, TimeProvider};
 pub use frequency::FrequencyScorer;
 pub use kind::KindScorer;
 pub use priority::PriorityScorer;

@@ -2,3 +2,17 @@
 Wollax.Cupel.ContextBudget.TotalReserved.get -> int
 Wollax.Cupel.ContextBudget.UnreservedCapacity.get -> int
 Wollax.Cupel.ContextBudget.HasCapacity.get -> bool
+Wollax.Cupel.Scoring.DecayCurve
+Wollax.Cupel.Scoring.DecayCurve.DecayCurve() -> void
+Wollax.Cupel.Scoring.DecayCurve.Exponential
+Wollax.Cupel.Scoring.DecayCurve.Exponential.Exponential(System.TimeSpan halfLife) -> void
+Wollax.Cupel.Scoring.DecayCurve.Exponential.HalfLife.get -> System.TimeSpan
+Wollax.Cupel.Scoring.DecayCurve.Window
+Wollax.Cupel.Scoring.DecayCurve.Window.MaxAge.get -> System.TimeSpan
+Wollax.Cupel.Scoring.DecayCurve.Window.Window(System.TimeSpan maxAge) -> void
+Wollax.Cupel.Scoring.DecayCurve.Step
+Wollax.Cupel.Scoring.DecayCurve.Step.Step(System.Collections.Generic.IReadOnlyList<(System.TimeSpan MaxAge, double Score)>! windows) -> void
+Wollax.Cupel.Scoring.DecayCurve.Step.Windows.get -> System.Collections.Generic.IReadOnlyList<(System.TimeSpan MaxAge, double Score)>!
+Wollax.Cupel.Scoring.DecayScorer
+Wollax.Cupel.Scoring.DecayScorer.DecayScorer(System.TimeProvider! timeProvider, Wollax.Cupel.Scoring.DecayCurve! curve, double nullTimestampScore = 0.5) -> void
+Wollax.Cupel.Scoring.DecayScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double

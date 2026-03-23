@@ -57,4 +57,4 @@ See `.kata/REQUIREMENTS.md` for the explicit capability contract, requirement st
 
 - [x] M001: v1.2 Rust Parity & Quality Hardening — Close diagnostics gap between Rust and .NET, harden API surface, batch quality issues; ship v1.2 (all 7 slices complete; v1.2.0 tag pending manual publish)
 - [x] M002: v1.3 Design Sprint — Resolve deferred design problems (count-based quotas, Cupel.Testing vocabulary, metadata convention system, future features specs) and close spec quality debt; produce spec chapters and design decision records ready for v1.3 implementation (all 6 slices complete, 2026-03-21)
-- [ ] M003: v1.3 Implementation Sprint — Implement all M002-designed features: DecayScorer, MetadataTrustScorer, CountQuotaSlice, core analytics extension methods, budget simulation, Cupel.Testing vocabulary package, and OTel bridge companion package (2026-03-23 — in progress)
+- [ ] M003: v1.3 Implementation Sprint — Implement all M002-designed features: DecayScorer, MetadataTrustScorer, CountQuotaSlice, core analytics extension methods, budget simulation, Cupel.Testing vocabulary package, and OTel bridge companion package (2026-03-23 — S01/DecayScorer complete; S02 next)

@@ -52,7 +52,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: DecayScorer — Rust + .NET implementation** `risk:high` `depends:[]`
+- [x] **S01: DecayScorer — Rust + .NET implementation** `risk:high` `depends:[]`
   > After this: A `DecayScorer` with Exponential, Window, and Step curves can be constructed in both .NET and Rust, injected with a `TimeProvider`/`TimeProvider` for testing, and produces correct scores verified by conformance vectors and unit tests in both languages.
 
 - [ ] **S02: MetadataTrustScorer — Rust + .NET implementation** `risk:medium` `depends:[S01]`
