@@ -2,12 +2,12 @@
 
 **Active Milestone:** M003 — v1.3 Implementation Sprint
 **Active Slice:** S05 — OTel bridge companion package
-**Active Task:** T01 — Create package + test project scaffolding; implement StageOnly tier
-**Phase:** planning complete; ready to execute
-**Slice Branch:** (S05 branch to be created from current branch)
+**Active Task:** T02 — Implement StageAndExclusions + Full tiers; complete test coverage
+**Phase:** executing
+**Slice Branch:** kata/root/M003/S05
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Execute T01 — create `src/Wollax.Cupel.Diagnostics.OpenTelemetry/` package project + test project; implement CupelVerbosity, CupelActivitySource, CupelOpenTelemetryTraceCollector (StageOnly tier); write first TUnit test; update Cupel.slnx
-**Last Updated:** 2026-03-23 (S05 planned — 3 tasks; BCL-only ActivitySource; no OTel.Api NuGet; two-phase Complete() design; D097–D100 added)
+**Next Action:** Execute T02 — extend Complete() with exclusion events (StageAndExclusions) and inclusion events (Full); add ExclusionReason→PipelineStage mapping; add tests for all 3 tiers + null-report path
+**Last Updated:** 2026-03-23 (T01 complete — package scaffold + StageOnly tier + TUnit test passing; static readonly SourceName; PublicAPI.Unshipped.txt populated in T01)
 
 ## M003 Overview
 
@@ -19,7 +19,7 @@
 | S02 | MetadataTrustScorer (Rust + .NET) | medium | ✅ complete |
 | S03 | CountQuotaSlice (Rust + .NET) | high | ✅ complete |
 | S04 | Core analytics + Cupel.Testing package | medium | ✅ complete |
-| S05 | OTel bridge companion package | high | 🔄 planned |
+| S05 | OTel bridge companion package | high | 🔄 executing (T01 done) |
 | S06 | Budget simulation + tiebreaker + spec alignment | low | — |
 
 ## Key Decisions Established in M003
