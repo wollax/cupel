@@ -6,120 +6,112 @@
 ## UAT Type
 
 - UAT mode: artifact-driven
-- Why this mode is sufficient: All observable outcomes are mechanically checkable via `dotnet test`, `dotnet build`, `ls`, and `grep`. The OTel integration is verified by a TUnit test harness that registers a real `ActivityListener` and captures real `System.Diagnostics.Activity` objects — no live OTel backend (Jaeger, Honeycomb, Aspire) is required to confirm correct attribute names and event structure. Human gut-check adds no signal beyond what the test harness already confirms.
+- Why this mode is sufficient: the slice is a library/package integration with no UI and no long-running service. Its success criteria are fully observable through real `System.Diagnostics.Activity` capture in a TUnit harness, build/package checks, and dependency-boundary checks. A live Jaeger/Honeycomb/Aspire backend would only test caller-owned exporter wiring, not the Cupel bridge contract itself.
 
 ## Preconditions
 
+- Working directory: `/Users/wollax/Git/personal/cupel`
 - .NET 10 SDK installed
-- `cd /Users/wollax/Git/personal/cupel`
-- `dotnet restore` has been run (or solution is already restored)
+- Solution restore succeeds (`dotnet restore` already done or can be rerun)
+- The repo contains the packed artifact in `./nupkg/` and the copied local-feed artifact in `./tests/Wollax.Cupel.ConsumptionTests/packages/`
 
 ## Smoke Test
 
 ```bash
-dotnet test --project tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/
+rtk proxy dotnet test --project tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests.csproj
 ```
 
-Expected: `total: 4, failed: 0, succeeded: 4`
+**Expected:** `total: 4, failed: 0, succeeded: 4`
 
 ## Test Cases
 
-### 1. All 3 verbosity tiers produce correct Activities and Events
+### 1. All OTel verbosity tiers emit the expected Activity/Event structure
 
-```bash
-dotnet test --project tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/ -v n
-```
+1. Run:
+   ```bash
+   rtk proxy dotnet test --project tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests.csproj -v n
+   ```
+2. Confirm these tests all pass:
+   - `StageOnly_ProducesRootAndFiveStageActivities`
+   - `StageAndExclusions_ProducesExclusionEvents`
+   - `Full_ProducesIncludedItemEvents`
+   - `NullReport_GracefulDegradation`
+3. **Expected:** the harness captures a root `cupel.pipeline` Activity, five child stage Activities, exclusion events in StageAndExclusions, included-item events in Full, and no crash when `Complete(null, budget)` is used.
 
-1. Run the command above.
-2. **Expected:** 4 tests pass — `StageOnly_ProducesRootAndFiveStageActivities`, `StageAndExclusions_ProducesExclusionEvents`, `Full_ProducesIncludedItemEvents`, `NullReport_GracefulDegradation`
+### 2. Full solution remains green after the slice lands
 
-### 2. Full solution remains green
-
-```bash
-dotnet test
-```
-
-1. Run the full solution test.
+1. Run:
+   ```bash
+   rtk proxy dotnet test
+   ```
 2. **Expected:** `total: 712, failed: 0, succeeded: 712`
 
-### 3. Package artifact exists
+### 3. Package artifact is present and consumable from the local feed
 
-```bash
-ls ./nupkg/Wollax.Cupel.Diagnostics.OpenTelemetry.*.nupkg
-```
+1. Run:
+   ```bash
+   rtk ls ./nupkg/Wollax.Cupel.Diagnostics.OpenTelemetry.*.nupkg
+   ```
+2. Run:
+   ```bash
+   rtk ls ./tests/Wollax.Cupel.ConsumptionTests/packages/Wollax.Cupel.Diagnostics.OpenTelemetry.*.nupkg
+   ```
+3. **Expected:** both commands list the same package version, proving pack output exists and was copied into the local-feed directory.
 
-1. Run the command.
-2. **Expected:** File listed (e.g. `Wollax.Cupel.Diagnostics.OpenTelemetry.0.0.0-alpha.0.78.nupkg`)
+### 4. Public API and dependency boundaries remain correct
 
-### 4. ActivitySource name matches spec
-
-```bash
-grep '"Wollax.Cupel"' src/Wollax.Cupel.Diagnostics.OpenTelemetry/CupelActivitySource.cs
-```
-
-1. Run the command.
-2. **Expected:** Line containing `SourceName = "Wollax.Cupel"` is printed
-
-### 5. PublicAPI compliance — zero RS0016 errors
-
-```bash
-dotnet build src/Wollax.Cupel.Diagnostics.OpenTelemetry/Wollax.Cupel.Diagnostics.OpenTelemetry.csproj 2>&1 | grep "RS0016" | wc -l
-```
-
-1. Run the command.
-2. **Expected:** `0`
-
-### 6. Core package independence — no OTel reference in Wollax.Cupel
-
-```bash
-grep -r "OpenTelemetry" src/Wollax.Cupel/Wollax.Cupel.csproj && echo "VIOLATION" || echo "OK"
-```
-
-1. Run the command.
-2. **Expected:** `OK`
+1. Run:
+   ```bash
+   rtk proxy dotnet build src/Wollax.Cupel.Diagnostics.OpenTelemetry/Wollax.Cupel.Diagnostics.OpenTelemetry.csproj 2>&1 | grep "RS0016" | wc -l
+   ```
+2. Run:
+   ```bash
+   rtk grep '"Wollax.Cupel"' src/Wollax.Cupel.Diagnostics.OpenTelemetry/CupelActivitySource.cs
+   ```
+3. Run:
+   ```bash
+   rtk grep -r "OpenTelemetry" src/Wollax.Cupel/Wollax.Cupel.csproj && echo VIOLATION || echo OK
+   ```
+4. **Expected:** `0`, then a `SourceName = "Wollax.Cupel"` match, then `OK`.
 
 ## Edge Cases
 
-### Null report with Full verbosity — no crash
+### Null report with Full verbosity
 
-```bash
-dotnet test --project tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/ --filter "NullReport"
-```
+1. Run:
+   ```bash
+   rtk proxy dotnet test --project tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests.csproj --filter "NullReport"
+   ```
+2. **Expected:** the test passes; Activities are still produced, but per-item events are skipped gracefully.
 
-1. Run the filter.
-2. **Expected:** Test passes — stage Activities are produced; no exception thrown; per-item events silently skipped
+### Parallel-test contamination regression
 
-### Local feed populated for consumption tests
-
-```bash
-ls ./tests/Wollax.Cupel.ConsumptionTests/packages/Wollax.Cupel.Diagnostics.OpenTelemetry.*.nupkg
-```
-
-1. Run the command.
-2. **Expected:** File listed
+1. Run the OTel test project normally.
+2. If failures appear with inflated Activity counts or the wrong verbosity observed, inspect `tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/CupelOpenTelemetryTraceCollectorTests.cs`.
+3. **Expected:** the test class remains marked `[NotInParallel]`; otherwise global `ActivityListener` state can cross-contaminate cases.
 
 ## Failure Signals
 
-- Any `RS0016` errors in `dotnet build` output → `PublicAPI.Unshipped.txt` is missing a public member
-- `total: 0` in OTel test run → test binary not built; run `dotnet build` first
-- `ActivityListener` captures 0 Activities → `CupelActivitySource.Source` is not being started; check that `AddSource("Wollax.Cupel")` is in the listener's `ShouldListenTo` filter
-- `cupel.exclusion` Events missing on StageAndExclusions test → `AddEvent` may have been called after `Stop()`; check ordering in `CupelOpenTelemetryTraceCollector.cs`
-- Tests seeing unexpected Activity counts or wrong verbosity → parallel test contamination; verify `[NotInParallel]` is still on the test class
-- `VIOLATION` from core independence check → OTel NuGet dep leaked into `Wollax.Cupel.csproj`
+- `RS0016` count > 0 → `PublicAPI.Unshipped.txt` is out of sync with the compiled public surface
+- OTel test project reports fewer than 4 tests or any failure → the bridge contract regressed
+- No `.nupkg` in `./nupkg/` or local feed → package packing/copy step regressed
+- Core project check prints `VIOLATION` → OpenTelemetry dependencies leaked into `Wollax.Cupel`
+- StageAndExclusions or Full tests observe zero events when Activities exist → event emission order likely regressed (`AddEvent()` after `Stop()` is silently dropped)
+- Unexpected cross-test Activity counts → `[NotInParallel]` was removed or bypassed
 
 ## Requirements Proved By This UAT
 
-- R022 (OpenTelemetry bridge) — `Wollax.Cupel.Diagnostics.OpenTelemetry` companion package produces real `System.Diagnostics.Activity` objects at all 3 verbosity tiers (StageOnly, StageAndExclusions, Full) with exact `cupel.*` attribute names matching spec; verified by TUnit test harness with real `ActivityListener`; BCL-only dependency confirmed; cardinality warning and DryRun requirement present in README; nupkg artifact present
+- R022 — proves that `Wollax.Cupel.Diagnostics.OpenTelemetry` exists as a companion package, emits real BCL `Activity`/`ActivityEvent` output at all three verbosity tiers with the spec-defined `cupel.*` attribute names, keeps the core package free of OTel dependencies, and produces a packable local-feed artifact
 
 ## Not Proven By This UAT
 
-- Live OTel backend integration (Jaeger, Honeycomb, Aspire, OTLP collector) — verified by test harness only; real export to a backend is caller's concern
-- `AddCupelInstrumentation()` fluent extension on `TracerProviderBuilder` — not implemented in this slice; callers use `AddSource(CupelActivitySource.SourceName)` directly
-- Consumption test via `PackageReference` from local feed — nupkg copied but not exercised with a consumption test in this slice
-- Release pipeline publish (`release-dotnet.yml`) — pack/publish workflow not updated in this slice (deferred)
+- Live export into a specific backend such as Jaeger, Honeycomb, Aspire, or OTLP collector
+- An `AddCupelInstrumentation()` convenience extension on `TracerProviderBuilder` (not implemented in this slice)
+- Release workflow publishing changes in `release-dotnet.yml`
+- End-to-end installation by an external sample app outside this repo; this UAT proves package creation and local-feed availability, not a separate consumer repository
 
 ## Notes for Tester
 
-- The test harness requires `[NotInParallel]` on the test class because `ActivitySource.AddActivityListener` is process-global. If you run tests interactively in an IDE that uses parallel test execution, you may see spurious failures from cross-contamination between test cases. Run tests via `dotnet test` (sequential per class) for reliable results.
-- `Complete(report, budget)` emits Activities retroactively using calculated start times based on `UtcNow - sum(stage durations)`. Activities appear in OTel backends with correct relative timing but the absolute start time is an approximation.
-- `CupelActivitySource.Source` is static and shared across all `CupelOpenTelemetryTraceCollector` instances. Only dispose when you are certain all tracing for the process is complete.
+- The bridge is intentionally BCL-only. Consumers integrate by adding/listening to `CupelActivitySource.SourceName`; no `OpenTelemetry.Api` dependency is required in the Cupel package itself.
+- The test harness uses `Execute(items, tracer)` plus `DryRun(items)` before `Complete(report, budget)`. That pattern is intentional because `DryRun()` creates its own internal diagnostic collector and cannot directly populate the OTel bridge buffer.
+- `Dispose()` tears down a shared static `ActivitySource`. In normal one-shot usage that is fine, but long-lived multi-instance scenarios should coordinate disposal carefully.

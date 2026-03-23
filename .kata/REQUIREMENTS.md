@@ -221,14 +221,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R022 — OpenTelemetry bridge
 - Class: operability
-- Status: active
+- Status: validated
 - Description: Bridge ITraceCollector to ActivitySource for OTel integration; new `Wollax.Cupel.Diagnostics.OpenTelemetry` NuGet companion package; 3 verbosity tiers (StageOnly, StageAndExclusions, Full); exact `cupel.*` attribute set; cardinality warning in README
 - Why it matters: Production observability without custom logging; callers using Jaeger/Honeycomb/Aspire can instrument Cupel pipelines without writing their own bridge
 - Source: user
 - Primary owning slice: M003/S05
 - Supporting slices: none
-- Validation: mapped — verbosity spec in `spec/src/integrations/opentelemetry.md`; implementation target M003/S05
-- Notes: Must be a companion package, not core — zero-dep constraint on core; D043 (cupel.* namespace, pre-stable), D068 (5 Activities, Sort omitted) all locked
+- Validation: validated — `Wollax.Cupel.Diagnostics.OpenTelemetry` implemented at `src/Wollax.Cupel.Diagnostics.OpenTelemetry/`; `CupelOpenTelemetryTraceCollector` emits real `System.Diagnostics.Activity` root + 5 stage Activities and `cupel.exclusion` / `cupel.item.included` events across all 3 verbosity tiers; `dotnet test --project tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests.csproj` → 4 passed; `dotnet test` → 712 passed; `dotnet pack` artifact present in `./nupkg/` and copied to `tests/Wollax.Cupel.ConsumptionTests/packages/`; `dotnet build ... | grep RS0016 | wc -l` → 0; `Wollax.Cupel` core has no OpenTelemetry reference
+- Notes: Must be a companion package, not core — zero-dep constraint on core; D043 (cupel.* namespace, pre-stable), D068 (5 Activities, Sort omitted), D097–D105 (implementation/runtime invariants) all locked
 
 ## Out of Scope
 
@@ -282,7 +282,7 @@ This file is the explicit capability and coverage contract for the project.
 | R014 | core-capability | validated | M001 phase 24 | none | validated |
 | R020 | core-capability | validated | M003/S01 | M003/S06 | validated |
 | R021 | quality-attribute | validated | M003/S04 | none | validated |
-| R022 | operability | active | M003/S05 | none | mapped |
+| R022 | operability | validated | M003/S05 | none | validated |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
@@ -295,7 +295,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 1 (R022)
-- Mapped to slices: 1 (all active requirements mapped to M003 slices)
-- Validated: 21 (R001–R006, R010–R014, R020–R021, R040–R045)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 22 (R001–R006, R010–R014, R020–R022, R040–R045)
 - Unmapped active requirements: 0
