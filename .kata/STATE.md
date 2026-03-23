@@ -2,12 +2,12 @@
 
 **Active Milestone:** M003 — v1.3 Implementation Sprint
 **Active Slice:** S05 — OTel bridge companion package
-**Active Task:** T02 — Implement StageAndExclusions + Full tiers; complete test coverage
+**Active Task:** T03 — Populate PublicAPI, write README, pack, wire solution
 **Phase:** executing
 **Slice Branch:** kata/root/M003/S05
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Execute T02 — extend Complete() with exclusion events (StageAndExclusions) and inclusion events (Full); add ExclusionReason→PipelineStage mapping; add tests for all 3 tiers + null-report path
-**Last Updated:** 2026-03-23 (T01 complete — package scaffold + StageOnly tier + TUnit test passing; static readonly SourceName; PublicAPI.Unshipped.txt populated in T01)
+**Next Action:** Execute T03 — populate PublicAPI.Unshipped.txt, write README, dotnet pack, copy to ./packages, full solution green
+**Last Updated:** 2026-03-23 (T02 complete — StageAndExclusions + Full tiers in Complete(); MapReasonToStage; 4 TUnit tests passing with [NotInParallel]; 712/712 solution tests green)
 
 ## M003 Overview
 
