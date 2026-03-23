@@ -1,4 +1,3 @@
-use std::any::Any;
 use std::collections::HashMap;
 
 use crate::CupelError;
@@ -68,9 +67,5 @@ impl KindScorer {
 impl Scorer for KindScorer {
     fn score(&self, item: &ContextItem, _all_items: &[ContextItem]) -> f64 {
         self.weights.get(item.kind()).copied().unwrap_or(0.0)
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
     }
 }

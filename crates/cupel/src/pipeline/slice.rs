@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::model::{ContextBudget, ContextItem, ScoredItem};
 use crate::slicer::Slicer;
+use crate::CupelError;
 
 /// Computes the effective budget after accounting for pinned items and output reserve.
 ///
@@ -30,7 +31,7 @@ pub(crate) fn slice_items(
     budget: &ContextBudget,
     pinned_tokens: i64,
     slicer: &dyn Slicer,
-) -> Vec<ContextItem> {
+) -> Result<Vec<ContextItem>, CupelError> {
     let adjusted = compute_effective_budget(budget, pinned_tokens);
     slicer.slice(sorted, &adjusted)
 }

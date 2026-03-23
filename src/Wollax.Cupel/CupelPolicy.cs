@@ -131,7 +131,7 @@ public sealed class CupelPolicy
         if (quotas is { Count: > 0 } && slicerType == SlicerType.Stream)
         {
             throw new ArgumentException(
-                "Quotas cannot be combined with SlicerType.Stream. QuotaSlice wraps ISlicer (sync) and cannot wrap StreamSlice (IAsyncSlicer).",
+                "Quotas cannot be combined with SlicerType.Stream. Stream slicing is asynchronous and does not support synchronous quota wrapping.",
                 nameof(quotas));
         }
 

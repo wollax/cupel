@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use crate::model::ContextItem;
 use crate::scorer::Scorer;
 
@@ -35,10 +33,6 @@ impl ScaledScorer {
         Self { inner }
     }
 
-    /// Returns a reference to the inner scorer (for cycle detection).
-    pub(crate) fn inner(&self) -> &dyn Scorer {
-        self.inner.as_ref()
-    }
 }
 
 impl Scorer for ScaledScorer {
@@ -75,14 +69,50 @@ impl Scorer for ScaledScorer {
 
         (raw_score - min) / (max - min)
     }
-
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
 }
 
 impl std::fmt::Debug for ScaledScorer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ScaledScorer").finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::ContextItemBuilder;
+
+    /// A scorer that always returns the same constant value.
+    struct ConstantScorer(f64);
+    impl Scorer for ConstantScorer {
+        fn score(&self, _item: &ContextItem, _all_items: &[ContextItem]) -> f64 {
+            self.0
+        }
+    }
+
+    #[test]
+    fn scaled_scorer_degenerate_all_equal_scores() {
+        // All inner scores equal → max == min → returns 0.5
+        let scorer = ScaledScorer::new(Box::new(ConstantScorer(0.7)));
+        let items: Vec<ContextItem> = (0..3)
+            .map(|i| ContextItemBuilder::new(i.to_string().as_str(), 5).build().unwrap())
+            .collect();
+
+        for item in &items {
+            let score = scorer.score(item, &items);
+            assert_eq!(score, 0.5, "expected 0.5 for degenerate all-equal case");
+        }
+    }
+
+    #[test]
+    fn scaled_scorer_item_not_in_list() {
+        // Item not found via reference identity → returns 0.5
+        let scorer = ScaledScorer::new(Box::new(ConstantScorer(0.5)));
+        let other = ContextItemBuilder::new("other", 5).build().unwrap();
+        let external = ContextItemBuilder::new("external", 5).build().unwrap();
+
+        // `external` is not in the slice passed to score()
+        let score = scorer.score(&external, &[other]);
+        assert_eq!(score, 0.5);
     }
 }

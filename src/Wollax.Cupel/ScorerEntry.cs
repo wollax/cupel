@@ -86,7 +86,7 @@ public sealed class ScorerEntry
         if (type != ScorerType.Scaled && innerScorer is not null)
         {
             throw new ArgumentException(
-                "InnerScorer must be null when Type is not Scaled.", nameof(innerScorer));
+                "InnerScorer is only valid for ScorerType.Scaled. Remove it or change the type to Scaled.", nameof(innerScorer));
         }
 
         Type = type;

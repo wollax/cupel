@@ -9,13 +9,11 @@ on:
         type: boolean
         default: false
 
-permissions:
-  contents: write
-  id-token: write
-
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,10 +34,10 @@ jobs:
         run: cargo fmt --check --manifest-path crates/cupel/Cargo.toml
 
       - name: Clippy (default features)
-        run: cargo clippy --manifest-path crates/cupel/Cargo.toml -- -D warnings
+        run: cargo clippy --all-targets --manifest-path crates/cupel/Cargo.toml -- -D warnings
 
       - name: Clippy (serde)
-        run: cargo clippy --features serde --manifest-path crates/cupel/Cargo.toml -- -D warnings
+        run: cargo clippy --features serde --all-targets --manifest-path crates/cupel/Cargo.toml -- -D warnings
 
       - name: Test (default features)
         run: cargo test --manifest-path crates/cupel/Cargo.toml
@@ -57,6 +55,9 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     needs: test
     if: ${{ inputs.dry-run != true }}
     environment: release

@@ -36,7 +36,7 @@ flowchart TD
 
 ## Summary
 
-| Type | Role | Defined in |
+| Type | Role | Spec page |
 |------|------|------------|
 | `TraceCollector` | Observer contract for pipeline instrumentation | [TraceCollector](diagnostics/trace-collector.md) |
 | `TraceEvent` | Structured record of a single pipeline observation | [Events](diagnostics/events.md) |

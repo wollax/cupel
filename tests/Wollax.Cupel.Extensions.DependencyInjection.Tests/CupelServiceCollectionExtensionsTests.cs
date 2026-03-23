@@ -284,17 +284,4 @@ public class CupelServiceCollectionExtensionsTests
         await Assert.That(ReferenceEquals(pipeline1.AsyncSlicer, pipeline2.AsyncSlicer)).IsTrue();
     }
 
-    [Test]
-    public async Task AddCupelTracing_IsTransient_DifferentInstancesPerResolve()
-    {
-        var services = new ServiceCollection();
-
-        services.AddCupelTracing();
-
-        var provider = services.BuildServiceProvider();
-        var collector1 = provider.GetRequiredService<ITraceCollector>();
-        var collector2 = provider.GetRequiredService<ITraceCollector>();
-
-        await Assert.That(ReferenceEquals(collector1, collector2)).IsFalse();
-    }
 }

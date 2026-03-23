@@ -53,7 +53,7 @@ Value density measures how much relevance score an item provides per token consu
 density = score / tokens
 ```
 
-- Items with `tokens = 0` have density `MAX_FLOAT` (the largest representable finite double), ensuring they sort first and are always included.
+- Items with `tokens = 0` have density `MAX_FLOAT` (the largest representable finite double), ensuring they sort first and are always included. Among zero-token items, all share the same density `MAX_FLOAT`. The sort tiebreak is index only — score values are irrelevant for zero-token items.
 - Items with high scores and low token counts are preferred over items with moderate scores and high token counts.
 
 ## Sort Stability
@@ -82,6 +82,7 @@ Since the input is pre-sorted by score descending (from the [Sort](../pipeline/s
 ## Conformance Notes
 
 - The density for zero-token items MUST be treated as the maximum possible value, ensuring they are always sorted first and always included.
+- Among zero-token items, tiebreaking is by original index only; score values MUST NOT affect the relative order of zero-token items.
 - The sort MUST be stable with index-based tiebreaking. Given items A (density 0.5, index 0) and B (density 0.5, index 3), A must precede B.
 - Items that do not fit (`tokens > remaining`) are skipped, not deferred. The algorithm makes a single pass through the sorted densities — it does not backtrack or attempt smaller items after skipping a large one.
 - The output list order is determined by the greedy iteration order (density-descending), **not** the original input order. The [Place](../pipeline/place.md) stage handles final ordering.

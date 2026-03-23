@@ -1,4 +1,3 @@
-use std::any::Any;
 use std::collections::HashMap;
 
 use crate::CupelError;
@@ -25,7 +24,7 @@ use crate::scorer::Scorer;
 ///     .tags(vec!["important".to_string()])
 ///     .build()?;
 ///
-/// let score = scorer.score(&item, &[item.clone()]);
+/// let score = scorer.score(&item, std::slice::from_ref(&item));
 /// assert!((score - 0.6666).abs() < 0.01); // 1.0 / 1.5
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
@@ -78,8 +77,40 @@ impl Scorer for TagScorer {
 
         f64::min(matched_sum / self.total_weight, 1.0)
     }
+}
 
-    fn as_any(&self) -> &dyn Any {
-        self
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::ContextItemBuilder;
+
+    #[test]
+    fn tag_scorer_zero_total_weight() {
+        // All weights are 0.0 → total_weight == 0.0 → score always returns 0.0
+        let weights = HashMap::from([
+            ("important".to_string(), 0.0),
+            ("recent".to_string(), 0.0),
+        ]);
+        let scorer = TagScorer::new(weights).unwrap();
+        let item = ContextItemBuilder::new("item", 5)
+            .tags(vec!["important".to_string()])
+            .build()
+            .unwrap();
+        let score = scorer.score(&item, std::slice::from_ref(&item));
+        assert_eq!(score, 0.0);
+    }
+
+    #[test]
+    fn tag_scorer_case_sensitive_no_match() {
+        // Weight configured for "Important" (capital I); item has "important" (lowercase)
+        // Tag key lookup is case-sensitive → no match → score == 0.0
+        let weights = HashMap::from([("Important".to_string(), 1.0)]);
+        let scorer = TagScorer::new(weights).unwrap();
+        let item = ContextItemBuilder::new("item", 5)
+            .tags(vec!["important".to_string()])
+            .build()
+            .unwrap();
+        let score = scorer.score(&item, std::slice::from_ref(&item));
+        assert_eq!(score, 0.0);
     }
 }

@@ -1,0 +1,40 @@
+[test]
+name = "DecayScorer Step: age 6h falls into second window (24h boundary), scores 0.5"
+stage = "scoring"
+scorer = "decay"
+
+# referenceTime = 2025-01-01T12:00:00Z
+# item timestamp  = 2025-01-01T06:00:00Z  →  age = 6 h
+# windows = [(1h, 0.9), (24h, 0.5), (72h, 0.1)]
+# 1h > 6h?  No  →  skip
+# 24h > 6h? Yes →  return 0.5
+
+[[items]]
+content = "six-hour-item"
+tokens = 100
+timestamp = 2025-01-01T06:00:00Z
+
+[[expected]]
+content = "six-hour-item"
+score_approx = 0.5
+
+[tolerance]
+score_epsilon = 1e-9
+
+[config]
+reference_time = 2025-01-01T12:00:00Z
+
+[config.curve]
+type = "step"
+
+[[config.curve.windows]]
+max_age_secs = 3600.0
+score = 0.9
+
+[[config.curve.windows]]
+max_age_secs = 86400.0
+score = 0.5
+
+[[config.curve.windows]]
+max_age_secs = 259200.0
+score = 0.1

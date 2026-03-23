@@ -1,6 +1,10 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Wollax.Cupel;
+using Wollax.Cupel.Diagnostics;
+using Wollax.Cupel.Diagnostics.OpenTelemetry;
 using Wollax.Cupel.Json;
+using Wollax.Cupel.Testing;
 using Wollax.Cupel.Tiktoken;
 
 #pragma warning disable CUPEL001 // Chat preset is experimental
@@ -97,5 +101,70 @@ public class ConsumptionTests
 
         await Assert.That(counted.Tokens).IsGreaterThan(0);
         await Assert.That(counted.Content).IsEqualTo(item.Content);
+    }
+
+    [Test]
+    public async Task OpenTelemetry_Package_Emits_Activities_Via_ActivityListener()
+    {
+        // Arrange: register listener for the canonical source name
+        var captured = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == CupelActivitySource.SourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => captured.Add(activity),
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        var budget = new ContextBudget(maxTokens: 4096, targetTokens: 3072);
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithPolicy(CupelPresets.Chat())
+            .WithBudget(budget)
+            .Build();
+
+        var items = new[]
+        {
+            new ContextItem { Content = "Hello", Tokens = 3, Kind = ContextKind.Message, Source = ContextSource.Chat },
+        };
+
+        var tracer = new CupelOpenTelemetryTraceCollector(CupelVerbosity.StageOnly);
+        pipeline.Execute(items, tracer);
+        var dryResult = pipeline.DryRun(items);
+        tracer.Complete(dryResult.Report!, budget);
+
+        // Assert: root pipeline Activity was captured
+        var root = captured.FirstOrDefault(a => a.OperationName == "cupel.pipeline");
+        await Assert.That(root).IsNotNull();
+
+        // Assert: at least one stage Activity
+        var stages = captured.Where(a => a.OperationName.StartsWith("cupel.stage.", StringComparison.Ordinal)).ToList();
+        await Assert.That(stages.Count).IsGreaterThan(0);
+    }
+
+    [Test]
+    public void Testing_Package_Should_Extension_Compiles_And_Works()
+    {
+        var report = new SelectionReport
+        {
+            Events = [],
+            Included =
+            [
+                new IncludedItem
+                {
+                    Item = new ContextItem { Content = "hello", Tokens = 10, Kind = ContextKind.Message },
+                    Score = 0.9,
+                    Reason = InclusionReason.Scored,
+                },
+            ],
+            Excluded = [],
+            TotalCandidates = 1,
+            TotalTokensConsidered = 10,
+        };
+
+        // Smoke test: Should() extension is callable and fluent chain works
+        report.Should()
+            .IncludeItemWithKind(ContextKind.Message)
+            .HaveAtLeastNExclusions(0)
+            .HaveKindCoverageCount(1);
     }
 }

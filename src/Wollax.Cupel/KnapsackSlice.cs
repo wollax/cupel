@@ -115,6 +115,16 @@ public sealed class KnapsackSlice : ISlicer
             discretizedWeights[i] = (weights[i] + _bucketSize - 1) / _bucketSize;
         }
 
+        // Guard against DP table sizes that would cause OOM
+        var cellCount = (long)candidateCount * (capacity + 1);
+        if (cellCount > 50_000_000L)
+        {
+            throw new InvalidOperationException(
+                $"KnapsackSlice DP table exceeds the 50,000,000-cell limit. " +
+                $"Reduce the number of candidates or increase BucketSize. " +
+                $"(candidates={candidateCount}, capacity={capacity}, cells={cellCount})");
+        }
+
         // Rent DP array from pool
         var dpArray = ArrayPool<int>.Shared.Rent(capacity + 1);
         // Flat boolean keep table for correct reconstruction from 1D DP array

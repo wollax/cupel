@@ -4,17 +4,17 @@ namespace Wollax.Cupel.Diagnostics;
 public enum PipelineStage
 {
     /// <summary>Classification stage.</summary>
-    Classify,
+    Classify = 0,
 
     /// <summary>Scoring stage.</summary>
-    Score,
+    Score = 1,
 
     /// <summary>Deduplication stage.</summary>
-    Deduplicate,
+    Deduplicate = 2,
 
     /// <summary>Budget-constrained selection stage.</summary>
-    Slice,
+    Slice = 3,
 
     /// <summary>Final ordering stage.</summary>
-    Place
+    Place = 4
 }

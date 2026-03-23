@@ -28,7 +28,7 @@ use crate::slicer::Slicer;
 /// ];
 ///
 /// let budget = ContextBudget::new(1000, 150, 0, HashMap::new(), 0.0)?;
-/// let selected = slicer.slice(&items, &budget);
+/// let selected = slicer.slice(&items, &budget)?;
 ///
 /// assert_eq!(selected.len(), 1);
 /// # Ok::<(), cupel::CupelError>(())
@@ -60,9 +60,13 @@ impl KnapsackSlice {
 }
 
 impl Slicer for KnapsackSlice {
-    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Vec<ContextItem> {
+    fn is_knapsack(&self) -> bool {
+        true
+    }
+
+    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError> {
         if sorted.is_empty() || budget.target_tokens() <= 0 {
-            return Vec::new();
+            return Ok(Vec::new());
         }
 
         // Step 1: Pre-filter zero-token items (always included)
@@ -78,7 +82,7 @@ impl Slicer for KnapsackSlice {
         }
 
         if candidates.is_empty() {
-            return zero_token_items;
+            return Ok(zero_token_items);
         }
 
         let n = candidates.len();
@@ -96,7 +100,13 @@ impl Slicer for KnapsackSlice {
         // Step 3: Discretize capacity and weights
         let capacity = (budget.target_tokens() / self.bucket_size) as usize;
         if capacity == 0 {
-            return zero_token_items;
+            return Ok(zero_token_items);
+        }
+
+        // Guard: reject table sizes that would cause OOM
+        let cells = (capacity as u64) * (n as u64);
+        if cells > 50_000_000 {
+            return Err(CupelError::TableTooLarge { candidates: n, capacity, cells });
         }
 
         let discretized_weights: Vec<usize> = weights
@@ -104,9 +114,10 @@ impl Slicer for KnapsackSlice {
             .map(|&w| ((w + self.bucket_size - 1) / self.bucket_size) as usize)
             .collect();
 
-        // Step 4: DP with 1D value array + 2D keep table
+        // Step 4: DP with 1D value array + flat keep table
         let mut dp = vec![0i64; capacity + 1];
-        let mut keep = vec![vec![false; capacity + 1]; n];
+        let stride = capacity + 1;
+        let mut keep = vec![false; n * stride];
 
         for i in 0..n {
             let dw = discretized_weights[i];
@@ -115,7 +126,7 @@ impl Slicer for KnapsackSlice {
                 let with_item = dp[w - dw] + dv;
                 if with_item > dp[w] {
                     dp[w] = with_item;
-                    keep[i][w] = true;
+                    keep[i * stride + w] = true;
                 }
             }
         }
@@ -125,7 +136,7 @@ impl Slicer for KnapsackSlice {
         let mut remaining_capacity = capacity;
 
         for i in (0..n).rev() {
-            if keep[i][remaining_capacity] {
+            if keep[i * stride + remaining_capacity] {
                 selected.push(candidates[i].item.clone());
                 remaining_capacity -= discretized_weights[i];
             }
@@ -134,6 +145,46 @@ impl Slicer for KnapsackSlice {
         // Step 6: Combine zero-token items with selected items
         let mut result = zero_token_items;
         result.extend(selected);
-        result
+        Ok(result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use crate::model::{ContextBudget, ScoredItem};
+    use crate::{ContextItemBuilder, CupelError};
+
+    use super::KnapsackSlice;
+    use crate::slicer::Slicer;
+
+    #[test]
+    fn knapsack_table_too_large() {
+        // bucket_size=1 means capacity = target_tokens directly
+        let slicer = KnapsackSlice::new(1).expect("bucket_size=1 is valid");
+
+        // 1001 items × capacity 50_001 = 50_051_001 > 50_000_000
+        let items: Vec<ScoredItem> = (0..1001)
+            .map(|i| ScoredItem {
+                item: ContextItemBuilder::new(format!("item-{i}"), 1)
+                    .build()
+                    .expect("valid item"),
+                score: 0.5,
+            })
+            .collect();
+
+        let budget = ContextBudget::new(100_000, 50_001, 0, HashMap::new(), 0.0)
+            .expect("valid budget");
+
+        let result = slicer.slice(&items, &budget);
+        match result {
+            Err(CupelError::TableTooLarge { candidates, capacity, cells }) => {
+                assert_eq!(candidates, 1001);
+                assert_eq!(capacity, 50_001);
+                assert!(cells > 50_000_000, "cells={cells} should exceed limit");
+            }
+            other => panic!("expected Err(TableTooLarge), got {other:?}"),
+        }
     }
 }

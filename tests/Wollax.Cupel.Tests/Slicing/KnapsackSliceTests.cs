@@ -281,4 +281,90 @@ public class KnapsackSliceTests
         await Assert.That(() => new KnapsackSlice(bucketSize: -1))
             .ThrowsExactly<ArgumentOutOfRangeException>();
     }
+
+    // ── DP table size guard tests ────────────────────────────────────────────
+
+    [Test]
+    public async Task DpTableGuard_AtExactLimit_Passes()
+    {
+        // 5000 candidates × (9999 + 1) = 50,000,000 cells — condition is >, so this passes
+        var slicer = new KnapsackSlice(bucketSize: 1);
+        var scored = new List<ScoredItem>();
+        for (var i = 0; i < 5000; i++)
+        {
+            scored.Add(CreateScored(CreateItem($"item{i}", 1), 0.5));
+        }
+        // targetTokens=9999 → capacity=9999 → cells = 5000 × 10000 = 50,000,000
+        var budget = new ContextBudget(maxTokens: 20000, targetTokens: 9999);
+
+        // Should not throw
+        var result = slicer.Slice(scored, budget, NullTraceCollector.Instance);
+        await Assert.That(result).IsNotNull();
+    }
+
+    [Test]
+    public async Task DpTableGuard_OneAboveLimit_Throws()
+    {
+        // 5000 candidates × (10000 + 1) = 50,005,000 cells — exceeds 50M
+        var slicer = new KnapsackSlice(bucketSize: 1);
+        var scored = new List<ScoredItem>();
+        for (var i = 0; i < 5000; i++)
+        {
+            scored.Add(CreateScored(CreateItem($"item{i}", 1), 0.5));
+        }
+        // targetTokens=10000 → capacity=10000 → cells = 5000 × 10001 = 50,005,000
+        var budget = new ContextBudget(maxTokens: 20000, targetTokens: 10000);
+
+        await Assert.That(() => slicer.Slice(scored, budget, NullTraceCollector.Instance))
+            .ThrowsExactly<InvalidOperationException>();
+    }
+
+    [Test]
+    public async Task DpTableGuard_ClearlyOverLimit_Throws()
+    {
+        // 10000 candidates × (5000 + 1) = 50,010,000 cells — clearly over 50M
+        var slicer = new KnapsackSlice(bucketSize: 1);
+        var scored = new List<ScoredItem>();
+        for (var i = 0; i < 10000; i++)
+        {
+            scored.Add(CreateScored(CreateItem($"item{i}", 1), 0.5));
+        }
+        // targetTokens=5000 → capacity=5000 → cells = 10000 × 5001 = 50,010,000
+        var budget = new ContextBudget(maxTokens: 10000, targetTokens: 5000);
+
+        await Assert.That(() => slicer.Slice(scored, budget, NullTraceCollector.Instance))
+            .ThrowsExactly<InvalidOperationException>();
+    }
+
+    // ── Negative-token items silent-skip test ────────────────────────────────
+
+    [Test]
+    public async Task NegativeTokenItems_SilentlyExcluded()
+    {
+        // Items with Tokens < 0 must be silently filtered — not included in result, no crash
+        var positiveItem = CreateItem("positive", 10);
+        var negativeItem1 = CreateItem("negative1", -5);
+        var negativeItem2 = CreateItem("negative2", -100);
+        var scored = new List<ScoredItem>
+        {
+            CreateScored(positiveItem, 0.9),
+            CreateScored(negativeItem1, 0.8),
+            CreateScored(negativeItem2, 0.7),
+        };
+        var budget = new ContextBudget(maxTokens: 100, targetTokens: 50);
+
+        // Should not throw; negative-token items must not appear in result
+        var result = _slicer.Slice(scored, budget, NullTraceCollector.Instance);
+
+        await Assert.That(result.Count).IsEqualTo(1);
+        await Assert.That(result[0]).IsEqualTo(positiveItem);
+
+        var containsNegative = false;
+        for (var i = 0; i < result.Count; i++)
+        {
+            if (ReferenceEquals(result[i], negativeItem1) || ReferenceEquals(result[i], negativeItem2))
+                containsNegative = true;
+        }
+        await Assert.That(containsNegative).IsFalse();
+    }
 }

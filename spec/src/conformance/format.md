@@ -91,7 +91,7 @@ Slicing vectors test slicer algorithms with pre-scored input.
 
 ### Set Comparison
 
-Slicer output is compared as a **set** — the order of items in `selected_contents` does not matter. An implementation passes if the set of selected item contents exactly matches the expected set. This is because slicers select items but do not determine presentation order (that is the placer's responsibility).
+Slicer output is compared as a **set** — the order of items in `selected_contents` does not matter. An implementation passes if the set of selected item contents exactly matches the expected set. This is because slicers select items but do not determine presentation order (that is the placer's responsibility). This applies to all slicers including QuotaSlice — ordering is always the placer's responsibility, not the slicer's.
 
 ## Placing Vectors
 

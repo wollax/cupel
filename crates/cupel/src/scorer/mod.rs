@@ -14,6 +14,8 @@
 //! | [`TagScorer`] | Absolute | `tags` | Boost items matching configured tags |
 //! | [`FrequencyScorer`] | Relative | `tags` | Promote items with common themes |
 //! | [`ReflexiveScorer`] | Absolute | `future_relevance_hint` | Pass through external relevance signals |
+//! | [`DecayScorer`] | Absolute | `timestamp` | Decay score by age (exponential, window, or step curve) |
+//! | [`MetadataTrustScorer`] | Absolute | `metadata["cupel:trust"]` | Read trust score from item metadata |
 //! | [`CompositeScorer`] | Weighted avg | child scorers | Combine multiple strategies |
 //! | [`ScaledScorer`] | Min-max norm | inner scorer | Normalize scores to \[0, 1\] |
 //!
@@ -53,8 +55,10 @@
 //! ```
 
 mod composite;
+mod decay;
 mod frequency;
 mod kind;
+mod metadata_trust;
 mod priority;
 mod recency;
 mod reflexive;
@@ -62,15 +66,15 @@ mod scaled;
 mod tag;
 
 pub use composite::CompositeScorer;
+pub use decay::{DecayCurve, DecayScorer, SystemTimeProvider, TimeProvider};
 pub use frequency::FrequencyScorer;
 pub use kind::KindScorer;
+pub use metadata_trust::MetadataTrustScorer;
 pub use priority::PriorityScorer;
 pub use recency::RecencyScorer;
 pub use reflexive::ReflexiveScorer;
 pub use scaled::ScaledScorer;
 pub use tag::TagScorer;
-
-use std::any::Any;
 
 use crate::model::ContextItem;
 
@@ -96,11 +100,7 @@ use crate::model::ContextItem;
 /// assert!(hi > lo);
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
-pub trait Scorer: Any + Send + Sync {
+pub trait Scorer: Send + Sync {
     /// Computes a relevance score for `item` given the full list of scoreable items.
     fn score(&self, item: &ContextItem, all_items: &[ContextItem]) -> f64;
-
-    /// Returns `self` as `&dyn Any` for downcasting (used by cycle detection).
-    #[doc(hidden)]
-    fn as_any(&self) -> &dyn Any;
 }

@@ -29,22 +29,25 @@
 //! ];
 //!
 //! let budget = ContextBudget::new(1000, 200, 0, HashMap::new(), 0.0)?;
-//! let selected = GreedySlice.slice(&items, &budget);
+//! let selected = GreedySlice.slice(&items, &budget)?;
 //!
 //! assert_eq!(selected.len(), 1);
 //! assert_eq!(selected[0].content(), "important");
 //! # Ok::<(), cupel::CupelError>(())
 //! ```
 
+mod count_quota;
 mod greedy;
 mod knapsack;
 mod quota;
 
+pub use count_quota::{CountQuotaEntry, CountQuotaSlice, ScarcityBehavior};
 pub use greedy::GreedySlice;
 pub use knapsack::KnapsackSlice;
 pub use quota::{QuotaEntry, QuotaSlice};
 
 use crate::model::{ContextBudget, ContextItem, ScoredItem};
+use crate::CupelError;
 
 /// A slicer selects items from a sorted list to fit within a token budget.
 ///
@@ -63,5 +66,16 @@ use crate::model::{ContextBudget, ContextItem, ScoredItem};
 /// ```
 pub trait Slicer: Send + Sync {
     /// Selects items from `sorted` that fit within `budget`.
-    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Vec<ContextItem>;
+    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError>;
+
+    /// Returns `true` if this slicer is a [`KnapsackSlice`].
+    ///
+    /// Used by [`CountQuotaSlice`] to reject knapsack inner slicers at construction
+    /// time, since the two-phase count algorithm is incompatible with knapsack's
+    /// global optimization.
+    ///
+    /// The default implementation returns `false`.
+    fn is_knapsack(&self) -> bool {
+        false
+    }
 }

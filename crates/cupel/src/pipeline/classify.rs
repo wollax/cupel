@@ -1,20 +1,26 @@
 use crate::CupelError;
 use crate::model::{ContextBudget, ContextItem};
 
+/// Result type for [`classify`]: `(pinned, scoreable, negative_token_items)`.
+type ClassifyResult = Result<(Vec<ContextItem>, Vec<ContextItem>, Vec<ContextItem>), CupelError>;
+
 /// Partitions input items into pinned and scoreable lists, excluding invalid items.
 ///
-/// Items with `tokens < 0` are excluded (checked before pinned status).
+/// Items with `tokens < 0` are excluded (checked before pinned status) and
+/// returned as the third tuple element so callers can record them.
 /// Validates that pinned items fit within `maxTokens - outputReserve`.
 pub(crate) fn classify(
     items: &[ContextItem],
     budget: &ContextBudget,
-) -> Result<(Vec<ContextItem>, Vec<ContextItem>), CupelError> {
+) -> ClassifyResult {
     let mut pinned = Vec::new();
     let mut scoreable = Vec::new();
+    let mut neg_items = Vec::new();
 
     for item in items {
         // Negative-token check BEFORE pinned check
         if item.tokens() < 0 {
+            neg_items.push(item.clone());
             continue;
         }
         if item.pinned() {
@@ -35,5 +41,5 @@ pub(crate) fn classify(
         });
     }
 
-    Ok((pinned, scoreable))
+    Ok((pinned, scoreable, neg_items))
 }

@@ -33,5 +33,5 @@ public enum ScorerType
 
     /// <summary>Wraps another scorer and normalizes its output to [0, 1].</summary>
     [JsonStringEnumMemberName("scaled")]
-    Scaled
+    Scaled = 6
 }

@@ -20,7 +20,7 @@ The pipeline calls `is_enabled` before constructing event payloads. When `is_ena
 
 A singleton instance is recommended but not required — callers that need a disabled collector can use any `NullTraceCollector` instance.
 
-**Rationale:** The null collector ensures zero overhead when diagnostics are disabled. Because `is_enabled` returns `false`, no event payloads are allocated and no buffers are touched. The cost of a disabled pipeline run is exactly one boolean check per instrumentation point.
+See [Null-Path Guarantee](../diagnostics.md#null-path-guarantee) for the rationale and implementation contract.
 
 ## DiagnosticTraceCollector
 
@@ -52,15 +52,15 @@ After the pipeline run completes, the caller extracts a `SelectionReport` from t
 
 **Rejected alternative:** A continuous verbosity integer — discrete levels are more meaningful to callers and prevent ambiguous intermediate values where behavior would be undefined.
 
-## Observer Callback
-
-Implementations may support an optional observer callback that fires synchronously on each recorded event. The spec defines this as a capability, not a mechanism — implementations choose how to expose the callback (function pointer, closure, delegate, trait object, etc.).
-
-**Rationale:** Synchronous firing ensures events are observable in real time, enabling streaming diagnostic use cases. The callback mechanism is left to implementations because callback abstractions differ fundamentally across languages and concurrency models. The spec prescribes the observable behavior (synchronous, per-event) without constraining the API surface.
-
 ## Conformance Notes
 
 - Implementations MUST provide both a null (disabled) and a diagnostic (enabled) collector.
 - The null collector MUST return `false` from `is_enabled` and MUST NOT allocate or buffer when `record_stage_event` or `record_item_event` are called.
 - `record_item_event` MUST be gated by the configured `detail_level`. When `detail_level` is `Stage`, item events MUST be discarded without recording.
 - Implementations MUST preserve event insertion order in the accumulated event list.
+
+## Observer Callback (Optional — MAY)
+
+Implementations may support an optional observer callback that fires synchronously on each recorded event. The spec defines this as a capability, not a mechanism — implementations choose how to expose the callback (function pointer, closure, delegate, trait object, etc.).
+
+**Rationale:** Synchronous firing ensures events are observable in real time, enabling streaming diagnostic use cases. The callback mechanism is left to implementations because callback abstractions differ fundamentally across languages and concurrency models. The spec prescribes the observable behavior (synchronous, per-event) without constraining the API surface.

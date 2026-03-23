@@ -377,4 +377,22 @@ public class QuotaSliceTests
         // Both kinds have 500 candidate tokens each, so roughly equal share of unassigned
         await Assert.That(docTokens).IsGreaterThan(0);
     }
+
+    [Test]
+    public async Task QuotaSlice_NullSlicer_ThrowsArgumentNull()
+    {
+        var quotas = new QuotaBuilder()
+            .Require(ContextKind.Message, 50)
+            .Build();
+
+        await Assert.That(() => new QuotaSlice(null!, quotas))
+            .ThrowsExactly<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task QuotaSlice_NullQuotas_ThrowsArgumentNull()
+    {
+        await Assert.That(() => new QuotaSlice(new GreedySlice(), null!))
+            .ThrowsExactly<ArgumentNullException>();
+    }
 }

@@ -1,0 +1,26 @@
+[test]
+name = "DecayScorer: null timestamp returns nullTimestampScore"
+stage = "scoring"
+scorer = "decay"
+
+# referenceTime = 2025-01-01T12:00:00Z
+# item has no timestamp → scorer returns nullTimestampScore = 0.5
+
+[[items]]
+content = "no-timestamp-item"
+tokens = 100
+
+[[expected]]
+content = "no-timestamp-item"
+score_approx = 0.5
+
+[tolerance]
+score_epsilon = 1e-9
+
+[config]
+reference_time = 2025-01-01T12:00:00Z
+null_timestamp_score = 0.5
+
+[config.curve]
+type = "exponential"
+half_life_secs = 86400.0

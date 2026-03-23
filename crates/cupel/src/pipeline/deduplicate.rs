@@ -4,12 +4,18 @@ use crate::model::ScoredItem;
 
 /// Removes items with duplicate content, keeping the highest-scoring instance.
 ///
+/// Returns a `(survivors, excluded)` tuple. `excluded` contains the removed
+/// duplicates so callers can record them for diagnostics.
+///
 /// Uses byte-exact ordinal comparison (no Unicode normalization, no case folding).
 /// When scores are equal, the item with the lower original index wins.
-/// If deduplication is disabled, returns the input unchanged.
-pub(crate) fn deduplicate(scored: Vec<ScoredItem>, enabled: bool) -> Vec<ScoredItem> {
+/// If deduplication is disabled, returns the input unchanged with an empty excluded list.
+pub(crate) fn deduplicate(
+    scored: Vec<ScoredItem>,
+    enabled: bool,
+) -> (Vec<ScoredItem>, Vec<ScoredItem>) {
     if !enabled || scored.is_empty() {
-        return scored;
+        return (scored, vec![]);
     }
 
     // Map: content string -> index of best item
@@ -30,11 +36,14 @@ pub(crate) fn deduplicate(scored: Vec<ScoredItem>, enabled: bool) -> Vec<ScoredI
         }
     }
 
-    // Collect survivors in original order
-    scored
+    // Split into survivors (in original order) and excluded
+    let (survivors, excluded): (Vec<_>, Vec<_>) = scored
         .into_iter()
         .enumerate()
-        .filter(|(i, si)| best_by_content.get(si.item.content()) == Some(i))
-        .map(|(_, si)| si)
-        .collect()
+        .partition(|(i, si)| best_by_content.get(si.item.content()) == Some(i));
+
+    (
+        survivors.into_iter().map(|(_, si)| si).collect(),
+        excluded.into_iter().map(|(_, si)| si).collect(),
+    )
 }

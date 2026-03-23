@@ -88,7 +88,7 @@ public static class CupelServiceCollectionExtensions
                 tempPipeline.Placer,
                 tempPipeline.AsyncSlicer,
                 tempPipeline.DeduplicationEnabled,
-                tempPipeline.OverflowStrategyValue);
+                tempPipeline.OverflowStrategy);
         });
 
         // Register transient pipeline — new instance per resolve, wrapping singleton components.

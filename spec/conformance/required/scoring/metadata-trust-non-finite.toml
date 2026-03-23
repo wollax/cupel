@@ -1,0 +1,20 @@
+[test]
+name = "MetadataTrustScorer: cupel:trust value is NaN → score equals default_score"
+stage = "scoring"
+scorer = "metadata_trust"
+
+# NaN parses as Ok(f64::NAN) — the is_finite() guard must fire after the parse call
+[[items]]
+content = "nan-trust-item"
+tokens = 10
+metadata = { "cupel:trust" = "NaN" }
+
+[[expected]]
+content = "nan-trust-item"
+score_approx = 0.5
+
+[tolerance]
+score_epsilon = 1e-9
+
+[config]
+default_score = 0.5

@@ -32,11 +32,13 @@ These defaults reflect a common heuristic: system prompts and memories are typic
 KIND-SCORE(item, allItems, weights):
     // weights is a map of ContextKind -> float64
 
-    if weights contains item.kind:    // case-insensitive lookup
+    if weights contains item.kind:    // ContextKind equality is case-insensitive (see enumerations.md)
         return weights[item.kind]
     else:
         return 0.0
 ```
+
+Case-insensitivity is a property of `ContextKind` equality as defined in [Enumerations](../data-model/enumerations.md#contextkind), not an ad-hoc behavior of the weight dictionary.
 
 ## Construction Validation
 

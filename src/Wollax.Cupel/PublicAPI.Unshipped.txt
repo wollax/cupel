@@ -2,3 +2,48 @@
 Wollax.Cupel.ContextBudget.TotalReserved.get -> int
 Wollax.Cupel.ContextBudget.UnreservedCapacity.get -> int
 Wollax.Cupel.ContextBudget.HasCapacity.get -> bool
+Wollax.Cupel.Scoring.DecayCurve
+Wollax.Cupel.Scoring.DecayCurve.DecayCurve() -> void
+Wollax.Cupel.Scoring.DecayCurve.Exponential
+Wollax.Cupel.Scoring.DecayCurve.Exponential.Exponential(System.TimeSpan halfLife) -> void
+Wollax.Cupel.Scoring.DecayCurve.Exponential.HalfLife.get -> System.TimeSpan
+Wollax.Cupel.Scoring.DecayCurve.Window
+Wollax.Cupel.Scoring.DecayCurve.Window.MaxAge.get -> System.TimeSpan
+Wollax.Cupel.Scoring.DecayCurve.Window.Window(System.TimeSpan maxAge) -> void
+Wollax.Cupel.Scoring.DecayCurve.Step
+Wollax.Cupel.Scoring.DecayCurve.Step.Step(System.Collections.Generic.IReadOnlyList<(System.TimeSpan MaxAge, double Score)>! windows) -> void
+Wollax.Cupel.Scoring.DecayCurve.Step.Windows.get -> System.Collections.Generic.IReadOnlyList<(System.TimeSpan MaxAge, double Score)>!
+Wollax.Cupel.Scoring.DecayScorer
+Wollax.Cupel.Scoring.DecayScorer.DecayScorer(System.TimeProvider! timeProvider, Wollax.Cupel.Scoring.DecayCurve! curve, double nullTimestampScore = 0.5) -> void
+Wollax.Cupel.Scoring.DecayScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.MetadataTrustScorer
+Wollax.Cupel.Scoring.MetadataTrustScorer.MetadataTrustScorer(double defaultScore = 0.5) -> void
+Wollax.Cupel.Scoring.MetadataTrustScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Diagnostics.CountRequirementShortfall
+Wollax.Cupel.Diagnostics.CountRequirementShortfall.CountRequirementShortfall(Wollax.Cupel.ContextKind! Kind, int RequiredCount, int SatisfiedCount) -> void
+Wollax.Cupel.Diagnostics.CountRequirementShortfall.Kind.get -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.Diagnostics.CountRequirementShortfall.Kind.init -> void
+Wollax.Cupel.Diagnostics.CountRequirementShortfall.RequiredCount.get -> int
+Wollax.Cupel.Diagnostics.CountRequirementShortfall.RequiredCount.init -> void
+Wollax.Cupel.Diagnostics.CountRequirementShortfall.SatisfiedCount.get -> int
+Wollax.Cupel.Diagnostics.CountRequirementShortfall.SatisfiedCount.init -> void
+Wollax.Cupel.Diagnostics.ExclusionReason.CountCapExceeded = 8 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.ExclusionReason.CountRequireCandidatesExhausted = 9 -> Wollax.Cupel.Diagnostics.ExclusionReason
+Wollax.Cupel.Diagnostics.SelectionReport.CountRequirementShortfalls.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.CountRequirementShortfall!>!
+Wollax.Cupel.Diagnostics.SelectionReport.CountRequirementShortfalls.init -> void
+Wollax.Cupel.Slicing.ScarcityBehavior
+Wollax.Cupel.Slicing.ScarcityBehavior.Degrade = 0 -> Wollax.Cupel.Slicing.ScarcityBehavior
+Wollax.Cupel.Slicing.ScarcityBehavior.Throw = 1 -> Wollax.Cupel.Slicing.ScarcityBehavior
+Wollax.Cupel.Slicing.CountQuotaEntry
+Wollax.Cupel.Slicing.CountQuotaEntry.CountQuotaEntry(Wollax.Cupel.ContextKind! kind, int requireCount, int capCount) -> void
+Wollax.Cupel.Slicing.CountQuotaEntry.Kind.get -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.Slicing.CountQuotaEntry.RequireCount.get -> int
+Wollax.Cupel.Slicing.CountQuotaEntry.CapCount.get -> int
+Wollax.Cupel.Slicing.CountQuotaSlice
+Wollax.Cupel.Slicing.CountQuotaSlice.CountQuotaSlice(Wollax.Cupel.ISlicer! innerSlicer, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.CountQuotaEntry!>! entries, Wollax.Cupel.Slicing.ScarcityBehavior scarcity = Wollax.Cupel.Slicing.ScarcityBehavior.Degrade) -> void
+Wollax.Cupel.Slicing.CountQuotaSlice.LastShortfalls.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.CountRequirementShortfall!>!
+Wollax.Cupel.Slicing.CountQuotaSlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.Diagnostics.SelectionReportExtensions
+static Wollax.Cupel.Diagnostics.SelectionReportExtensions.BudgetUtilization(this Wollax.Cupel.Diagnostics.SelectionReport! report, Wollax.Cupel.ContextBudget! budget) -> double
+static Wollax.Cupel.Diagnostics.SelectionReportExtensions.KindDiversity(this Wollax.Cupel.Diagnostics.SelectionReport! report) -> int
+static Wollax.Cupel.Diagnostics.SelectionReportExtensions.TimestampCoverage(this Wollax.Cupel.Diagnostics.SelectionReport! report) -> double

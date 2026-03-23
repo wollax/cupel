@@ -1,0 +1,62 @@
+[test]
+name = "CountQuotaSlice: combined require+cap — require_count=2, cap_count=2, 4 candidates; 2 selected, 2 excluded"
+stage = "slicing"
+slicer = "count_quota"
+
+# Budget: 1000 tokens. Each item = 100 tokens.
+# Policy: require_count=2, cap_count=2 for kind "tool".
+#
+# Phase 1 (Count-Satisfy): commits top-2 by score → tool-a (0.9) + tool-b (0.7).
+#   satisfied_count = 2 = require_count → no shortfall.
+#   pre_alloc_tokens = 200. residual budget = 800.
+#
+# Phase 2 (Budget-Distribute): remaining = [tool-c (0.6, 100t), tool-d (0.4, 100t)].
+#   GreedySlice selects tool-c (0.6) + tool-d (0.4) — both fit in 800t residual.
+#   Inner slice returns: [tool-c, tool-d].
+#
+# Cap enforcement: selected_count["tool"] = 2 (from Phase 1). cap = 2.
+#   tool-c: count=2 >= cap=2 → excluded.
+#   tool-d: count=2 >= cap=2 → excluded.
+#
+# Expected: 2 items selected (tool-a, tool-b). shortfall_count = 0. cap_excluded_count = 2.
+
+[config]
+inner_slicer = "greedy"
+scarcity_behavior = "degrade"
+
+[[config.entries]]
+kind = "tool"
+require_count = 2
+cap_count = 2
+
+[budget]
+target_tokens = 1000
+
+[[scored_items]]
+content = "tool-a"
+tokens = 100
+score = 0.9
+kind = "tool"
+
+[[scored_items]]
+content = "tool-b"
+tokens = 100
+score = 0.7
+kind = "tool"
+
+[[scored_items]]
+content = "tool-c"
+tokens = 100
+score = 0.6
+kind = "tool"
+
+[[scored_items]]
+content = "tool-d"
+tokens = 100
+score = 0.4
+kind = "tool"
+
+[expected]
+selected_contents = ["tool-a", "tool-b"]
+shortfall_count = 0
+cap_excluded_count = 2

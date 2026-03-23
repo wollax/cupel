@@ -12,10 +12,18 @@ mod conformance {
 
     use cupel::{
         ChronologicalPlacer, CompositeScorer, ContextItem, ContextItemBuilder, ContextKind,
-        FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice, Placer, PriorityScorer,
-        QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer, ScoredItem, Scorer,
-        Slicer, TagScorer, UShapedPlacer,
+        CountQuotaEntry, CountQuotaSlice, DecayCurve, DecayScorer, FrequencyScorer, GreedySlice,
+        KindScorer, KnapsackSlice, MetadataTrustScorer, Placer, PriorityScorer, QuotaEntry,
+        QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer, ScarcityBehavior, ScoredItem,
+        Scorer, Slicer, TagScorer, TimeProvider, UShapedPlacer,
     };
+
+    struct FixedTimeProvider(DateTime<Utc>);
+    impl TimeProvider for FixedTimeProvider {
+        fn now(&self) -> DateTime<Utc> {
+            self.0
+        }
+    }
 
     /// Load a TOML test vector from a path relative to the conformance/required/ directory.
     pub fn load_vector(relative_path: &str) -> Value {
@@ -83,6 +91,16 @@ mod conformance {
 
                 if let Some(pinned) = item.get("pinned").and_then(|v| v.as_bool()) {
                     builder = builder.pinned(pinned);
+                }
+
+                if let Some(meta_table) = item.get("metadata").and_then(|v| v.as_table()) {
+                    let map: HashMap<String, String> = meta_table
+                        .iter()
+                        .filter_map(|(k, v)| v.as_str().map(|s| (k.clone(), s.to_owned())))
+                        .collect();
+                    if !map.is_empty() {
+                        builder = builder.metadata(map);
+                    }
                 }
 
                 builder.build().expect("failed to build ContextItem")
@@ -209,6 +227,78 @@ mod conformance {
                 let inner = build_scorer_by_type(inner_type, None);
                 Box::new(ScaledScorer::new(inner))
             }
+            "decay" => {
+                let cfg = config.expect("decay scorer needs config");
+
+                let ref_time = parse_toml_datetime(
+                    cfg.get("reference_time")
+                        .expect("decay config missing reference_time"),
+                );
+
+                let null_ts_score = cfg
+                    .get("null_timestamp_score")
+                    .and_then(|v| v.as_float())
+                    .unwrap_or(0.5);
+
+                let curve_cfg = cfg.get("curve").expect("decay config missing curve");
+                let curve_type = curve_cfg["type"]
+                    .as_str()
+                    .expect("decay config.curve missing type");
+
+                let curve = match curve_type {
+                    "exponential" => {
+                        let half_life_secs = curve_cfg["half_life_secs"]
+                            .as_float()
+                            .or_else(|| curve_cfg["half_life_secs"].as_integer().map(|i| i as f64))
+                            .expect("decay curve missing half_life_secs");
+                        let millis = (half_life_secs * 1_000.0) as i64;
+                        DecayCurve::exponential(chrono::Duration::milliseconds(millis)).unwrap()
+                    }
+                    "window" => {
+                        let max_age_secs = curve_cfg["max_age_secs"]
+                            .as_float()
+                            .or_else(|| curve_cfg["max_age_secs"].as_integer().map(|i| i as f64))
+                            .expect("decay curve missing max_age_secs");
+                        let millis = (max_age_secs * 1_000.0) as i64;
+                        DecayCurve::window(chrono::Duration::milliseconds(millis)).unwrap()
+                    }
+                    "step" => {
+                        let windows_arr = curve_cfg
+                            .get("windows")
+                            .and_then(|v| v.as_array())
+                            .expect("decay step curve missing windows");
+                        let windows: Vec<(chrono::Duration, f64)> = windows_arr
+                            .iter()
+                            .map(|w| {
+                                let max_age_secs = w["max_age_secs"]
+                                    .as_float()
+                                    .or_else(|| w["max_age_secs"].as_integer().map(|i| i as f64))
+                                    .expect("step window missing max_age_secs");
+                                let score = w["score"]
+                                    .as_float()
+                                    .or_else(|| w["score"].as_integer().map(|i| i as f64))
+                                    .expect("step window missing score");
+                                let millis = (max_age_secs * 1_000.0) as i64;
+                                (chrono::Duration::milliseconds(millis), score)
+                            })
+                            .collect();
+                        DecayCurve::step(windows).unwrap()
+                    }
+                    other => panic!("unknown decay curve type: {other}"),
+                };
+
+                Box::new(
+                    DecayScorer::new(Box::new(FixedTimeProvider(ref_time)), curve, null_ts_score)
+                        .unwrap(),
+                )
+            }
+            "metadata_trust" => {
+                let default_score = config
+                    .and_then(|c| c.get("default_score"))
+                    .and_then(|v| v.as_float())
+                    .unwrap_or(0.5);
+                Box::new(MetadataTrustScorer::new(default_score).unwrap())
+            }
             other => panic!("unknown scorer type: {other}"),
         }
     }
@@ -260,6 +350,50 @@ mod conformance {
                     .collect();
 
                 Box::new(QuotaSlice::new(quotas, inner).unwrap())
+            }
+            "count_quota" => {
+                let cfg = config.expect("count_quota slicer needs config");
+                let inner_type = cfg
+                    .get("inner_slicer")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("greedy");
+                let inner = build_slicer_by_type(inner_type, None);
+
+                let scarcity_str = cfg
+                    .get("scarcity_behavior")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("degrade");
+                let scarcity = match scarcity_str {
+                    "degrade" => ScarcityBehavior::Degrade,
+                    "throw" => ScarcityBehavior::Throw,
+                    other => panic!("unknown scarcity_behavior: {other}"),
+                };
+
+                let entries_arr = cfg
+                    .get("entries")
+                    .and_then(|v| v.as_array())
+                    .expect("count_quota needs config.entries");
+
+                let entries: Vec<CountQuotaEntry> = entries_arr
+                    .iter()
+                    .map(|e| {
+                        let kind = e["kind"].as_str().expect("entry missing kind");
+                        let require_count = e["require_count"]
+                            .as_integer()
+                            .expect("entry missing require_count") as usize;
+                        let cap_count = e["cap_count"]
+                            .as_integer()
+                            .expect("entry missing cap_count") as usize;
+                        CountQuotaEntry::new(
+                            ContextKind::new(kind).unwrap(),
+                            require_count,
+                            cap_count,
+                        )
+                        .unwrap()
+                    })
+                    .collect();
+
+                Box::new(CountQuotaSlice::new(entries, inner, scarcity).unwrap())
             }
             other => panic!("unknown slicer type: {other}"),
         }

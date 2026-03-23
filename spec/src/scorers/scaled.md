@@ -69,7 +69,7 @@ Similarly, when `allItems` is empty, the result is 0.5.
 - **Time:** O(*N*) per item (scores all *N* items to find min/max). O(*N*^2) total across all items in a scoring pass, since each item triggers a full scan.
 - **Space:** O(1) auxiliary per invocation.
 
-**Performance note:** Each call to `SCALED-SCORE` invokes the inner scorer *N* times. Across a full scoring pass of *N* items, the inner scorer is invoked *N*^2 times total. Implementations MAY cache the min/max computation across invocations within a single scoring pass, but caching is not required by this specification.
+**Performance note:** Each call to `SCALED-SCORE` invokes the inner scorer *N* times. Across a full scoring pass of *N* items, the inner scorer is invoked *N*^2 times total. Implementations MAY cache the min/max computation across invocations within a single scoring pass, but caching is not required by this specification. When `ScaledScorer` instances are deeply nested — a `ScaledScorer` wrapping another `ScaledScorer` — the cost compounds to O(*N*^(*depth*+1)) per scoring pass. Callers with multiple scale-normalization requirements should prefer a flat [`CompositeScorer`](composite.md) structure over nested `ScaledScorer` instances.
 
 ## Conformance Notes
 

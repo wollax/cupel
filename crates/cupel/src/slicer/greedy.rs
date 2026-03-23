@@ -1,3 +1,4 @@
+use crate::CupelError;
 use crate::model::{ContextBudget, ContextItem, ScoredItem};
 use crate::slicer::Slicer;
 
@@ -24,7 +25,7 @@ use crate::slicer::Slicer;
 /// ];
 ///
 /// let budget = ContextBudget::new(1000, 100, 0, HashMap::new(), 0.0)?;
-/// let selected = GreedySlice.slice(&items, &budget);
+/// let selected = GreedySlice.slice(&items, &budget)?;
 ///
 /// assert_eq!(selected.len(), 1);
 /// assert_eq!(selected[0].content(), "high value");
@@ -34,9 +35,9 @@ use crate::slicer::Slicer;
 pub struct GreedySlice;
 
 impl Slicer for GreedySlice {
-    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Vec<ContextItem> {
+    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError> {
         if sorted.is_empty() || budget.target_tokens() <= 0 {
-            return Vec::new();
+            return Ok(Vec::new());
         }
 
         // Step 1: Compute value densities with original indices
@@ -73,6 +74,6 @@ impl Slicer for GreedySlice {
             }
         }
 
-        selected
+        Ok(selected)
     }
 }

@@ -132,7 +132,7 @@ impl<'de> Deserialize<'de> for QuotaEntry {
 /// }];
 ///
 /// let budget = ContextBudget::new(1000, 500, 0, HashMap::new(), 0.0)?;
-/// let selected = slicer.slice(&items, &budget);
+/// let selected = slicer.slice(&items, &budget)?;
 /// assert_eq!(selected.len(), 1);
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
@@ -171,9 +171,9 @@ impl QuotaSlice {
 }
 
 impl Slicer for QuotaSlice {
-    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Vec<ContextItem> {
+    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError> {
         if sorted.is_empty() || budget.target_tokens() <= 0 {
-            return Vec::new();
+            return Ok(Vec::new());
         }
 
         let target_tokens = budget.target_tokens();
@@ -272,10 +272,10 @@ impl Slicer for QuotaSlice {
             let sub_budget = ContextBudget::new(cap, kind_budget, 0, HashMap::new(), 0.0)
                 .expect("sub-budget should be valid since cap >= kind_budget >= 0");
 
-            let selected = self.inner.slice(items, &sub_budget);
+            let selected = self.inner.slice(items, &sub_budget)?;
             all_selected.extend(selected);
         }
 
-        all_selected
+        Ok(all_selected)
     }
 }

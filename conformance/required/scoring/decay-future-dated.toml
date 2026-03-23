@@ -1,0 +1,27 @@
+[test]
+name = "DecayScorer Exponential: future-dated item clamps to age zero, scores 1.0"
+stage = "scoring"
+scorer = "decay"
+
+# referenceTime = 2025-01-01T12:00:00Z
+# item timestamp  = 2025-01-02T00:00:00Z  →  timestamp > now → age clamps to 0
+# halfLife = 24 h  →  score = 2^(0) = 1.0
+
+[[items]]
+content = "future-item"
+tokens = 100
+timestamp = 2025-01-02T00:00:00Z
+
+[[expected]]
+content = "future-item"
+score_approx = 1.0
+
+[tolerance]
+score_epsilon = 1e-9
+
+[config]
+reference_time = 2025-01-01T12:00:00Z
+
+[config.curve]
+type = "exponential"
+half_life_secs = 86400.0

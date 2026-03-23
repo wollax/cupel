@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use crate::model::ContextItem;
 use crate::scorer::Scorer;
 
@@ -16,7 +14,7 @@ use crate::scorer::Scorer;
 ///     .future_relevance_hint(0.75)
 ///     .build()?;
 ///
-/// let score = ReflexiveScorer.score(&item, &[item.clone()]);
+/// let score = ReflexiveScorer.score(&item, std::slice::from_ref(&item));
 /// assert_eq!(score, 0.75);
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
@@ -35,8 +33,32 @@ impl Scorer for ReflexiveScorer {
             }
         }
     }
+}
 
-    fn as_any(&self) -> &dyn Any {
-        self
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::ContextItemBuilder;
+
+    #[test]
+    fn reflexive_scorer_nan_hint() {
+        // NaN is not finite → implementation returns 0.0 (finiteness guard)
+        let item = ContextItemBuilder::new("nan-item", 5)
+            .future_relevance_hint(f64::NAN)
+            .build()
+            .unwrap();
+        let score = ReflexiveScorer.score(&item, std::slice::from_ref(&item));
+        assert_eq!(score, 0.0);
+    }
+
+    #[test]
+    fn reflexive_scorer_large_hint_clamped() {
+        // hint = 2.0 → clamped to 1.0
+        let item = ContextItemBuilder::new("large-hint", 5)
+            .future_relevance_hint(2.0)
+            .build()
+            .unwrap();
+        let score = ReflexiveScorer.score(&item, std::slice::from_ref(&item));
+        assert_eq!(score, 1.0);
     }
 }

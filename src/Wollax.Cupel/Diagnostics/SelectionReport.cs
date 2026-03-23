@@ -2,7 +2,7 @@ namespace Wollax.Cupel.Diagnostics;
 
 /// <summary>
 /// Detailed report of the selection process.
-/// Populated when a <see cref="DiagnosticTraceCollector"/> is used.
+/// Populated when an <see cref="ITraceCollector"/> with tracing enabled is used.
 /// </summary>
 public sealed record SelectionReport
 {
@@ -20,4 +20,11 @@ public sealed record SelectionReport
 
     /// <summary>Total tokens across all candidate items considered.</summary>
     public required int TotalTokensConsidered { get; init; }
+
+    /// <summary>
+    /// Unmet count requirements from <c>CountQuotaSlice</c>, when the candidate pool
+    /// could not satisfy a <c>RequireCount</c> constraint at run time.
+    /// Empty when no count requirements were configured or all were satisfied.
+    /// </summary>
+    public IReadOnlyList<CountRequirementShortfall> CountRequirementShortfalls { get; init; } = [];
 }

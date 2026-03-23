@@ -10,6 +10,9 @@ public interface ITraceCollector
     /// <summary>
     /// Gets a value indicating whether trace collection is active.
     /// When <c>false</c>, callers should skip trace event construction entirely.
+    /// Callers may cache this value for the duration of a pipeline run.
+    /// Implementations must not toggle this property mid-run; once the pipeline has read
+    /// <see cref="IsEnabled"/>, the value is treated as fixed for that invocation.
     /// </summary>
     bool IsEnabled { get; }
 

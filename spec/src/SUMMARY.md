@@ -24,6 +24,8 @@
   - [ReflexiveScorer](scorers/reflexive.md)
   - [CompositeScorer](scorers/composite.md)
   - [ScaledScorer](scorers/scaled.md)
+  - [MetadataTrustScorer](scorers/metadata-trust.md)
+  - [DecayScorer](scorers/decay.md)
 - [Slicers](slicers.md)
   - [GreedySlice](slicers/greedy.md)
   - [KnapsackSlice](slicers/knapsack.md)
@@ -37,11 +39,23 @@
   - [Exclusion Reasons](diagnostics/exclusion-reasons.md)
   - [SelectionReport](diagnostics/selection-report.md)
 
+# Integrations
+
+- [OpenTelemetry](integrations/opentelemetry.md)
+
+# Analytics
+
+- [Budget Simulation](analytics/budget-simulation.md)
+
 # Conformance
 
 - [Conformance Levels](conformance/levels.md)
 - [Test Vector Format](conformance/format.md)
 - [Running the Suite](conformance/running.md)
+
+# Testing
+
+- [Cupel.Testing Vocabulary](testing/vocabulary.md)
 
 # Appendix
 

@@ -95,7 +95,7 @@ The sort MUST be stable or use a composite sort key. When two items have the sam
 | Single item | That item returned as-is |
 | Two items | Higher-scored at index 0, lower-scored at index 1 |
 | All items have the same score | Original input order preserved (stable sort); alternating placement still applies |
-| Pinned items (score 1.0) | Placed at edges alongside other high-scored items |
+| Pinned items (score 1.0) | Not special-cased by UShapedPlacer; pinned items arrive with score 1.0 from the pipeline and naturally rank highly, sorting to edges. |
 
 ## Complexity
 

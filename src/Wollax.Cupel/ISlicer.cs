@@ -14,6 +14,7 @@ public interface ISlicer
 {
     /// <summary>
     /// Selects items that fit within the given budget.
+    /// Candidates must be provided sorted by score descending.
     /// </summary>
     /// <param name="scoredItems">Items with their scores, sorted by score descending.</param>
     /// <param name="budget">The token budget constraint.</param>
