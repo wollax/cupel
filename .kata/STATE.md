@@ -1,12 +1,12 @@
 # Kata State
 
 **Active Milestone:** M003 — v1.3 Implementation Sprint
-**Active Slice:** S06 — Budget simulation + tiebreaker + spec alignment
-**Phase:** planning (S06 plan written, 3 tasks defined, decisions D107–D109 appended)
+**Active Slice:** S05 — OTel bridge companion package (T03 complete, all tasks done)
+**Phase:** verifying (S05 all tasks complete, slice-level verification passing)
 **Slice Branch:** kata/root/M003/S05
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Execute T01 — Add budget-override DryRun seam + GetMarginalItems + FindMinBudgetFor
-**Last Updated:** 2026-03-23 (S06-PLAN.md + T01/T02/T03 plans written; D107–D109 appended)
+**Next Action:** Close S05 slice, then proceed to S06
+**Last Updated:** 2026-03-23 (S05/T03 verified and committed; 712 tests green)
 
 ## M003 Overview
 
