@@ -219,18 +219,20 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: validated — `Wollax.Cupel.Testing` NuGet package implemented at `src/Wollax.Cupel.Testing/`; all 13 assertion patterns implemented in `SelectionReportAssertionChain.cs`; `SelectionReport.Should()` entry point via `SelectionReportExtensions.cs`; `SelectionReportAssertionException` seals failure messages; `dotnet pack` produces `Wollax.Cupel.Testing.*.nupkg`; 26 TUnit tests in `Wollax.Cupel.Testing.Tests` pass (2 per pattern); consumption test references package via `PackageReference Version="*-*"` from local feed; `dotnet test` → 708 passed, 0 failed; `cargo test --all-targets` → 124 passed, 0 failed
 - Notes: Vocabulary design phase in M002/S05 (R043); D041 (no FluentAssertions, no snapshot testing), D065 (predicate type IncludedItem/ExcludedItem), D066 (Should() entry point + SelectionReportAssertionException) all locked; D090 (pattern 6 degenerate .NET form); D091 (direct SelectionReport construction in tests)
 
-## Deferred
-
 ### R022 — OpenTelemetry bridge
 - Class: operability
-- Status: active
+- Status: validated
 - Description: Bridge ITraceCollector to ActivitySource for OTel integration; new `Wollax.Cupel.Diagnostics.OpenTelemetry` NuGet companion package; 3 verbosity tiers (StageOnly, StageAndExclusions, Full); exact `cupel.*` attribute set; cardinality warning in README
 - Why it matters: Production observability without custom logging; callers using Jaeger/Honeycomb/Aspire can instrument Cupel pipelines without writing their own bridge
 - Source: user
 - Primary owning slice: M003/S05
 - Supporting slices: none
-- Validation: partial — S05 branch (`kata/M003/S05`) has T01-T02 completed (core seam: `ITraceCollector.OnPipelineCompleted` hook + `StageTraceSnapshot` model); T03-T04 (actual companion package, SDK tests, CI wiring) never implemented; branch not merged to main; verbosity spec in `spec/src/integrations/opentelemetry.md` remains authoritative
-- Notes: Must be a companion package, not core — zero-dep constraint on core; D043 (cupel.* namespace, pre-stable), D068 (5 Activities, Sort omitted), D100 (structured completion handoff), D101 (SDK-backed verification), D102 (package-specific verbosity enum) all locked. S05 branch has diverged from main due to S06 squash-merge; rebase or fresh branch needed to complete.
+- Validation: validated — `Wollax.Cupel.Diagnostics.OpenTelemetry` companion package implemented at `src/Wollax.Cupel.Diagnostics.OpenTelemetry/`; `CupelOpenTelemetryTraceCollector` implements `ITraceCollector` with structured `OnPipelineCompleted` handoff; `CupelOpenTelemetryVerbosity` enum (StageOnly, StageAndExclusions, Full); `AddCupelInstrumentation()` extension on `TracerProviderBuilder`; `ActivitySource("Wollax.Cupel")` emits `cupel.pipeline` root + 5 `cupel.stage.*` children with exact `cupel.*` attributes; 7 SDK-backed in-memory exporter tests pass; 7 core seam tests pass; consumption smoke test passes from local-feed nupkg; `dotnet test --configuration Release` → 737 passed, 0 failed; redaction enforced (no content/metadata leakage)
+- Notes: Companion package, not core — zero-dep constraint on core preserved; D043 (cupel.* namespace, pre-stable), D068 (5 Activities, Sort omitted), D100 (structured completion handoff), D101 (SDK-backed verification), D102 (package-specific verbosity enum) all locked and implemented.
+
+## Deferred
+
+(none — all requirements are either validated or out of scope)
 
 ## Out of Scope
 
@@ -284,7 +286,7 @@ This file is the explicit capability and coverage contract for the project.
 | R014 | core-capability | validated | M001 phase 24 | none | validated |
 | R020 | core-capability | validated | M003/S01 | M003/S06 | validated |
 | R021 | quality-attribute | validated | M003/S04 | none | validated |
-| R022 | operability | active | M003/S05 | none | mapped |
+| R022 | operability | validated | M003/S05 | none | validated |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
@@ -297,7 +299,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 1 (R022 — OTel bridge, S05 incomplete)
-- Mapped to slices: 1 (R022 mapped to M003/S05, partially complete on branch)
-- Validated: 22 (R001–R006, R010–R014, R020–R021, R040–R045)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 23 (R001–R006, R010–R014, R020–R022, R040–R045)
 - Unmapped active requirements: 0

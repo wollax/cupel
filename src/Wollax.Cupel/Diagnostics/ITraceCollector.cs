@@ -29,4 +29,18 @@ public interface ITraceCollector
     /// </summary>
     /// <param name="traceEvent">The item-level event to record.</param>
     void RecordItemEvent(TraceEvent traceEvent);
+
+    /// <summary>
+    /// Receives structured end-of-run data after pipeline execution completes.
+    /// The default implementation is a no-op, preserving backward compatibility
+    /// for existing <see cref="ITraceCollector"/> implementations.
+    /// </summary>
+    /// <param name="report">The final selection report with included/excluded items.</param>
+    /// <param name="budget">The pipeline budget used for this execution.</param>
+    /// <param name="stageSnapshots">Per-stage structured snapshots with in/out counts and timing.</param>
+    void OnPipelineCompleted(
+        SelectionReport report,
+        ContextBudget budget,
+        IReadOnlyList<StageTraceSnapshot> stageSnapshots)
+    { }
 }

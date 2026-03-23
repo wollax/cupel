@@ -110,7 +110,8 @@ public sealed class CupelPipeline
     {
         var budget = budgetOverride ?? _budget;
         var sw = trace.IsEnabled ? Stopwatch.StartNew() : null;
-        ReportBuilder? reportBuilder = trace is DiagnosticTraceCollector ? new ReportBuilder() : null;
+        ReportBuilder? reportBuilder = trace.IsEnabled ? new ReportBuilder() : null;
+        List<StageTraceSnapshot>? stageSnapshots = trace.IsEnabled ? [] : null;
 
         // CLASSIFY: partition into pinned and scoreable, skip negative tokens
         var pinned = new List<ContextItem>();
@@ -143,11 +144,19 @@ public sealed class CupelPipeline
 
         if (sw is not null)
         {
+            var classifyDuration = sw.Elapsed;
             trace.RecordStageEvent(new TraceEvent
             {
                 Stage = PipelineStage.Classify,
-                Duration = sw.Elapsed,
+                Duration = classifyDuration,
                 ItemCount = pinned.Count + scoreable.Count
+            });
+            stageSnapshots!.Add(new StageTraceSnapshot
+            {
+                Stage = PipelineStage.Classify,
+                ItemCountIn = items.Count,
+                ItemCountOut = pinned.Count + scoreable.Count,
+                Duration = classifyDuration
             });
             sw.Restart();
         }
@@ -173,11 +182,19 @@ public sealed class CupelPipeline
 
         if (sw is not null)
         {
+            var scoreDuration = sw.Elapsed;
             trace.RecordStageEvent(new TraceEvent
             {
                 Stage = PipelineStage.Score,
-                Duration = sw.Elapsed,
+                Duration = scoreDuration,
                 ItemCount = scored.Length
+            });
+            stageSnapshots!.Add(new StageTraceSnapshot
+            {
+                Stage = PipelineStage.Score,
+                ItemCountIn = scoreable.Count,
+                ItemCountOut = scored.Length,
+                Duration = scoreDuration
             });
             sw.Restart();
         }
@@ -231,11 +248,19 @@ public sealed class CupelPipeline
 
         if (sw is not null)
         {
+            var dedupDuration = sw.Elapsed;
             trace.RecordStageEvent(new TraceEvent
             {
                 Stage = PipelineStage.Deduplicate,
-                Duration = sw.Elapsed,
+                Duration = dedupDuration,
                 ItemCount = deduped.Length
+            });
+            stageSnapshots!.Add(new StageTraceSnapshot
+            {
+                Stage = PipelineStage.Deduplicate,
+                ItemCountIn = scored.Length,
+                ItemCountOut = deduped.Length,
+                Duration = dedupDuration
             });
             sw.Restart();
         }
@@ -281,11 +306,19 @@ public sealed class CupelPipeline
 
         if (sw is not null)
         {
+            var sliceDuration = sw.Elapsed;
             trace.RecordStageEvent(new TraceEvent
             {
                 Stage = PipelineStage.Slice,
-                Duration = sw.Elapsed,
+                Duration = sliceDuration,
                 ItemCount = slicedItems.Count
+            });
+            stageSnapshots!.Add(new StageTraceSnapshot
+            {
+                Stage = PipelineStage.Slice,
+                ItemCountIn = sorted.Length,
+                ItemCountOut = slicedItems.Count,
+                Duration = sliceDuration
             });
             sw.Restart();
         }
@@ -450,19 +483,36 @@ public sealed class CupelPipeline
 
         if (sw is not null)
         {
+            var placeDuration = sw.Elapsed;
             trace.RecordStageEvent(new TraceEvent
             {
                 Stage = PipelineStage.Place,
-                Duration = sw.Elapsed,
+                Duration = placeDuration,
                 ItemCount = placed.Count
+            });
+            stageSnapshots!.Add(new StageTraceSnapshot
+            {
+                Stage = PipelineStage.Place,
+                ItemCountIn = merged.Length,
+                ItemCountOut = placed.Count,
+                Duration = placeDuration
             });
         }
 
         // BUILD RESULT
         SelectionReport? report = null;
-        if (trace is DiagnosticTraceCollector diagnosticCollector && reportBuilder is not null)
+        if (reportBuilder is not null)
         {
-            report = reportBuilder.Build(diagnosticCollector.Events);
+            // Use DiagnosticTraceCollector events when available; otherwise provide
+            // the stage events that were recorded via RecordStageEvent.
+            IReadOnlyList<TraceEvent> events = trace is DiagnosticTraceCollector diagnosticCollector
+                ? diagnosticCollector.Events
+                : [];
+
+            report = reportBuilder.Build(events);
+
+            // Invoke the structured completion hook for any enabled collector.
+            trace.OnPipelineCompleted(report, _budget, stageSnapshots!);
         }
 
         return new ContextResult { Items = placed, Report = report };

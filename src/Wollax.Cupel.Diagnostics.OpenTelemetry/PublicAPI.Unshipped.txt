@@ -1,0 +1,14 @@
+#nullable enable
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryTraceCollector
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryTraceCollector.CupelOpenTelemetryTraceCollector(Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryVerbosity verbosity = Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryVerbosity.StageOnly) -> void
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryTraceCollector.IsEnabled.get -> bool
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryTraceCollector.OnPipelineCompleted(Wollax.Cupel.Diagnostics.SelectionReport! report, Wollax.Cupel.ContextBudget! budget, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.StageTraceSnapshot>! stageSnapshots) -> void
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryTraceCollector.RecordItemEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryTraceCollector.RecordStageEvent(Wollax.Cupel.Diagnostics.TraceEvent traceEvent) -> void
+const Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryTraceCollector.SourceName = "Wollax.Cupel" -> string!
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryVerbosity
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryVerbosity.Full = 2 -> Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryVerbosity
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryVerbosity.StageAndExclusions = 1 -> Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryVerbosity
+Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryVerbosity.StageOnly = 0 -> Wollax.Cupel.Diagnostics.OpenTelemetry.CupelOpenTelemetryVerbosity
+Wollax.Cupel.Diagnostics.OpenTelemetry.TracerProviderBuilderExtensions
+static Wollax.Cupel.Diagnostics.OpenTelemetry.TracerProviderBuilderExtensions.AddCupelInstrumentation(this OpenTelemetry.Trace.TracerProviderBuilder! builder) -> OpenTelemetry.Trace.TracerProviderBuilder!

@@ -1,6 +1,10 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using Wollax.Cupel;
 using Wollax.Cupel.Diagnostics;
+using Wollax.Cupel.Diagnostics.OpenTelemetry;
 using Wollax.Cupel.Json;
 using Wollax.Cupel.Testing;
 using Wollax.Cupel.Tiktoken;
@@ -126,5 +130,49 @@ public class ConsumptionTests
             .IncludeItemWithKind(ContextKind.Message)
             .HaveAtLeastNExclusions(0)
             .HaveKindCoverageCount(1);
+    }
+
+    /// <summary>
+    /// Smoke test for the companion OpenTelemetry package consumed via NuGet local feed.
+    /// Uses AddCupelInstrumentation() and CupelOpenTelemetryTraceCollector to verify
+    /// that Activities appear on the "Wollax.Cupel" source during a real pipeline run.
+    /// </summary>
+    [Test]
+    public async Task OpenTelemetry_Companion_Package_Captures_Pipeline_Activities()
+    {
+        var exportedActivities = new List<Activity>();
+
+        using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .AddCupelInstrumentation()
+            .AddInMemoryExporter(exportedActivities)
+            .Build()!;
+
+        var pipeline = CupelPipeline.CreateBuilder()
+            .WithPolicy(CupelPresets.Chat())
+            .WithBudget(new ContextBudget(maxTokens: 4096, targetTokens: 3072))
+            .Build();
+
+        var items = new[]
+        {
+            new ContextItem { Content = "Hello", Tokens = 3, Kind = ContextKind.Message, Source = ContextSource.Chat },
+            new ContextItem { Content = "World", Tokens = 3, Kind = ContextKind.Message, Source = ContextSource.Chat },
+        };
+
+        var collector = new CupelOpenTelemetryTraceCollector(CupelOpenTelemetryVerbosity.StageOnly);
+        var result = pipeline.Execute(items, collector);
+        tracerProvider.ForceFlush();
+
+        await Assert.That(exportedActivities.Count).IsGreaterThan(0)
+            .Because("The companion package must emit Activities on the 'Wollax.Cupel' source during pipeline execution");
+
+        var root = exportedActivities.FirstOrDefault(a => a.OperationName == "cupel.pipeline");
+        await Assert.That(root).IsNotNull()
+            .Because("Must have a root 'cupel.pipeline' Activity");
+
+        var stages = exportedActivities
+            .Where(a => a.OperationName.StartsWith("cupel.stage.", StringComparison.Ordinal))
+            .ToList();
+        await Assert.That(stages.Count).IsEqualTo(5)
+            .Because("Must have exactly 5 stage Activities");
     }
 }

@@ -37,14 +37,14 @@ Given candidates and a budget, return the optimal context selection with full ex
 - S05: Cupel.Testing vocabulary design — `spec/src/testing/vocabulary.md` with 13 fully-specified named assertion patterns; PD-1 through PD-4 locked; R043 validated
 - S06: Future features spec chapters — `spec/src/scorers/decay.md` (DECAY-SCORE pseudocode, 3 curve factories, mandatory TimeProvider); `spec/src/integrations/opentelemetry.md` (5-Activity OTel hierarchy, 3 verbosity tiers, pre-stability disclaimer); `spec/src/analytics/budget-simulation.md` (GetMarginalItems, FindMinBudgetFor, DryRun determinism MUST); all 0 TBD fields; R044 validated
 
-**M003: v1.3 Implementation Sprint — 5 of 6 slices complete (2026-03-23):**
+**M003: v1.3 Implementation Sprint — all 6 slices complete (2026-03-23):**
 - S01: DecayScorer in Rust + .NET — 3 curve types, TimeProvider injection, 5 conformance vectors; R020 validated
 - S02: MetadataTrustScorer in Rust + .NET — NaN-safe scoring, D059 dual-type dispatch, 5 conformance vectors; R042 implementation added
 - S03: CountQuotaSlice in Rust + .NET — decorator slicer, ScarcityBehavior, 5 conformance vectors, shortfall reporting; R040 implementation added
 - S04: Core analytics (BudgetUtilization, KindDiversity, TimestampCoverage) + Wollax.Cupel.Testing package (13 assertion patterns, 26 tests); R021 validated
-- S05: **INCOMPLETE** — branch `kata/M003/S05` has T01-T02 (core ITraceCollector seam + StageTraceSnapshot), T03-T04 (actual OTel companion package) never built; branch not merged to main; R022 still active
+- S05: OTel bridge companion package — `Wollax.Cupel.Diagnostics.OpenTelemetry` with `CupelOpenTelemetryTraceCollector`, 3 verbosity tiers, structured `OnPipelineCompleted` handoff, 737 tests green; R022 validated
 - S06: Budget simulation (GetMarginalItems + FindMinBudgetFor) + deterministic tie-break contract + spec navigation/changelog alignment
-- Test counts: cargo test 128 passed, dotnet test 723 passed, drift guard clean
+- Test counts: cargo test 128 passed, dotnet test 737 passed, drift guard clean
 
 ## Architecture / Key Patterns
 

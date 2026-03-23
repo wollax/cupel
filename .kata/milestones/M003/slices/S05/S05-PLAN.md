@@ -39,25 +39,25 @@
 
 ## Tasks
 
-- [ ] **T01: Write failing-first OTel seam and package contract tests** `est:45m`
+- [x] **T01: Write failing-first OTel seam and package contract tests** `est:45m`
   - Why: Lock the exact R022 boundary before changing public APIs so the slice is driven by real runtime proof instead of ad hoc implementation.
   - Files: `tests/Wollax.Cupel.Tests/Pipeline/OpenTelemetryReportSeamTests.cs`, `tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests.csproj`, `tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/CupelOpenTelemetryTraceCollectorTests.cs`, `tests/Wollax.Cupel.ConsumptionTests/ConsumptionTests.cs`
   - Do: Add focused failing tests that assert the future core seam, exact source name/hierarchy/attributes for all three verbosity tiers, and a local-feed consumption smoke path for the companion package.
   - Verify: Run the focused `dotnet test` commands and confirm they fail for missing seam/package behavior rather than broken test scaffolding.
   - Done when: The repo contains executable failing-first tests that name the exact files, source name, hierarchy, and attribute/event contract this slice must satisfy.
-- [ ] **T02: Add structured completion handoff in core diagnostics** `est:1h`
+- [x] **T02: Add structured completion handoff in core diagnostics** `est:1h`
   - Why: The bridge cannot emit spec-accurate telemetry from `TraceEvent.Message`; core must provide structured stage counts, timing, budget, and final-report data to any enabled collector.
   - Files: `src/Wollax.Cupel/Diagnostics/ITraceCollector.cs`, `src/Wollax.Cupel/Diagnostics/StageTraceSnapshot.cs`, `src/Wollax.Cupel/CupelPipeline.cs`, `src/Wollax.Cupel/PublicAPI.Unshipped.txt`, `tests/Wollax.Cupel.Tests/Pipeline/OpenTelemetryReportSeamTests.cs`
   - Do: Add an additive no-op completion hook and stage snapshot model, build `SelectionReport` for enabled collectors, capture exact per-stage in/out counts plus timing/budget data, and keep existing `DiagnosticTraceCollector` behavior intact.
   - Verify: `dotnet test tests/Wollax.Cupel.Tests/Wollax.Cupel.Tests.csproj --filter "FullyQualifiedName~OpenTelemetryReportSeamTests|FullyQualifiedName~DiagnosticTraceCollector|FullyQualifiedName~ExplainabilityIntegrationTests"`
   - Done when: The seam tests pass, existing diagnostics tests stay green, and the new handoff contains enough structured data for the bridge to emit the spec without message parsing.
-- [ ] **T03: Implement the OpenTelemetry companion package and SDK-backed assertions** `est:1h`
+- [x] **T03: Implement the OpenTelemetry companion package and SDK-backed assertions** `est:1h`
   - Why: This is the slice’s real product output — the bridge package itself, not just core scaffolding.
   - Files: `src/Wollax.Cupel.Diagnostics.OpenTelemetry/Wollax.Cupel.Diagnostics.OpenTelemetry.csproj`, `src/Wollax.Cupel.Diagnostics.OpenTelemetry/CupelOpenTelemetryTraceCollector.cs`, `src/Wollax.Cupel.Diagnostics.OpenTelemetry/CupelOpenTelemetryVerbosity.cs`, `src/Wollax.Cupel.Diagnostics.OpenTelemetry/TracerProviderBuilderExtensions.cs`, `src/Wollax.Cupel.Diagnostics.OpenTelemetry/README.md`, `src/Wollax.Cupel.Diagnostics.OpenTelemetry/PublicAPI.Unshipped.txt`, `tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/CupelOpenTelemetryTraceCollectorTests.cs`
   - Do: Create the package from the S04 template, add the minimum OpenTelemetry dependencies, implement the collector against the structured handoff, emit exact `cupel.*` attributes/events for `StageOnly`/`StageAndExclusions`/`Full`, and keep content out of emitted telemetry.
   - Verify: `dotnet test tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests.csproj`
   - Done when: Real `Sdk.CreateTracerProviderBuilder()` capture proves the exact source name, hierarchy, attributes, event counts, and verbosity behavior, and the package builds clean with PublicAPI analyzers.
-- [ ] **T04: Wire solution, packaging, and consumption flow for the bridge** `est:45m`
+- [x] **T04: Wire solution, packaging, and consumption flow for the bridge** `est:45m`
   - Why: R022 is not complete until the package is packable, restorable from the local feed, and included in the repo’s normal build/release path.
   - Files: `Directory.Packages.props`, `Cupel.slnx`, `tests/Wollax.Cupel.ConsumptionTests/Wollax.Cupel.ConsumptionTests.csproj`, `tests/Wollax.Cupel.ConsumptionTests/ConsumptionTests.cs`, `.github/workflows/release.yml`
   - Do: Register OpenTelemetry package versions centrally, add the new src/test projects to the solution, add package-consumption smoke coverage, and verify the existing release workflow/glob copies and tests the new package (editing it only if the new project is skipped).

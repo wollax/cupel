@@ -50,3 +50,14 @@ static Wollax.Cupel.Diagnostics.SelectionReportExtensions.TimestampCoverage(this
 Wollax.Cupel.BudgetSimulationExtensions
 static Wollax.Cupel.BudgetSimulationExtensions.GetMarginalItems(this Wollax.Cupel.CupelPipeline! pipeline, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.ContextBudget! budget, int slackTokens) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
 static Wollax.Cupel.BudgetSimulationExtensions.FindMinBudgetFor(this Wollax.Cupel.CupelPipeline! pipeline, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.ContextItem! targetItem, int searchCeiling) -> int?
+Wollax.Cupel.Diagnostics.StageTraceSnapshot
+Wollax.Cupel.Diagnostics.StageTraceSnapshot.StageTraceSnapshot() -> void
+Wollax.Cupel.Diagnostics.StageTraceSnapshot.Stage.get -> Wollax.Cupel.Diagnostics.PipelineStage
+Wollax.Cupel.Diagnostics.StageTraceSnapshot.Stage.init -> void
+Wollax.Cupel.Diagnostics.StageTraceSnapshot.ItemCountIn.get -> int
+Wollax.Cupel.Diagnostics.StageTraceSnapshot.ItemCountIn.init -> void
+Wollax.Cupel.Diagnostics.StageTraceSnapshot.ItemCountOut.get -> int
+Wollax.Cupel.Diagnostics.StageTraceSnapshot.ItemCountOut.init -> void
+Wollax.Cupel.Diagnostics.StageTraceSnapshot.Duration.get -> System.TimeSpan
+Wollax.Cupel.Diagnostics.StageTraceSnapshot.Duration.init -> void
+Wollax.Cupel.Diagnostics.ITraceCollector.OnPipelineCompleted(Wollax.Cupel.Diagnostics.SelectionReport! report, Wollax.Cupel.ContextBudget! budget, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.StageTraceSnapshot>! stageSnapshots) -> void
