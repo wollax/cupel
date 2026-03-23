@@ -55,7 +55,7 @@ This milestone is complete only when all are true:
 - [x] **S01: DecayScorer — Rust + .NET implementation** `risk:high` `depends:[]`
   > After this: A `DecayScorer` with Exponential, Window, and Step curves can be constructed in both .NET and Rust, injected with a `TimeProvider`/`TimeProvider` for testing, and produces correct scores verified by conformance vectors and unit tests in both languages.
 
-- [ ] **S02: MetadataTrustScorer — Rust + .NET implementation** `risk:medium` `depends:[S01]`
+- [x] **S02: MetadataTrustScorer — Rust + .NET implementation** `risk:medium` `depends:[S01]`
   > After this: A `MetadataTrustScorer` using the `cupel:trust` float convention and `cupel:source-type` string convention can be constructed in both .NET and Rust, producing correct scores verified by conformance vectors and unit tests in both languages.
 
 - [ ] **S03: CountQuotaSlice — Rust + .NET implementation** `risk:high` `depends:[S01]`

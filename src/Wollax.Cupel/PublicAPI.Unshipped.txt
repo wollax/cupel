@@ -16,3 +16,6 @@ Wollax.Cupel.Scoring.DecayCurve.Step.Windows.get -> System.Collections.Generic.I
 Wollax.Cupel.Scoring.DecayScorer
 Wollax.Cupel.Scoring.DecayScorer.DecayScorer(System.TimeProvider! timeProvider, Wollax.Cupel.Scoring.DecayCurve! curve, double nullTimestampScore = 0.5) -> void
 Wollax.Cupel.Scoring.DecayScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double
+Wollax.Cupel.Scoring.MetadataTrustScorer
+Wollax.Cupel.Scoring.MetadataTrustScorer.MetadataTrustScorer(double defaultScore = 0.5) -> void
+Wollax.Cupel.Scoring.MetadataTrustScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double

@@ -1,9 +1,9 @@
 {
   "pid": 88457,
-  "startedAt": "2026-03-23T01:18:58.474Z",
+  "startedAt": "2026-03-23T02:08:15.125Z",
   "unitType": "complete-slice",
-  "unitId": "M003/S01",
-  "unitStartedAt": "2026-03-23T01:40:46.112Z",
-  "completedUnits": 5,
-  "sessionFile": "/Users/wollax/.kata-cli/sessions/2026-03-23T01-40-46-093Z_7bc8451e-7f63-47e0-8cc7-bef3bde83651.jsonl"
+  "unitId": "M003/S02",
+  "unitStartedAt": "2026-03-23T02:25:33.816Z",
+  "completedUnits": 4,
+  "sessionFile": "/Users/wollax/.kata-cli/sessions/2026-03-23T02-25-33-797Z_c1da8289-6343-4cb8-b5cf-801265601947.jsonl"
 }

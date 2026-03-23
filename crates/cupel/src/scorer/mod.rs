@@ -15,6 +15,7 @@
 //! | [`FrequencyScorer`] | Relative | `tags` | Promote items with common themes |
 //! | [`ReflexiveScorer`] | Absolute | `future_relevance_hint` | Pass through external relevance signals |
 //! | [`DecayScorer`] | Absolute | `timestamp` | Decay score by age (exponential, window, or step curve) |
+//! | [`MetadataTrustScorer`] | Absolute | `metadata["cupel:trust"]` | Read trust score from item metadata |
 //! | [`CompositeScorer`] | Weighted avg | child scorers | Combine multiple strategies |
 //! | [`ScaledScorer`] | Min-max norm | inner scorer | Normalize scores to \[0, 1\] |
 //!
@@ -57,6 +58,7 @@ mod composite;
 mod decay;
 mod frequency;
 mod kind;
+mod metadata_trust;
 mod priority;
 mod recency;
 mod reflexive;
@@ -67,6 +69,7 @@ pub use composite::CompositeScorer;
 pub use decay::{DecayCurve, DecayScorer, SystemTimeProvider, TimeProvider};
 pub use frequency::FrequencyScorer;
 pub use kind::KindScorer;
+pub use metadata_trust::MetadataTrustScorer;
 pub use priority::PriorityScorer;
 pub use recency::RecencyScorer;
 pub use reflexive::ReflexiveScorer;

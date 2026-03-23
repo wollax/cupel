@@ -105,3 +105,28 @@ fn decay_step_second_window() {
 fn decay_window_at_boundary() {
     run_scoring_test("scoring/decay-window-at-boundary.toml");
 }
+
+#[test]
+fn metadata_trust_present_valid() {
+    run_scoring_test("scoring/metadata-trust-present-valid.toml");
+}
+
+#[test]
+fn metadata_trust_key_absent() {
+    run_scoring_test("scoring/metadata-trust-key-absent.toml");
+}
+
+#[test]
+fn metadata_trust_unparseable() {
+    run_scoring_test("scoring/metadata-trust-unparseable.toml");
+}
+
+#[test]
+fn metadata_trust_out_of_range_high() {
+    run_scoring_test("scoring/metadata-trust-out-of-range-high.toml");
+}
+
+#[test]
+fn metadata_trust_non_finite() {
+    run_scoring_test("scoring/metadata-trust-non-finite.toml");
+}

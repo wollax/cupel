@@ -34,8 +34,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user (brainstorm March 15 — radical ideas, survived 2 rounds)
 - Primary owning slice: M002/S04
 - Supporting slices: none
-- Validation: validated — `spec/src/scorers/metadata-trust.md` exists with `"cupel:"` namespace reserved normatively (MUST NOT); `cupel:trust` (float64 [0,1], string storage, configurable defaultScore, explicit parse-failure/non-finite handling) and `cupel:source-type` (open string, 4 RECOMMENDED values) conventions defined; 5 conformance vector outlines included; no TBD fields; `grep -ci "\bTBD\b"` → 0; `grep -q "metadata-trust" spec/src/SUMMARY.md` passes; `grep -q "MetadataTrustScorer" spec/src/scorers.md` passes; cargo test (35+78 doctests passed) and dotnet test (583 passed) both green
-- Notes: Trust is a scoring input, not a filter. No trust gates (silent exclusion) in this spec.
+- Validation: validated — `spec/src/scorers/metadata-trust.md` exists with `"cupel:"` namespace reserved normatively (MUST NOT); `cupel:trust` (float64 [0,1], string storage, configurable defaultScore, explicit parse-failure/non-finite handling) and `cupel:source-type` (open string, 4 RECOMMENDED values) conventions defined; 5 conformance vector outlines included; no TBD fields; `grep -ci "\bTBD\b"` → 0; `grep -q "metadata-trust" spec/src/SUMMARY.md` passes; `grep -q "MetadataTrustScorer" spec/src/scorers.md` passes; cargo test (35+78 doctests passed) and dotnet test (583 passed) both green; **M003/S02 implementation**: `MetadataTrustScorer` implemented in both Rust and .NET; all 5 conformance vector outlines have passing implementations; drift guard clean; `cargo test --all-targets` → 43 passed; `dotnet test` → 669 passed
+- Notes: Trust is a scoring input, not a filter. No trust gates (silent exclusion) in this spec. cupel:source-type is a string convention for callers — no built-in scorer required.
 
 ### R043 — Cupel.Testing vocabulary design
 - Class: differentiator

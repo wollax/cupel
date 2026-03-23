@@ -13,8 +13,9 @@ mod conformance {
     use cupel::{
         ChronologicalPlacer, CompositeScorer, ContextItem, ContextItemBuilder, ContextKind,
         DecayCurve, DecayScorer, FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice,
-        Placer, PriorityScorer, QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer,
-        ScaledScorer, ScoredItem, Scorer, Slicer, TagScorer, TimeProvider, UShapedPlacer,
+        MetadataTrustScorer, Placer, PriorityScorer, QuotaEntry, QuotaSlice, RecencyScorer,
+        ReflexiveScorer, ScaledScorer, ScoredItem, Scorer, Slicer, TagScorer, TimeProvider,
+        UShapedPlacer,
     };
 
     struct FixedTimeProvider(DateTime<Utc>);
@@ -90,6 +91,16 @@ mod conformance {
 
                 if let Some(pinned) = item.get("pinned").and_then(|v| v.as_bool()) {
                     builder = builder.pinned(pinned);
+                }
+
+                if let Some(meta_table) = item.get("metadata").and_then(|v| v.as_table()) {
+                    let map: HashMap<String, String> = meta_table
+                        .iter()
+                        .filter_map(|(k, v)| v.as_str().map(|s| (k.clone(), s.to_owned())))
+                        .collect();
+                    if !map.is_empty() {
+                        builder = builder.metadata(map);
+                    }
                 }
 
                 builder.build().expect("failed to build ContextItem")
@@ -280,6 +291,13 @@ mod conformance {
                     DecayScorer::new(Box::new(FixedTimeProvider(ref_time)), curve, null_ts_score)
                         .unwrap(),
                 )
+            }
+            "metadata_trust" => {
+                let default_score = config
+                    .and_then(|c| c.get("default_score"))
+                    .and_then(|v| v.as_float())
+                    .unwrap_or(0.5);
+                Box::new(MetadataTrustScorer::new(default_score).unwrap())
             }
             other => panic!("unknown scorer type: {other}"),
         }
