@@ -1,13 +1,12 @@
 # Kata State
 
 **Active Milestone:** M003 — v1.3 Implementation Sprint
-**Active Slice:** S05 — OTel bridge companion package
-**Active Task:** T03 — Populate PublicAPI, write README, pack, wire solution
-**Phase:** executing
+**Active Slice:** S05 — OTel bridge companion package (COMPLETE)
+**Phase:** complete (S05 all tasks done; slice ready for squash-merge)
 **Slice Branch:** kata/root/M003/S05
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Execute T03 — populate PublicAPI.Unshipped.txt, write README, dotnet pack, copy to ./packages, full solution green
-**Last Updated:** 2026-03-23 (T02 complete — StageAndExclusions + Full tiers in Complete(); MapReasonToStage; 4 TUnit tests passing with [NotInParallel]; 712/712 solution tests green)
+**Next Action:** Squash-merge S05 to main, then begin S06 — Budget simulation + tiebreaker + spec alignment
+**Last Updated:** 2026-03-23 (S05 T03 complete — PublicAPI.Unshipped.txt populated, README written, nupkg packed + copied to local feed; 712/712 tests green; D097–D100 appended)
 
 ## M003 Overview
 
@@ -19,7 +18,7 @@
 | S02 | MetadataTrustScorer (Rust + .NET) | medium | ✅ complete |
 | S03 | CountQuotaSlice (Rust + .NET) | high | ✅ complete |
 | S04 | Core analytics + Cupel.Testing package | medium | ✅ complete |
-| S05 | OTel bridge companion package | high | 🔄 executing (T01 done) |
+| S05 | OTel bridge companion package | high | ✅ complete |
 | S06 | Budget simulation + tiebreaker + spec alignment | low | — |
 
 ## Key Decisions Established in M003
