@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Wollax.Cupel;
+using Wollax.Cupel.Diagnostics;
 using Wollax.Cupel.Json;
+using Wollax.Cupel.Testing;
 using Wollax.Cupel.Tiktoken;
 
 #pragma warning disable CUPEL001 // Chat preset is experimental
@@ -97,5 +99,32 @@ public class ConsumptionTests
 
         await Assert.That(counted.Tokens).IsGreaterThan(0);
         await Assert.That(counted.Content).IsEqualTo(item.Content);
+    }
+
+    [Test]
+    public void Testing_Package_Should_Extension_Compiles_And_Works()
+    {
+        var report = new SelectionReport
+        {
+            Events = [],
+            Included =
+            [
+                new IncludedItem
+                {
+                    Item = new ContextItem { Content = "hello", Tokens = 10, Kind = ContextKind.Message },
+                    Score = 0.9,
+                    Reason = InclusionReason.Scored,
+                },
+            ],
+            Excluded = [],
+            TotalCandidates = 1,
+            TotalTokensConsidered = 10,
+        };
+
+        // Smoke test: Should() extension is callable and fluent chain works
+        report.Should()
+            .IncludeItemWithKind(ContextKind.Message)
+            .HaveAtLeastNExclusions(0)
+            .HaveKindCoverageCount(1);
     }
 }

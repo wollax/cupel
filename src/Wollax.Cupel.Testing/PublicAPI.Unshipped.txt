@@ -1,0 +1,19 @@
+#nullable enable
+Wollax.Cupel.Testing.SelectionReportAssertionException
+Wollax.Cupel.Testing.SelectionReportAssertionException.SelectionReportAssertionException(string! message) -> void
+Wollax.Cupel.Testing.SelectionReportAssertionChain
+Wollax.Cupel.Testing.SelectionReportAssertionChain.IncludeItemWithKind(Wollax.Cupel.ContextKind! kind) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.IncludeItemMatching(System.Func<Wollax.Cupel.Diagnostics.IncludedItem!, bool>! predicate) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.IncludeExactlyNItemsWithKind(Wollax.Cupel.ContextKind! kind, int n) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.ExcludeItemWithReason(Wollax.Cupel.Diagnostics.ExclusionReason reason) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.ExcludeItemMatchingWithReason(System.Func<Wollax.Cupel.ContextItem!, bool>! predicate, Wollax.Cupel.Diagnostics.ExclusionReason reason) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.HaveExcludedItemWithBudgetExceeded(System.Func<Wollax.Cupel.ContextItem!, bool>! predicate) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.HaveNoExclusionsForKind(Wollax.Cupel.ContextKind! kind) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportExtensions
+static Wollax.Cupel.Testing.SelectionReportExtensions.Should(this Wollax.Cupel.Diagnostics.SelectionReport! report) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.HaveAtLeastNExclusions(int n) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.ExcludedItemsAreSortedByScoreDescending() -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.HaveBudgetUtilizationAbove(double threshold, Wollax.Cupel.ContextBudget! budget) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.HaveKindCoverageCount(int n) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.PlaceItemAtEdge(System.Func<Wollax.Cupel.Diagnostics.IncludedItem!, bool>! predicate) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.PlaceTopNScoredAtEdges(int n) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!

@@ -210,14 +210,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R021 — Cupel.Testing package
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Fluent assertion chains over SelectionReport for test authoring; 13 named assertion patterns; `SelectionReport.Should()` entry point returning `SelectionReportAssertionChain`; dedicated `SelectionReportAssertionException`; new `Wollax.Cupel.Testing` NuGet package
 - Why it matters: Reduces boilerplate in caller tests; without a testing vocabulary, every test must write manual LINQ predicates against SelectionReport fields
 - Source: user
 - Primary owning slice: M003/S04
 - Supporting slices: none
-- Validation: mapped — vocabulary spec in `spec/src/testing/vocabulary.md`; implementation target M003/S04
-- Notes: Vocabulary design phase in M002/S05 (R043); D041 (no FluentAssertions, no snapshot testing), D065 (predicate type IncludedItem/ExcludedItem), D066 (Should() entry point + SelectionReportAssertionException) all locked
+- Validation: validated — `Wollax.Cupel.Testing` NuGet package implemented at `src/Wollax.Cupel.Testing/`; all 13 assertion patterns implemented in `SelectionReportAssertionChain.cs`; `SelectionReport.Should()` entry point via `SelectionReportExtensions.cs`; `SelectionReportAssertionException` seals failure messages; `dotnet pack` produces `Wollax.Cupel.Testing.*.nupkg`; 26 TUnit tests in `Wollax.Cupel.Testing.Tests` pass (2 per pattern); consumption test references package via `PackageReference Version="*-*"` from local feed; `dotnet test` → 708 passed, 0 failed; `cargo test --all-targets` → 124 passed, 0 failed
+- Notes: Vocabulary design phase in M002/S05 (R043); D041 (no FluentAssertions, no snapshot testing), D065 (predicate type IncludedItem/ExcludedItem), D066 (Should() entry point + SelectionReportAssertionException) all locked; D090 (pattern 6 degenerate .NET form); D091 (direct SelectionReport construction in tests)
 
 ### R022 — OpenTelemetry bridge
 - Class: operability
@@ -281,7 +281,7 @@ This file is the explicit capability and coverage contract for the project.
 | R013 | quality-attribute | validated | M001 phase 25 | none | validated |
 | R014 | core-capability | validated | M001 phase 24 | none | validated |
 | R020 | core-capability | validated | M003/S01 | M003/S06 | validated |
-| R021 | quality-attribute | active | M003/S04 | none | mapped |
+| R021 | quality-attribute | validated | M003/S04 | none | validated |
 | R022 | operability | active | M003/S05 | none | mapped |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
@@ -295,7 +295,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 2 (R021, R022)
-- Mapped to slices: 2 (all active requirements mapped to M003 slices)
-- Validated: 20 (R001–R006, R010–R014, R020, R040–R045)
+- Active requirements: 1 (R022)
+- Mapped to slices: 1 (all active requirements mapped to M003 slices)
+- Validated: 21 (R001–R006, R010–R014, R020–R021, R040–R045)
 - Unmapped active requirements: 0

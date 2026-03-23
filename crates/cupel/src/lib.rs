@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
+pub mod analytics;
 pub mod diagnostics;
 pub mod error;
 pub mod model;
@@ -9,6 +10,7 @@ pub mod placer;
 pub mod scorer;
 pub mod slicer;
 
+pub use analytics::{budget_utilization, kind_diversity, timestamp_coverage};
 pub use diagnostics::{
     CountRequirementShortfall, DiagnosticTraceCollector, ExcludedItem, ExclusionReason,
     IncludedItem, InclusionReason, NullTraceCollector, OverflowEvent, PipelineStage,

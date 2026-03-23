@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.19.22" />
     <PackageReference Include="Wollax.Cupel" Version="*-*" />
+    <PackageReference Include="Wollax.Cupel.Testing" Version="*-*" />
     <PackageReference Include="Wollax.Cupel.Json" Version="*-*" />
     <PackageReference Include="Wollax.Cupel.Extensions.DependencyInjection" Version="*-*" />
     <PackageReference Include="Wollax.Cupel.Tiktoken" Version="*-*" />

@@ -43,3 +43,7 @@ Wollax.Cupel.Slicing.CountQuotaSlice
 Wollax.Cupel.Slicing.CountQuotaSlice.CountQuotaSlice(Wollax.Cupel.ISlicer! innerSlicer, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.CountQuotaEntry!>! entries, Wollax.Cupel.Slicing.ScarcityBehavior scarcity = Wollax.Cupel.Slicing.ScarcityBehavior.Degrade) -> void
 Wollax.Cupel.Slicing.CountQuotaSlice.LastShortfalls.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.CountRequirementShortfall!>!
 Wollax.Cupel.Slicing.CountQuotaSlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.Diagnostics.SelectionReportExtensions
+static Wollax.Cupel.Diagnostics.SelectionReportExtensions.BudgetUtilization(this Wollax.Cupel.Diagnostics.SelectionReport! report, Wollax.Cupel.ContextBudget! budget) -> double
+static Wollax.Cupel.Diagnostics.SelectionReportExtensions.KindDiversity(this Wollax.Cupel.Diagnostics.SelectionReport! report) -> int
+static Wollax.Cupel.Diagnostics.SelectionReportExtensions.TimestampCoverage(this Wollax.Cupel.Diagnostics.SelectionReport! report) -> double

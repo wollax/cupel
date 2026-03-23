@@ -61,7 +61,7 @@ This milestone is complete only when all are true:
 - [x] **S03: CountQuotaSlice — Rust + .NET implementation** `risk:high` `depends:[S01]`
   > After this: A `CountQuotaSlice` decorator wrapping any inner slicer enforces absolute minimum/maximum counts per ContextKind in both .NET and Rust; CountCapExceeded and CountRequireCandidatesExhausted ExclusionReason variants are emitted; SelectionReport.CountRequirementShortfalls reports unmet minimums; ScarcityBehavior::Degrade is the default.
 
-- [ ] **S04: Core analytics + Cupel.Testing package** `risk:medium` `depends:[S01,S02,S03]`
+- [x] **S04: Core analytics + Cupel.Testing package** `risk:medium` `depends:[S01,S02,S03]`
   > After this: `BudgetUtilization(budget)`, `KindDiversity()`, and `TimestampCoverage()` are callable extension methods on SelectionReport in both languages; `Wollax.Cupel.Testing` NuGet package installs independently and exposes all 13 assertion patterns from the vocabulary spec via `SelectionReport.Should()` chains; tests green.
 
 - [ ] **S05: OTel bridge companion package** `risk:high` `depends:[S04]`
