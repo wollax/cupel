@@ -1,13 +1,13 @@
 # Kata State
 
 **Active Milestone:** M003 — v1.3 Implementation Sprint
-**Active Slice:** S05 — OTel bridge companion package
-**Active Task:** (S05 not yet started — planning next)
-**Phase:** S04 complete; S05 ready to begin
-**Slice Branch:** kata/root/M003/S04 (S05 branch to be created)
+**Active Slice:** S06 — Budget simulation + tiebreaker + spec alignment
+**Active Task:** T01 — Write failing-first verification for budget simulation and deterministic ties
+**Phase:** S06 planned; ready to execute
+**Slice Branch:** kata/root/M003/S06
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Begin S05 — create `src/Wollax.Cupel.Diagnostics.OpenTelemetry/` NuGet package (CupelOpenTelemetryTraceCollector, AddCupelInstrumentation(), 3 verbosity tiers, exact cupel.* attributes per spec); use Wollax.Cupel.Testing.csproj as structural template
-**Last Updated:** 2026-03-23 (S04 complete — analytics + Cupel.Testing package; 708 dotnet tests + 124 cargo tests all green; R021 validated)
+**Next Action:** Execute S06/T01 — add `tests/Wollax.Cupel.Tests/Pipeline/BudgetSimulationTests.cs`, extend .NET/Rust GreedySlice tie-break tests, and run the focused failing-first verification commands
+**Last Updated:** 2026-03-23 (S06 planned; S05 complete; M003 final implementation slice queued)
 
 ## M003 Overview
 
@@ -19,41 +19,31 @@
 | S02 | MetadataTrustScorer (Rust + .NET) | medium | ✅ complete |
 | S03 | CountQuotaSlice (Rust + .NET) | high | ✅ complete |
 | S04 | Core analytics + Cupel.Testing package | medium | ✅ complete |
-| S05 | OTel bridge companion package | high | — |
-| S06 | Budget simulation + tiebreaker + spec alignment | low | — |
+| S05 | OTel bridge companion package | high | ✅ complete |
+| S06 | Budget simulation + tiebreaker + spec alignment | low | 🟡 planned |
 
-## Key Decisions Established in M003
+## Recent Planning Decisions
 
-- D072–D087: DecayScorer, MetadataTrustScorer, CountQuotaSlice patterns (see DECISIONS.md for full list)
-- D088: S04 verification strategy — contract-level + integration (analytics unit tests + Cupel.Testing consumption reference)
-- D089: Rust analytics as free functions in analytics.rs, pub use-d from lib.rs
-- D090: .NET pattern 6 (HaveExcludedItemWithBudgetExceeded) degenerate form — flat enum, no token-detail fields
-- D091: Test fixtures use direct SelectionReport record construction in AssertionChainTests.cs
-- D092: ContextBudget::new takes HashMap<ContextKind, i64> directly; Default::default() for empty slots
-- D093: Rust analytics uses .kind() accessor (private field) on ContextItem
-- D094: SelectionReportAssertionChain constructor is internal; chain created exclusively via Should()
-- D095: Consumption test local NuGet feed is ./packages (not ./nupkg); artifact copy required
-- D096: PlaceTopNScoredAtEdges uses minTopScore + HashSet membership for tie handling
+- D097: S06 proof is integration-level — failing-first .NET budget-simulation tests, explicit .NET/Rust GreedySlice tie regressions, full-suite regression checks, and grep-based spec alignment checks
+- D098: Both public `.NET` budget-simulation APIs take explicit `ContextBudget budget` and reuse an internal `CupelPipeline` temporary-budget execution seam
+- D099: GreedySlice tie-breaking is the existing stable original-order / original-index contract; no new `ContextItem.Id` surface is added in M003
+- D095: Local NuGet consumption tests restore from `./packages`, not `./nupkg`
+- D089: Rust analytics live as free functions in `crates/cupel/src/analytics.rs`
 
-## S04 Outputs Available for S05
+## S06 Planned Deliverables
 
-- `Wollax.Cupel.Testing.csproj` is the proven NuGet package project structure template for S05
-- Local feed wiring: ./packages feed, PackageReference Version="*-*", nuget.config
-- `ITraceCollector` and `SelectionReport` from Wollax.Cupel core — both stable, S05 consumes them
+- `.NET` public APIs: `GetMarginalItems(items, budget, slackTokens)` and `FindMinBudgetFor(items, budget, targetItem, searchCeiling)` on `CupelPipeline`
+- Internal budget-override seam in `src/Wollax.Cupel/CupelPipeline.cs` so simulation reuses the real execution core
+- Deterministic GreedySlice tie-break tests in both .NET and Rust, plus spec wording aligned to original-index ordering
+- Spec/index/changelog alignment: `spec/src/SUMMARY.md`, `spec/src/slicers.md`, `spec/src/scorers.md`, `spec/src/changelog.md`, and new `spec/src/slicers/count-quota.md`
+- Rust budget-simulation parity decision documented explicitly as deferred for v1.3
 
-## S03 Known Gaps (deferred to future)
+## Inputs Available from Prior Slices
 
-- `SelectionReport.CountRequirementShortfalls` always `[]` via standard Pipeline — ReportBuilder needs wiring
-- `ExclusionReason.CountCapExceeded` not in `SelectionReport.Excluded` — pipeline extension deferred
-- Shortfall propagation via `ITraceCollector` requires a new interface method (deferred)
+- S04 provides the analytics extension pattern and the PublicAPI/new-package workflow
+- S05 proves the second standalone NuGet package pattern and leaves M003 with only S06 feature/documentation gaps remaining
+- `CupelPipeline.DryRun()` and GreedySlice implementations already exist in both languages; S06 adds budget override + tests rather than inventing a new pipeline path
 
 ## Blockers
 
-- (none)
-
-## S05 Prerequisites
-
-- `ITraceCollector` interface stable in Wollax.Cupel core (done M001)
-- `SelectionReport` stable (done M001/M002)
-- New package project wiring pattern established in S04 (Wollax.Cupel.Testing) — S05 clones this pattern
-- Spec chapter for OTel verbosity tiers in `spec/src/integrations/opentelemetry.md` (done M002/S06)
+- None
