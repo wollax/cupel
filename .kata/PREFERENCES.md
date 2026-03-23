@@ -8,6 +8,10 @@ custom_instructions: []
 models: {}
 skill_discovery: suggest
 auto_supervisor: {}
+pr:
+  enabled: true
+  auto_create: true
+  review_on_create: true
 ---
 
 # Kata Skill Preferences
