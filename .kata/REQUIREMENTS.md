@@ -199,36 +199,36 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R020 — DecayScorer with TimeProvider injection
 - Class: core-capability
-- Status: deferred
-- Description: Built-in time-decay scorer with injectable TimeProvider for testability
-- Why it matters: Common use case; RecencyScorer only does ordinal ranking, not true decay curves
+- Status: active
+- Description: Built-in time-decay scorer with injectable TimeProvider for testability; three curve types: Exponential(halfLife), Window(maxAge), Step(windows); mandatory TimeProvider injection per D042; conformance vectors in spec and crate
+- Why it matters: Common use case; RecencyScorer only does ordinal ranking, not true decay curves; time-decay is essential for agent memory scenarios where recency matters in absolute time, not just ordinal position
 - Source: user
-- Primary owning slice: none (v1.3 implementation; spec chapter in M002/S06)
-- Supporting slices: M002/S06
-- Validation: unmapped
-- Notes: Spec chapter designed in M002/S06 (R044); implementation deferred to v1.3
+- Primary owning slice: M003/S01
+- Supporting slices: M003/S06
+- Validation: mapped — spec chapter in `spec/src/scorers/decay.md`; implementation target M003/S01
+- Notes: Spec chapter designed in M002/S06 (R044); D042 (mandatory TimeProvider), D047 (Rust trait shape), D070 (Step curve semantics), D071 (Window boundary semantics) all locked
 
 ### R021 — Cupel.Testing package
 - Class: quality-attribute
-- Status: deferred
-- Description: Fluent assertion chains over SelectionReport for test authoring
-- Why it matters: Reduces boilerplate in caller tests
+- Status: active
+- Description: Fluent assertion chains over SelectionReport for test authoring; 13 named assertion patterns; `SelectionReport.Should()` entry point returning `SelectionReportAssertionChain`; dedicated `SelectionReportAssertionException`; new `Wollax.Cupel.Testing` NuGet package
+- Why it matters: Reduces boilerplate in caller tests; without a testing vocabulary, every test must write manual LINQ predicates against SelectionReport fields
 - Source: user
-- Primary owning slice: none (v1.3 implementation; vocabulary design in M002/S05)
-- Supporting slices: M002/S05
-- Validation: unmapped
-- Notes: Vocabulary design phase in M002/S05 (R043); implementation deferred to v1.3
+- Primary owning slice: M003/S04
+- Supporting slices: none
+- Validation: mapped — vocabulary spec in `spec/src/testing/vocabulary.md`; implementation target M003/S04
+- Notes: Vocabulary design phase in M002/S05 (R043); D041 (no FluentAssertions, no snapshot testing), D065 (predicate type IncludedItem/ExcludedItem), D066 (Should() entry point + SelectionReportAssertionException) all locked
 
 ### R022 — OpenTelemetry bridge
 - Class: operability
-- Status: deferred
-- Description: Bridge ITraceCollector/TraceCollector to ActivitySource for OTel integration
-- Why it matters: Production observability without custom logging
+- Status: active
+- Description: Bridge ITraceCollector to ActivitySource for OTel integration; new `Wollax.Cupel.Diagnostics.OpenTelemetry` NuGet companion package; 3 verbosity tiers (StageOnly, StageAndExclusions, Full); exact `cupel.*` attribute set; cardinality warning in README
+- Why it matters: Production observability without custom logging; callers using Jaeger/Honeycomb/Aspire can instrument Cupel pipelines without writing their own bridge
 - Source: user
-- Primary owning slice: none (v1.3 implementation; verbosity spec in M002/S06)
-- Supporting slices: M002/S06
-- Validation: unmapped
-- Notes: Must be a companion package, not core — zero-dep constraint; verbosity levels spec in M002/S06 (R044)
+- Primary owning slice: M003/S05
+- Supporting slices: none
+- Validation: mapped — verbosity spec in `spec/src/integrations/opentelemetry.md`; implementation target M003/S05
+- Notes: Must be a companion package, not core — zero-dep constraint on core; D043 (cupel.* namespace, pre-stable), D068 (5 Activities, Sort omitted) all locked
 
 ## Out of Scope
 
@@ -280,9 +280,9 @@ This file is the explicit capability and coverage contract for the project.
 | R012 | core-capability | validated | M001 phase 23 | none | validated |
 | R013 | quality-attribute | validated | M001 phase 25 | none | validated |
 | R014 | core-capability | validated | M001 phase 24 | none | validated |
-| R020 | core-capability | deferred | none (v1.3) | M002/S06 | unmapped |
-| R021 | quality-attribute | deferred | none (v1.3) | M002/S05 | unmapped |
-| R022 | operability | deferred | none (v1.3) | M002/S06 | unmapped |
+| R020 | core-capability | active | M003/S01 | M003/S06 | mapped |
+| R021 | quality-attribute | active | M003/S04 | none | mapped |
+| R022 | operability | active | M003/S05 | none | mapped |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
@@ -295,7 +295,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 0
-- Mapped to slices: 0
+- Active requirements: 3 (R020, R021, R022)
+- Mapped to slices: 3 (all active requirements mapped to M003 slices)
 - Validated: 19 (R001–R006, R010–R014, R040–R045)
 - Unmapped active requirements: 0
