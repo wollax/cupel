@@ -8,6 +8,7 @@
     <Project Path="src/Wollax.Cupel.Extensions.DependencyInjection/Wollax.Cupel.Extensions.DependencyInjection.csproj" />
     <Project Path="src/Wollax.Cupel.Tiktoken/Wollax.Cupel.Tiktoken.csproj" />
     <Project Path="src/Wollax.Cupel.Testing/Wollax.Cupel.Testing.csproj" />
+    <Project Path="src/Wollax.Cupel.Diagnostics.OpenTelemetry/Wollax.Cupel.Diagnostics.OpenTelemetry.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Wollax.Cupel.Tests/Wollax.Cupel.Tests.csproj" />
@@ -15,5 +16,6 @@
     <Project Path="tests/Wollax.Cupel.Extensions.DependencyInjection.Tests/Wollax.Cupel.Extensions.DependencyInjection.Tests.csproj" />
     <Project Path="tests/Wollax.Cupel.Tiktoken.Tests/Wollax.Cupel.Tiktoken.Tests.csproj" />
     <Project Path="tests/Wollax.Cupel.Testing.Tests/Wollax.Cupel.Testing.Tests.csproj" />
+    <Project Path="tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests/Wollax.Cupel.Diagnostics.OpenTelemetry.Tests.csproj" />
   </Folder>
 </Solution>
