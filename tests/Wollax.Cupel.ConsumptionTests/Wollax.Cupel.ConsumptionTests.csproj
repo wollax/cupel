@@ -17,6 +17,7 @@
     <PackageReference Include="Wollax.Cupel.Json" Version="*-*" />
     <PackageReference Include="Wollax.Cupel.Extensions.DependencyInjection" Version="*-*" />
     <PackageReference Include="Wollax.Cupel.Tiktoken" Version="*-*" />
+    <PackageReference Include="Wollax.Cupel.Diagnostics.OpenTelemetry" Version="*-*" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="1.0.0" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.102" />

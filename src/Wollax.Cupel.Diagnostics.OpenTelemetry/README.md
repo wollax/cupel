@@ -12,15 +12,17 @@ OpenTelemetry bridge for the [Cupel](https://github.com/wollax/cupel) context-wi
 
 `Wollax.Cupel.Diagnostics.OpenTelemetry` is a **separate NuGet assembly**. The core `Wollax.Cupel` package has zero dependency on OpenTelemetry — callers who do not need telemetry incur no transitive overhead.
 
-The package registers a single `ActivitySource` with the canonical name `"Wollax.Cupel"`. To receive traces, register this source name in your OpenTelemetry configuration:
+The package registers a single `ActivitySource` with the canonical name `"Wollax.Cupel"`. To receive traces, register the source via the `AddCupelInstrumentation()` extension method:
 
 ```csharp
 services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
-        .AddSource(CupelActivitySource.SourceName)  // "Wollax.Cupel"
+        .AddCupelInstrumentation()  // registers "Wollax.Cupel" ActivitySource
         // ... exporters ...
     );
 ```
+
+This is equivalent to calling `.AddSource(CupelActivitySource.SourceName)` manually, but avoids hard-coding the source name string.
 
 ## Usage
 
@@ -74,7 +76,10 @@ All `StageAndExclusions` output plus one `cupel.item.included` Event per include
 ## Registering with `AddSource`
 
 ```csharp
-// Use the exported constant to avoid hard-coding the source name string:
+// Preferred: use the convenience extension method
+.AddCupelInstrumentation()
+
+// Or use the exported constant directly:
 .AddSource(CupelActivitySource.SourceName)  // == "Wollax.Cupel"
 ```
 

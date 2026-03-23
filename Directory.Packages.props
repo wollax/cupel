@@ -21,6 +21,7 @@
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="1.0.1" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="1.0.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.2" />
+    <PackageVersion Include="OpenTelemetry" Version="1.15.0" />
   </ItemGroup>
 
 </Project>
