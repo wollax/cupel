@@ -37,6 +37,15 @@ Given candidates and a budget, return the optimal context selection with full ex
 - S05: Cupel.Testing vocabulary design — `spec/src/testing/vocabulary.md` with 13 fully-specified named assertion patterns; PD-1 through PD-4 locked; R043 validated
 - S06: Future features spec chapters — `spec/src/scorers/decay.md` (DECAY-SCORE pseudocode, 3 curve factories, mandatory TimeProvider); `spec/src/integrations/opentelemetry.md` (5-Activity OTel hierarchy, 3 verbosity tiers, pre-stability disclaimer); `spec/src/analytics/budget-simulation.md` (GetMarginalItems, FindMinBudgetFor, DryRun determinism MUST); all 0 TBD fields; R044 validated
 
+**M003: v1.3 Implementation Sprint — 5 of 6 slices complete (2026-03-23):**
+- S01: DecayScorer in Rust + .NET — 3 curve types, TimeProvider injection, 5 conformance vectors; R020 validated
+- S02: MetadataTrustScorer in Rust + .NET — NaN-safe scoring, D059 dual-type dispatch, 5 conformance vectors; R042 implementation added
+- S03: CountQuotaSlice in Rust + .NET — decorator slicer, ScarcityBehavior, 5 conformance vectors, shortfall reporting; R040 implementation added
+- S04: Core analytics (BudgetUtilization, KindDiversity, TimestampCoverage) + Wollax.Cupel.Testing package (13 assertion patterns, 26 tests); R021 validated
+- S05: **INCOMPLETE** — branch `kata/M003/S05` has T01-T02 (core ITraceCollector seam + StageTraceSnapshot), T03-T04 (actual OTel companion package) never built; branch not merged to main; R022 still active
+- S06: Budget simulation (GetMarginalItems + FindMinBudgetFor) + deterministic tie-break contract + spec navigation/changelog alignment
+- Test counts: cargo test 128 passed, dotnet test 723 passed, drift guard clean
+
 ## Architecture / Key Patterns
 
 - **Tech stack**: C# / .NET 10 + Rust (Edition 2024, MSRV 1.85)
@@ -57,4 +66,4 @@ See `.kata/REQUIREMENTS.md` for the explicit capability contract, requirement st
 
 - [x] M001: v1.2 Rust Parity & Quality Hardening — Close diagnostics gap between Rust and .NET, harden API surface, batch quality issues; ship v1.2 (all 7 slices complete; v1.2.0 tag pending manual publish)
 - [x] M002: v1.3 Design Sprint — Resolve deferred design problems (count-based quotas, Cupel.Testing vocabulary, metadata convention system, future features specs) and close spec quality debt; produce spec chapters and design decision records ready for v1.3 implementation (all 6 slices complete, 2026-03-21)
-- [x] M003: v1.3 Implementation Sprint — Implement all M002-designed features: DecayScorer, MetadataTrustScorer, CountQuotaSlice, core analytics extension methods, budget simulation, Cupel.Testing vocabulary package, and OTel bridge companion package (2026-03-23 — all 6 slices complete)
+- [ ] M003: v1.3 Implementation Sprint — Implement all M002-designed features: DecayScorer, MetadataTrustScorer, CountQuotaSlice, core analytics extension methods, budget simulation, Cupel.Testing vocabulary package, and OTel bridge companion package (2026-03-23 — S01-S04+S06 complete; **S05 OTel bridge incomplete** — branch `kata/M003/S05` has T01-T02 only, not merged to main; R022 remains active)

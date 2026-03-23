@@ -195,7 +195,7 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: validated
 - Notes: Completed in phases 24-01, 24-02; lives in `spec/src/diagnostics/`
 
-## Deferred
+## Validated (M003)
 
 ### R020 — DecayScorer with TimeProvider injection
 - Class: core-capability
@@ -219,6 +219,8 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: validated — `Wollax.Cupel.Testing` NuGet package implemented at `src/Wollax.Cupel.Testing/`; all 13 assertion patterns implemented in `SelectionReportAssertionChain.cs`; `SelectionReport.Should()` entry point via `SelectionReportExtensions.cs`; `SelectionReportAssertionException` seals failure messages; `dotnet pack` produces `Wollax.Cupel.Testing.*.nupkg`; 26 TUnit tests in `Wollax.Cupel.Testing.Tests` pass (2 per pattern); consumption test references package via `PackageReference Version="*-*"` from local feed; `dotnet test` → 708 passed, 0 failed; `cargo test --all-targets` → 124 passed, 0 failed
 - Notes: Vocabulary design phase in M002/S05 (R043); D041 (no FluentAssertions, no snapshot testing), D065 (predicate type IncludedItem/ExcludedItem), D066 (Should() entry point + SelectionReportAssertionException) all locked; D090 (pattern 6 degenerate .NET form); D091 (direct SelectionReport construction in tests)
 
+## Deferred
+
 ### R022 — OpenTelemetry bridge
 - Class: operability
 - Status: active
@@ -227,8 +229,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M003/S05
 - Supporting slices: none
-- Validation: mapped — verbosity spec in `spec/src/integrations/opentelemetry.md`; implementation target M003/S05
-- Notes: Must be a companion package, not core — zero-dep constraint on core; D043 (cupel.* namespace, pre-stable), D068 (5 Activities, Sort omitted) all locked
+- Validation: partial — S05 branch (`kata/M003/S05`) has T01-T02 completed (core seam: `ITraceCollector.OnPipelineCompleted` hook + `StageTraceSnapshot` model); T03-T04 (actual companion package, SDK tests, CI wiring) never implemented; branch not merged to main; verbosity spec in `spec/src/integrations/opentelemetry.md` remains authoritative
+- Notes: Must be a companion package, not core — zero-dep constraint on core; D043 (cupel.* namespace, pre-stable), D068 (5 Activities, Sort omitted), D100 (structured completion handoff), D101 (SDK-backed verification), D102 (package-specific verbosity enum) all locked. S05 branch has diverged from main due to S06 squash-merge; rebase or fresh branch needed to complete.
 
 ## Out of Scope
 
@@ -295,7 +297,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 1 (R022)
-- Mapped to slices: 1 (all active requirements mapped to M003 slices)
-- Validated: 21 (R001–R006, R010–R014, R020–R021, R040–R045)
+- Active requirements: 1 (R022 — OTel bridge, S05 incomplete)
+- Mapped to slices: 1 (R022 mapped to M003/S05, partially complete on branch)
+- Validated: 22 (R001–R006, R010–R014, R020–R021, R040–R045)
 - Unmapped active requirements: 0
