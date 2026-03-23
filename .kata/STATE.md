@@ -2,12 +2,12 @@
 
 **Active Milestone:** M003 — v1.3 Implementation Sprint
 **Active Slice:** S05 — OTel bridge companion package
-**Active Task:** (S05 not yet started — planning next)
-**Phase:** S04 complete; S05 ready to begin
-**Slice Branch:** kata/root/M003/S04 (S05 branch to be created)
+**Active Task:** T01 — Create package + test project scaffolding; implement StageOnly tier
+**Phase:** planning complete; ready to execute
+**Slice Branch:** (S05 branch to be created from current branch)
 **Active Workspace:** /Users/wollax/Git/personal/cupel
-**Next Action:** Begin S05 — create `src/Wollax.Cupel.Diagnostics.OpenTelemetry/` NuGet package (CupelOpenTelemetryTraceCollector, AddCupelInstrumentation(), 3 verbosity tiers, exact cupel.* attributes per spec); use Wollax.Cupel.Testing.csproj as structural template
-**Last Updated:** 2026-03-23 (S04 complete — analytics + Cupel.Testing package; 708 dotnet tests + 124 cargo tests all green; R021 validated)
+**Next Action:** Execute T01 — create `src/Wollax.Cupel.Diagnostics.OpenTelemetry/` package project + test project; implement CupelVerbosity, CupelActivitySource, CupelOpenTelemetryTraceCollector (StageOnly tier); write first TUnit test; update Cupel.slnx
+**Last Updated:** 2026-03-23 (S05 planned — 3 tasks; BCL-only ActivitySource; no OTel.Api NuGet; two-phase Complete() design; D097–D100 added)
 
 ## M003 Overview
 
@@ -19,7 +19,7 @@
 | S02 | MetadataTrustScorer (Rust + .NET) | medium | ✅ complete |
 | S03 | CountQuotaSlice (Rust + .NET) | high | ✅ complete |
 | S04 | Core analytics + Cupel.Testing package | medium | ✅ complete |
-| S05 | OTel bridge companion package | high | — |
+| S05 | OTel bridge companion package | high | 🔄 planned |
 | S06 | Budget simulation + tiebreaker + spec alignment | low | — |
 
 ## Key Decisions Established in M003
