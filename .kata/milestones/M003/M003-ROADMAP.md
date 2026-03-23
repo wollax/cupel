@@ -64,10 +64,10 @@ This milestone is complete only when all are true:
 - [x] **S04: Core analytics + Cupel.Testing package** `risk:medium` `depends:[S01,S02,S03]`
   > After this: `BudgetUtilization(budget)`, `KindDiversity()`, and `TimestampCoverage()` are callable extension methods on SelectionReport in both languages; `Wollax.Cupel.Testing` NuGet package installs independently and exposes all 13 assertion patterns from the vocabulary spec via `SelectionReport.Should()` chains; tests green.
 
-- [ ] **S05: OTel bridge companion package** `risk:high` `depends:[S04]`
+- [x] **S05: OTel bridge companion package** `risk:high` `depends:[S04]`
   > After this: `Wollax.Cupel.Diagnostics.OpenTelemetry` NuGet companion package can be installed and configured to bridge any Cupel pipeline to OpenTelemetry's ActivitySource; a test harness verifies real Activity and Event output at all three verbosity tiers (StageOnly, StageAndExclusions, Full) with exact `cupel.*` attribute names matching the spec.
 
-- [ ] **S06: Budget simulation + tiebreaker + spec alignment** `risk:low` `depends:[S04]`
+- [x] **S06: Budget simulation + tiebreaker + spec alignment** `risk:low` `depends:[S04]`
   > After this: `GetMarginalItems` and `FindMinBudgetFor` are callable extension methods on the .NET Pipeline; the tiebreaker rule (score ties → id ascending) is committed to the GreedySlice spec chapter and implemented in both languages; all spec cross-references for M003 features are updated (SUMMARY.md, scorers.md index, slicers.md, changelog); Rust budget simulation parity decision is documented.
 
 ## Boundary Map

@@ -2,7 +2,7 @@
 
 Budget simulation methods are extension methods on `CupelPipeline` in the .NET implementation. They orchestrate internal `DryRun` calls to answer questions about what the pipeline would select at different token budgets — for example, which items are marginal at a given budget, or what is the minimum budget required to include a specific item.
 
-**Language Parity Note:** The budget simulation API is scoped to the .NET implementation in v1.3. Rust parity is deferred to M003+.
+**Language Parity Note:** The budget simulation API (`GetMarginalItems`, `FindMinBudgetFor`) is scoped to the .NET implementation in v1.3. Rust parity is deferred — the Rust crate does not expose these methods. The deferral rationale: the Rust `Pipeline` does not yet expose a public `DryRun` equivalent, and budget simulation was not a priority for Rust consumers in this release cycle. A future milestone will assess Rust parity when the Rust pipeline gains a `dry_run` surface.
 
 **`SweepBudget` Out-of-Scope Note:** `SweepBudget` (exhaustive budget sweep) has been assigned to the Smelt project and will not be added to Cupel.
 
@@ -10,9 +10,9 @@ Budget simulation methods are extension methods on `CupelPipeline` in the .NET i
 
 ## DryRun Determinism Invariant
 
-`DryRun` MUST produce identical output for identical inputs. Tie-breaking order MUST be stable across calls — items with equal scores or equal token counts MUST be ordered consistently across repeated invocations with the same inputs. Implementations that depend on non-deterministic ordering (e.g., hash-map iteration order) are non-conformant.
+`DryRun` MUST produce identical output for identical inputs. The slicer's tie-breaking rule MUST be deterministic and stable across calls. Implementations that depend on non-deterministic ordering (e.g., hash-map iteration order) are non-conformant.
 
-This invariant is the foundation on which the budget simulation methods rely. Both `GetMarginalItems` and `FindMinBudgetFor` call `DryRun` multiple times and compare the results; non-deterministic `DryRun` output would make those comparisons meaningless.
+For `GreedySlice`, determinism is guaranteed by the [deterministic tie-break contract](../slicers/greedy.md#deterministic-tie-break-contract): equal-density items are ordered by original index ascending. This means repeated `DryRun` calls with the same items and budget always produce the same included set in the same order — the foundation on which `GetMarginalItems` and `FindMinBudgetFor` rely to produce meaningful diff and binary-search results.
 
 ---
 

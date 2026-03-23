@@ -47,3 +47,6 @@ Wollax.Cupel.Diagnostics.SelectionReportExtensions
 static Wollax.Cupel.Diagnostics.SelectionReportExtensions.BudgetUtilization(this Wollax.Cupel.Diagnostics.SelectionReport! report, Wollax.Cupel.ContextBudget! budget) -> double
 static Wollax.Cupel.Diagnostics.SelectionReportExtensions.KindDiversity(this Wollax.Cupel.Diagnostics.SelectionReport! report) -> int
 static Wollax.Cupel.Diagnostics.SelectionReportExtensions.TimestampCoverage(this Wollax.Cupel.Diagnostics.SelectionReport! report) -> double
+Wollax.Cupel.BudgetSimulationExtensions
+static Wollax.Cupel.BudgetSimulationExtensions.GetMarginalItems(this Wollax.Cupel.CupelPipeline! pipeline, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.ContextBudget! budget, int slackTokens) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+static Wollax.Cupel.BudgetSimulationExtensions.FindMinBudgetFor(this Wollax.Cupel.CupelPipeline! pipeline, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.ContextItem! targetItem, int searchCeiling) -> int?

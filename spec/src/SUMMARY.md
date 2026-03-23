@@ -30,6 +30,7 @@
   - [GreedySlice](slicers/greedy.md)
   - [KnapsackSlice](slicers/knapsack.md)
   - [QuotaSlice](slicers/quota.md)
+  - [CountQuotaSlice](slicers/count-quota.md)
 - [Placers](placers.md)
   - [ChronologicalPlacer](placers/chronological.md)
   - [UShapedPlacer](placers/u-shaped.md)

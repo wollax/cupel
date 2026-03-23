@@ -217,4 +217,109 @@ public class GreedySliceTests
         await Assert.That(result[1]).IsEqualTo(item2);
         await Assert.That(result[2]).IsEqualTo(item3);
     }
+
+    // ──────────────────────────────────────────────
+    // Deterministic tie-break regression tests (S06)
+    // ──────────────────────────────────────────────
+
+    [Test]
+    public async Task EqualDensity_DifferentScoresAndTokens_PreservesInputOrder()
+    {
+        // Items with different score/token ratios that yield identical density
+        // density = score / tokens = 0.01 for all
+        var itemA = CreateItem("A", 100); // density = 1.0/100 = 0.01
+        var itemB = CreateItem("B", 50);  // density = 0.5/50  = 0.01
+        var itemC = CreateItem("C", 200); // density = 2.0/200 = 0.01
+        var scored = new List<ScoredItem>
+        {
+            CreateScored(itemA, 1.0),
+            CreateScored(itemB, 0.5),
+            CreateScored(itemC, 2.0)
+        };
+        // Budget fits all: 100 + 50 + 200 = 350
+        var budget = new ContextBudget(maxTokens: 500, targetTokens: 400);
+
+        var result = _slicer.Slice(scored, budget, NullTraceCollector.Instance);
+
+        await Assert.That(result.Count).IsEqualTo(3);
+        // Original input order must be preserved when densities are equal
+        await Assert.That(ReferenceEquals(result[0], itemA)).IsTrue();
+        await Assert.That(ReferenceEquals(result[1], itemB)).IsTrue();
+        await Assert.That(ReferenceEquals(result[2], itemC)).IsTrue();
+    }
+
+    [Test]
+    public async Task ZeroTokenItems_AllTied_PreservesInputOrder()
+    {
+        // All zero-token items share density MAX_FLOAT — tiebreak must be input order
+        var itemX = CreateItem("X", 0);
+        var itemY = CreateItem("Y", 0);
+        var itemZ = CreateItem("Z", 0);
+        var scored = new List<ScoredItem>
+        {
+            CreateScored(itemX, 0.3),
+            CreateScored(itemY, 0.9),
+            CreateScored(itemZ, 0.1)
+        };
+        var budget = new ContextBudget(maxTokens: 100, targetTokens: 50);
+
+        var result = _slicer.Slice(scored, budget, NullTraceCollector.Instance);
+
+        await Assert.That(result.Count).IsEqualTo(3);
+        // Score must NOT affect order among zero-token items — only original index matters
+        await Assert.That(ReferenceEquals(result[0], itemX)).IsTrue();
+        await Assert.That(ReferenceEquals(result[1], itemY)).IsTrue();
+        await Assert.That(ReferenceEquals(result[2], itemZ)).IsTrue();
+    }
+
+    [Test]
+    public async Task EqualDensity_BudgetConstraint_DropsLastInInputOrder()
+    {
+        // Equal density, but budget only fits 2 of 3 -> the LAST in input order is dropped
+        var item1 = CreateItem("first", 30);
+        var item2 = CreateItem("second", 30);
+        var item3 = CreateItem("third", 30);
+        var scored = new List<ScoredItem>
+        {
+            CreateScored(item1, 0.6),
+            CreateScored(item2, 0.6),
+            CreateScored(item3, 0.6)
+        };
+        // density = 0.6/30 = 0.02 for all; budget fits 60 tokens = 2 items
+        var budget = new ContextBudget(maxTokens: 100, targetTokens: 60);
+
+        var result = _slicer.Slice(scored, budget, NullTraceCollector.Instance);
+
+        await Assert.That(result.Count).IsEqualTo(2);
+        // First two in input order are selected; third is dropped
+        await Assert.That(ReferenceEquals(result[0], item1)).IsTrue();
+        await Assert.That(ReferenceEquals(result[1], item2)).IsTrue();
+    }
+
+    [Test]
+    public async Task DeterministicTieBreak_IsIdempotent()
+    {
+        // Run the same equal-density scenario 10 times and confirm identical results
+        var itemA = CreateItem("A", 20);
+        var itemB = CreateItem("B", 20);
+        var itemC = CreateItem("C", 20);
+
+        var budget = new ContextBudget(maxTokens: 100, targetTokens: 50);
+
+        for (var run = 0; run < 10; run++)
+        {
+            var scored = new List<ScoredItem>
+            {
+                CreateScored(itemA, 0.4),
+                CreateScored(itemB, 0.4),
+                CreateScored(itemC, 0.4)
+            };
+
+            var result = _slicer.Slice(scored, budget, NullTraceCollector.Instance);
+
+            await Assert.That(result.Count).IsEqualTo(2);
+            await Assert.That(ReferenceEquals(result[0], itemA)).IsTrue();
+            await Assert.That(ReferenceEquals(result[1], itemB)).IsTrue();
+        }
+    }
 }

@@ -56,28 +56,28 @@
 
 ## Tasks
 
-- [ ] **T01: Write failing-first verification for budget simulation and deterministic ties** `est:45m`
+- [x] **T01: Write failing-first verification for budget simulation and deterministic ties** `est:45m`
   - Why: This slice changes core selection behavior and public API surface; the stopping condition needs executable tests before implementation so regressions localize cleanly and spec/doc drift cannot hide behind green builds.
   - Files: `tests/Wollax.Cupel.Tests/Pipeline/BudgetSimulationTests.cs`, `tests/Wollax.Cupel.Tests/Slicing/GreedySliceTests.cs`, `crates/cupel/src/slicer/greedy.rs`
   - Do: Create `BudgetSimulationTests.cs` with initially failing tests that assert `GetMarginalItems` returns reference-equal marginal items, `FindMinBudgetFor` binary-searches to the first successful budget, and both methods throw the exact guard/argument messages for non-monotonic or invalid inputs; add explicit equal-density / zero-token tie-order regression tests to the existing .NET and Rust GreedySlice test surfaces.
   - Verify: `rtk dotnet test tests/Wollax.Cupel.Tests/Wollax.Cupel.Tests.csproj --filter "FullyQualifiedName~BudgetSimulationTests|FullyQualifiedName~GreedySliceTests"` should fail for missing API/docs rather than malformed tests; `rtk cargo test greedy -- --nocapture` should pass or fail only on the new tiebreak assertions.
   - Done when: the repo contains focused failing-first tests that name the intended budget-simulation API and deterministic tie behavior explicitly, and any failure points to unimplemented slice work rather than ambiguous test scaffolding.
 
-- [ ] **T02: Implement the .NET budget-override seam and public simulation APIs** `est:1h`
+- [x] **T02: Implement the .NET budget-override seam and public simulation APIs** `est:1h`
   - Why: The slice's main functional deliverable is real budget simulation on `CupelPipeline`; this task closes the runtime gap by reusing the real `DryRun` path instead of cloning pipeline logic in extensions.
   - Files: `src/Wollax.Cupel/CupelPipeline.cs`, `src/Wollax.Cupel/Diagnostics/CupelPipelineBudgetSimulationExtensions.cs`, `src/Wollax.Cupel/PublicAPI.Unshipped.txt`, `tests/Wollax.Cupel.Tests/Pipeline/BudgetSimulationTests.cs`
   - Do: Add an internal execution seam in `CupelPipeline` that accepts a temporary `ContextBudget` override while preserving the existing `Execute`/`DryRun` behavior and diagnostics pipeline; implement public extension methods `GetMarginalItems(items, budget, slackTokens)` and `FindMinBudgetFor(items, budget, targetItem, searchCeiling)` against that seam; keep item comparison reference-based; enforce the spec-defined `QuotaSlice` / `CountQuotaSlice` guards and precondition messages; update `PublicAPI.Unshipped.txt`; make the focused tests from T01 pass.
   - Verify: `rtk dotnet test tests/Wollax.Cupel.Tests/Wollax.Cupel.Tests.csproj --filter "FullyQualifiedName~BudgetSimulationTests"`; `rtk dotnet build src/Wollax.Cupel/Wollax.Cupel.csproj`; `rtk grep "GetMarginalItems|FindMinBudgetFor" src/Wollax.Cupel/PublicAPI.Unshipped.txt src/Wollax.Cupel`.
   - Done when: both public APIs exist with the explicit `ContextBudget` parameter, all budget-simulation tests pass, the guard/error messages are locked by tests, and `CupelPipeline` still has a single execution core.
 
-- [ ] **T03: Lock the GreedySlice tie-break contract across .NET, Rust, and spec text** `est:45m`
+- [x] **T03: Lock the GreedySlice tie-break contract across .NET, Rust, and spec text** `est:45m`
   - Why: The roadmap's “id ascending” wording is currently impossible literally because `ContextItem` has no `Id`; this task resolves the ambiguity by committing the real deterministic contract and preventing future regressions.
   - Files: `src/Wollax.Cupel/GreedySlice.cs`, `tests/Wollax.Cupel.Tests/Slicing/GreedySliceTests.cs`, `crates/cupel/src/slicer/greedy.rs`, `spec/src/slicers/greedy.md`, `spec/src/analytics/budget-simulation.md`
   - Do: Keep the implementations on stable original-index ordering for equal densities, adding or tightening comments/tests where needed; update the spec language from ambiguous “id ascending” intent to the concrete original-order/original-index contract that callers can actually rely on; ensure the budget-simulation determinism section references the same rule so repeated dry runs have a single documented tie behavior.
   - Verify: `rtk dotnet test tests/Wollax.Cupel.Tests/Wollax.Cupel.Tests.csproj --filter "FullyQualifiedName~GreedySliceTests"`; `rtk cargo test --all-targets`; `rtk grep "original index|original order|stable" spec/src/slicers/greedy.md spec/src/analytics/budget-simulation.md src/Wollax.Cupel/GreedySlice.cs crates/cupel/src/slicer/greedy.rs`.
   - Done when: .NET and Rust both have explicit executable regression coverage for equal-density ties, and the spec text matches the actual implementation without inventing a new `ContextItem.Id` surface.
 
-- [ ] **T04: Complete spec navigation, CountQuotaSlice docs, and milestone-facing changelog alignment** `est:45m`
+- [x] **T04: Complete spec navigation, CountQuotaSlice docs, and milestone-facing changelog alignment** `est:45m`
   - Why: S06 is the cleanup slice for M003 feature/spec alignment; without this task, the implementation can ship while the mdBook navigation and release notes still misrepresent what v1.3 contains.
   - Files: `spec/src/SUMMARY.md`, `spec/src/slicers.md`, `spec/src/scorers.md`, `spec/src/slicers/count-quota.md`, `spec/src/changelog.md`, `spec/src/analytics/budget-simulation.md`
   - Do: Write the real `CountQuotaSlice` spec page and link it from `SUMMARY.md` and `slicers.md`; update `scorers.md` so DecayScorer and MetadataTrustScorer are fully represented in the scorer table/categories; update `changelog.md` with the v1.3 additions and the deterministic tie-break clarification; extend the budget-simulation chapter with the explicit Rust-parity deferral rationale and the final `FindMinBudgetFor` signature so all cross-references agree.

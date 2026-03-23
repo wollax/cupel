@@ -8,9 +8,16 @@ namespace Wollax.Cupel;
 /// </summary>
 /// <remarks>
 /// Algorithm runs in O(N log N) due to sorting by density.
-/// Zero-token items have infinite density and are always included at zero cost.
+/// Zero-token items have density <see cref="double.MaxValue"/> and are always included at zero cost.
 /// Fills to <see cref="ContextBudget.TargetTokens"/> (soft goal), not
 /// <see cref="ContextBudget.MaxTokens"/> (hard ceiling).
+///
+/// <para><strong>Tie-break contract:</strong> When two items have equal value density,
+/// the item with the lower original index in the input list is preferred (original-index
+/// ascending). This guarantees deterministic output for identical inputs — a requirement
+/// for budget-simulation repeatability. Among zero-token items (all sharing density
+/// <see cref="double.MaxValue"/>), score values do NOT affect relative order; only the
+/// original index matters.</para>
 /// </remarks>
 public sealed class GreedySlice : ISlicer
 {
@@ -36,7 +43,8 @@ public sealed class GreedySlice : ISlicer
             densities[i] = (density, i);
         }
 
-        // Sort descending by density, stable via ascending index
+        // Sort descending by density; tiebreak by original index ascending
+        // to guarantee deterministic output for equal-density items.
         Array.Sort(densities, static (a, b) =>
         {
             var densityComparison = b.Density.CompareTo(a.Density);

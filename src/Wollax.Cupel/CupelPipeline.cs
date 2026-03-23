@@ -90,10 +90,25 @@ public sealed class CupelPipeline
         return ExecuteCore(items, trace);
     }
 
+    /// <summary>
+    /// Internal dry-run with a temporary budget override. Used by budget-simulation
+    /// extension methods to execute the full pipeline at different budget levels
+    /// without mutating the pipeline's stored <see cref="_budget"/>.
+    /// </summary>
+    internal ContextResult DryRunWithBudget(IReadOnlyList<ContextItem> items, ContextBudget temporaryBudget)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(temporaryBudget);
+        var trace = new DiagnosticTraceCollector();
+        return ExecuteCore(items, trace, temporaryBudget);
+    }
+
     private ContextResult ExecuteCore(
         IReadOnlyList<ContextItem> items,
-        ITraceCollector trace)
+        ITraceCollector trace,
+        ContextBudget? budgetOverride = null)
     {
+        var budget = budgetOverride ?? _budget;
         var sw = trace.IsEnabled ? Stopwatch.StartNew() : null;
         ReportBuilder? reportBuilder = trace is DiagnosticTraceCollector ? new ReportBuilder() : null;
 
@@ -142,11 +157,11 @@ public sealed class CupelPipeline
         for (var i = 0; i < pinned.Count; i++)
             pinnedTokens += pinned[i].Tokens;
 
-        var availableForPinned = _budget.MaxTokens - _budget.OutputReserve - _budget.TotalReservedTokens;
+        var availableForPinned = budget.MaxTokens - budget.OutputReserve - budget.TotalReservedTokens;
         if (pinnedTokens > availableForPinned)
         {
             throw new InvalidOperationException(
-                $"Pinned items require {pinnedTokens} tokens, but only {availableForPinned} tokens are available (MaxTokens={_budget.MaxTokens} - OutputReserve={_budget.OutputReserve} - ReservedSlots={_budget.TotalReservedTokens}).");
+                $"Pinned items require {pinnedTokens} tokens, but only {availableForPinned} tokens are available (MaxTokens={budget.MaxTokens} - OutputReserve={budget.OutputReserve} - ReservedSlots={budget.TotalReservedTokens}).");
         }
 
         // SCORE: score each scoreable item
@@ -245,12 +260,12 @@ public sealed class CupelPipeline
         }
 
         // SLICE: create adjusted budget and slice
-        var effectiveMax = Math.Max(0, _budget.MaxTokens - _budget.OutputReserve - pinnedTokens - _budget.TotalReservedTokens);
-        var effectiveTarget = Math.Max(0, _budget.TargetTokens - pinnedTokens - _budget.TotalReservedTokens);
+        var effectiveMax = Math.Max(0, budget.MaxTokens - budget.OutputReserve - pinnedTokens - budget.TotalReservedTokens);
+        var effectiveTarget = Math.Max(0, budget.TargetTokens - pinnedTokens - budget.TotalReservedTokens);
 
-        if (_budget.EstimationSafetyMarginPercent > 0)
+        if (budget.EstimationSafetyMarginPercent > 0)
         {
-            var multiplier = 1.0 - _budget.EstimationSafetyMarginPercent / 100.0;
+            var multiplier = 1.0 - budget.EstimationSafetyMarginPercent / 100.0;
             effectiveMax = (int)(effectiveMax * multiplier);
             effectiveTarget = (int)(effectiveTarget * multiplier);
             effectiveTarget = Math.Min(effectiveTarget, effectiveMax);
@@ -325,7 +340,7 @@ public sealed class CupelPipeline
                 var capPercent = quotaSlicer.Quotas.GetCap(kvp.Key);
                 if (capPercent < 100)
                 {
-                    var capTokens = (int)(capPercent / 100.0 * _budget.TargetTokens);
+                    var capTokens = (int)(capPercent / 100.0 * budget.TargetTokens);
                     if (kvp.Value > capTokens)
                     {
                         trace.RecordItemEvent(new TraceEvent
@@ -345,13 +360,13 @@ public sealed class CupelPipeline
         for (var i = 0; i < merged.Length; i++)
             mergedTokens += merged[i].Item.Tokens;
 
-        if (mergedTokens > _budget.TargetTokens)
+        if (mergedTokens > budget.TargetTokens)
         {
             switch (_overflowStrategy)
             {
                 case OverflowStrategy.Throw:
                     throw new OverflowException(
-                        $"Selected items require {mergedTokens} tokens, exceeding the target budget of {_budget.TargetTokens} tokens ({mergedTokens - _budget.TargetTokens} tokens over budget).");
+                        $"Selected items require {mergedTokens} tokens, exceeding the target budget of {budget.TargetTokens} tokens ({mergedTokens - budget.TargetTokens} tokens over budget).");
 
                 case OverflowStrategy.Truncate:
                 {
@@ -367,7 +382,7 @@ public sealed class CupelPipeline
                     var currentTokens = 0;
                     for (var i = 0; i < merged.Length; i++)
                     {
-                        if (merged[i].Item.Pinned || currentTokens + merged[i].Item.Tokens <= _budget.TargetTokens)
+                        if (merged[i].Item.Pinned || currentTokens + merged[i].Item.Tokens <= budget.TargetTokens)
                         {
                             kept.Add(merged[i]);
                             currentTokens += merged[i].Item.Tokens;
@@ -379,14 +394,14 @@ public sealed class CupelPipeline
                     }
 
                     // Handle case where pinned items alone exceed target (best-effort)
-                    if (currentTokens > _budget.TargetTokens)
+                    if (currentTokens > budget.TargetTokens)
                     {
                         trace.RecordItemEvent(new TraceEvent
                         {
                             Stage = PipelineStage.Slice,
                             Duration = TimeSpan.Zero,
                             ItemCount = 0,
-                            Message = $"WARNING: After truncation, selected items still exceed TargetTokens ({currentTokens} > {_budget.TargetTokens}). Pinned items cannot be removed."
+                            Message = $"WARNING: After truncation, selected items still exceed TargetTokens ({currentTokens} > {budget.TargetTokens}). Pinned items cannot be removed."
                         });
                     }
 
@@ -402,9 +417,9 @@ public sealed class CupelPipeline
 
                     _overflowObserver?.Invoke(new OverflowEvent
                     {
-                        TokensOverBudget = mergedTokens - _budget.TargetTokens,
+                        TokensOverBudget = mergedTokens - budget.TargetTokens,
                         OverflowingItems = overflowItems,
-                        Budget = _budget
+                        Budget = budget
                     });
                     break;
                 }
