@@ -36,8 +36,20 @@ public sealed class CupelOpenTelemetryTraceCollector : ITraceCollector, IDisposa
     /// <inheritdoc/>
     public void RecordItemEvent(TraceEvent traceEvent)
     {
-        // No-op for StageOnly tier. Higher verbosity tiers (T02) will use this.
+        // No-op: item-level detail is sourced from SelectionReport in Complete().
     }
+
+    /// <summary>
+    /// Maps an <see cref="ExclusionReason"/> to the <see cref="PipelineStage"/> that produced it.
+    /// </summary>
+    private static PipelineStage MapReasonToStage(ExclusionReason reason) => reason switch
+    {
+        ExclusionReason.NegativeTokens => PipelineStage.Classify,
+        ExclusionReason.Filtered => PipelineStage.Classify,
+        ExclusionReason.ScoredTooLow => PipelineStage.Score,
+        ExclusionReason.Deduplicated => PipelineStage.Deduplicate,
+        _ => PipelineStage.Slice  // BudgetExceeded, PinnedOverride, CountCapExceeded, QuotaCapExceeded, QuotaRequireDisplaced, CountRequireCandidatesExhausted
+    };
 
     /// <summary>
     /// Creates the root <c>cupel.pipeline</c> Activity and one child Activity per stage,
@@ -94,6 +106,45 @@ public sealed class CupelOpenTelemetryTraceCollector : ITraceCollector, IDisposa
             }
 
             stageActivity?.SetTag("cupel.stage.item_count_in", itemCountIn);
+
+            // StageAndExclusions tier: add exclusion count tag and per-exclusion events
+            if (_verbosity >= CupelVerbosity.StageAndExclusions && report != null)
+            {
+                var stage = stageData.Stage;
+                var stageExclusions = report.Excluded
+                    .Where(e => MapReasonToStage(e.Reason) == stage)
+                    .ToList();
+
+                stageActivity?.SetTag("cupel.exclusion.count", stageExclusions.Count);
+
+                foreach (var excluded in stageExclusions)
+                {
+                    stageActivity?.AddEvent(new ActivityEvent(
+                        "cupel.exclusion",
+                        tags: new ActivityTagsCollection
+                        {
+                            ["cupel.exclusion.reason"] = excluded.Reason.ToString(),
+                            ["cupel.exclusion.item_kind"] = excluded.Item.Kind.ToString(),
+                            ["cupel.exclusion.item_tokens"] = excluded.Item.Tokens
+                        }));
+                }
+            }
+
+            // Full tier: add per-included-item events on the Place stage
+            if (_verbosity >= CupelVerbosity.Full && report != null && stageData.Stage == PipelineStage.Place)
+            {
+                foreach (var included in report.Included)
+                {
+                    stageActivity?.AddEvent(new ActivityEvent(
+                        "cupel.item.included",
+                        tags: new ActivityTagsCollection
+                        {
+                            ["cupel.item.kind"] = included.Item.Kind.ToString(),
+                            ["cupel.item.tokens"] = included.Item.Tokens,
+                            ["cupel.item.score"] = included.Score
+                        }));
+                }
+            }
 
             stageActivity?.SetEndTime((stageStart + stageData.Duration).UtcDateTime);
             stageActivity?.Stop();

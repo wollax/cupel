@@ -1,9 +1,0 @@
-{
-  "pid": 12304,
-  "startedAt": "2026-03-23T16:50:46.451Z",
-  "unitType": "execute-task",
-  "unitId": "M003/S05/T01",
-  "unitStartedAt": "2026-03-23T17:07:56.671Z",
-  "completedUnits": 2,
-  "sessionFile": "/Users/wollax/.kata-cli/sessions/2026-03-23T17-07-56-596Z_8afa9bd9-79b0-4fad-8cac-3ebf50c3e8df.jsonl"
-}
