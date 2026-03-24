@@ -324,14 +324,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R056 — DryRunWithPolicy override
 - Class: core-capability
-- Status: deferred
-- Description: Policy-explicit variant of `dry_run` for fork diagnostic callers who want to test arbitrary pipeline configurations without constructing new Pipeline instances
-- Why it matters: Would simplify PolicySensitivityReport usage — callers wouldn't need to build separate Pipeline objects
-- Source: brainstorm (March 21)
-- Primary owning slice: none
+- Status: active
+- Description: `DryRunWithPolicy` — a method on `CupelPipeline` (.NET) and `Pipeline` (Rust) that runs the full pipeline using a caller-supplied policy object instead of the pipeline's own scorer/slicer/placer. Also includes a policy-accepting `PolicySensitivity` overload (.NET) and a `policy_sensitivity` free function (Rust) so fork-diagnostic callers can pass `(label, policy)` tuples instead of pre-built pipelines. Rust gains a new `Policy` struct (with `PolicyBuilder`) and `PolicySensitivityReport` type to achieve parity.
+- Why it matters: Fork-diagnostic callers currently must construct N full `CupelPipeline` instances to compare N configurations. `DryRunWithPolicy` makes configuration comparison frictionless — pass a policy, get a report.
+- Source: brainstorm (March 21); demand confirmed by R051 usage patterns
+- Primary owning slice: M007/S01 (.NET), M007/S02 (Rust), M007/S03 (Rust fork diagnostic + spec)
 - Supporting slices: none
 - Validation: unmapped
-- Notes: Defer until R051 (fork diagnostic) proves demand for this convenience API.
+- Notes: M007 is the first Rust implementation of PolicySensitivity. CupelPolicy cannot express CountQuotaSlice (enum gap) — documented as a known limitation.
 
 ### R057 — TimestampCoverageReport split form
 - Class: quality-attribute
@@ -407,6 +407,7 @@ This file is the explicit capability and coverage contract for the project.
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
+| R056 | core-capability | active | M007/S01, M007/S02, M007/S03 | none | unmapped |
 | R040 | differentiator | validated | M002/S03 | M002/S01 | validated |
 | R041 | quality-attribute | validated | M002/S02 | none | validated |
 | R042 | differentiator | validated | M002/S04 | none | validated |
@@ -416,7 +417,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 0
-- Mapped to slices: 0
+- Active requirements: 1 (R056)
+- Mapped to slices: 1 (R056 → M007/S01, S02, S03)
 - Validated: 31 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R060–R061)
 - Unmapped active requirements: 0

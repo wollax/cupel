@@ -1,17 +1,17 @@
 # Kata State
 
-**Active Milestone:** none (M006 complete)
-**Active Slice:** none
+**Active Milestone:** M007 — DryRunWithPolicy
+**Active Slice:** none (planning complete, ready for S01)
 **Active Task:** none
-**Phase:** milestone complete
+**Phase:** Planning complete
 
 ## Recent Decisions
 
-- D143: S03 verification strategy — integration-level with real dry_run() composition tests in both languages; full-suite regression; PublicAPI build-level audit
-- D144: .NET QuotaSlice requires QuotaSet built via QuotaBuilder — no direct list constructor; QuotaSet has internal constructor
-- D142: Integration tests require WithScorer(new ReflexiveScorer()) — scorer is mandatory in PipelineBuilder
-- D140: CountQuotaSlice.Entries exposed as internal property (not public)
-- D136: M006 is implementation-only; design fully settled in count-quota-design.md
+- D148: DryRunWithPolicy takes explicit budget parameter (not inherited from pipeline)
+- D149: Rust Policy struct uses Arc<dyn Trait> for scorer/slicer/placer (not Box — enables multi-run policy_sensitivity)
+- D150: Rust policy_sensitivity is a free function, not a Pipeline method
+- D151: CupelPolicy cannot express CountQuotaSlice — documented gap, no code workaround
+- D147: Composition test budget 600 tokens (M006)
 
 ## Blockers
 
@@ -19,4 +19,4 @@
 
 ## Next Action
 
-M006 is complete. Start M007 or queue next milestone. All R061 criteria validated. dotnet build Cupel.slnx: 0 errors, 0 warnings. cargo test --all-targets: all passing. R061 marked validated in .kata/REQUIREMENTS.md.
+Start S01: .NET DryRunWithPolicy and policy-accepting PolicySensitivity. Branch: `kata/M007/S01`. Read M007-CONTEXT.md before starting implementation.
