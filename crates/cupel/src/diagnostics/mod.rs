@@ -19,7 +19,7 @@ use crate::model::{ContextBudget, ContextItem};
 /// degraded selection under `ScarcityBehavior::Degrade`. The pipeline continues;
 /// callers should inspect this list to detect unmet count requirements.
 #[non_exhaustive]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CountRequirementShortfall {
     /// The context kind that could not be fully satisfied.
@@ -61,7 +61,7 @@ pub enum PipelineStage {
 /// [`SelectionReport::events`]. Together they provide a stage-by-stage view of
 /// how long each stage ran and how many items it processed.
 #[non_exhaustive]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TraceEvent {
     /// The pipeline stage that emitted this event.
@@ -83,7 +83,7 @@ pub struct TraceEvent {
 /// identifies how many tokens are over, which items are responsible, and what
 /// the original budget was.
 #[non_exhaustive]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct OverflowEvent {
     /// How many tokens the selection exceeds the budget by (always positive).
@@ -255,7 +255,7 @@ pub enum InclusionReason {
 /// The `included` list on [`SelectionReport`] is in final placed order —
 /// the order determined by the Placer, not score order.
 #[non_exhaustive]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct IncludedItem {
     /// The selected context item.
@@ -277,7 +277,7 @@ pub struct IncludedItem {
 /// list on [`SelectionReport`] is sorted by `score` descending, surfacing the
 /// highest-value rejected items first.
 #[non_exhaustive]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ExcludedItem {
     /// The excluded context item.
@@ -309,7 +309,7 @@ pub struct ExcludedItem {
 /// scarcity caused a `require_count` to go unmet. An empty list means all
 /// count requirements were fully satisfied.
 #[non_exhaustive]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct SelectionReport {
     /// All recorded trace events in insertion (stage) order.

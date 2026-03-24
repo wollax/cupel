@@ -6,14 +6,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R050 — SelectionReport structural equality
 - Class: core-capability
-- Status: active
-- Description: `SelectionReport`, `IncludedItem`, and `ExcludedItem` implement structural equality in both languages — `PartialEq`/`Eq` (Rust) + `IEquatable<T>` (.NET). Exact f64 comparison (no epsilon). Enables programmatic comparison of reports for fork diagnostics and snapshot testing.
+- Status: validated
+- Description: `SelectionReport`, `IncludedItem`, and `ExcludedItem` implement structural equality in both languages — `PartialEq` (Rust, not `Eq` due to f64 fields per D109) + `IEquatable<T>` (.NET). Exact f64 comparison (no epsilon). Enables programmatic comparison of reports for fork diagnostics and snapshot testing.
 - Why it matters: Without structural equality, PolicySensitivityReport cannot diff reports programmatically, and snapshot testing cannot assert expected vs actual report equivalence. This is a load-bearing prerequisite for R051 and R053.
 - Source: brainstorm (March 21 — M003 candidate list)
 - Primary owning slice: M004/S01
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Rust `SelectionReport` currently derives `Debug, Clone` but not `PartialEq`. .NET uses `sealed record` which gets value equality for free on properties but needs explicit `IEquatable` for nested collections. Exact f64 equality is correct because deterministic pipelines produce identical scores.
+- Validation: validated — Rust: PartialEq derived on 6 diagnostic structs + ContextBudget; 15 equality tests in `crates/cupel/tests/equality.rs`; `cargo test --all-targets` 143 passed. .NET: IEquatable on ContextItem (collection-aware), IncludedItem, ExcludedItem (null-safe DeduplicatedAgainst), SelectionReport (SequenceEqual for all lists); 28 equality tests; `dotnet test` 764 passed; PublicAPI.Unshipped.txt updated; `dotnet build` 0 warnings
+- Notes: Rust uses PartialEq only (not Eq) because f64 fields prevent it (D109). .NET record compiler generates operator ==/!= from custom Equals automatically (D111). ContextBudget also received PartialEq as a transitive dependency (D110).
 
 ### R051 — PolicySensitivityReport — fork diagnostic
 - Class: differentiator
@@ -373,7 +373,7 @@ This file is the explicit capability and coverage contract for the project.
 | R020 | core-capability | validated | M003/S01 | M003/S06 | validated |
 | R021 | quality-attribute | validated | M003/S04 | none | validated |
 | R022 | operability | validated | M003/S05 | none | validated |
-| R050 | core-capability | active | M004/S01 | none | unmapped |
+| R050 | core-capability | validated | M004/S01 | none | validated |
 | R051 | differentiator | active | M004/S02 | none | unmapped |
 | R052 | core-capability | active | M004/S03 | none | unmapped |
 | R053 | quality-attribute | active | M004/S04 | none | unmapped |
@@ -390,7 +390,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 5 (R050–R054)
-- Mapped to slices: 5 (R050→M004/S01, R051→M004/S02, R052→M004/S03, R053→M004/S04, R054→M004/S05)
-- Validated: 23 (R001–R006, R010–R014, R020–R022, R040–R045)
+- Active requirements: 4 (R051–R054)
+- Mapped to slices: 4 (R051→M004/S02, R052→M004/S03, R053→M004/S04, R054→M004/S05)
+- Validated: 24 (R001–R006, R010–R014, R020–R022, R040–R045, R050)
 - Unmapped active requirements: 0

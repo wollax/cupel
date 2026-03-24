@@ -52,7 +52,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: SelectionReport structural equality** `risk:medium` `depends:[]`
+- [x] **S01: SelectionReport structural equality** `risk:medium` `depends:[]`
   > After this: `SelectionReport`, `IncludedItem`, and `ExcludedItem` support `==` in both languages with exact f64 equality; all existing tests pass; downstream slices can compare reports programmatically.
 
 - [ ] **S02: PolicySensitivityReport — fork diagnostic** `risk:high` `depends:[S01]`

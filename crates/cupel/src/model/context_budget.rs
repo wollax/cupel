@@ -28,7 +28,7 @@ use crate::model::ContextKind;
 /// assert!(err.is_err());
 /// # Ok::<(), cupel::CupelError>(())
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ContextBudget {
     max_tokens: i64,
     target_tokens: i64,

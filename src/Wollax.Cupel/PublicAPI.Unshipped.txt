@@ -1,4 +1,12 @@
 #nullable enable
+Wollax.Cupel.ContextItem.Equals(Wollax.Cupel.ContextItem? other) -> bool
+override Wollax.Cupel.ContextItem.GetHashCode() -> int
+Wollax.Cupel.Diagnostics.IncludedItem.Equals(Wollax.Cupel.Diagnostics.IncludedItem? other) -> bool
+override Wollax.Cupel.Diagnostics.IncludedItem.GetHashCode() -> int
+Wollax.Cupel.Diagnostics.ExcludedItem.Equals(Wollax.Cupel.Diagnostics.ExcludedItem? other) -> bool
+override Wollax.Cupel.Diagnostics.ExcludedItem.GetHashCode() -> int
+Wollax.Cupel.Diagnostics.SelectionReport.Equals(Wollax.Cupel.Diagnostics.SelectionReport? other) -> bool
+override Wollax.Cupel.Diagnostics.SelectionReport.GetHashCode() -> int
 Wollax.Cupel.ContextBudget.TotalReserved.get -> int
 Wollax.Cupel.ContextBudget.UnreservedCapacity.get -> int
 Wollax.Cupel.ContextBudget.HasCapacity.get -> bool

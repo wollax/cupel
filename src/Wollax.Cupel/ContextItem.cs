@@ -6,7 +6,7 @@ namespace Wollax.Cupel;
 /// Immutable data model representing a single piece of context in the pipeline.
 /// Every scorer, slicer, and placer operates on ContextItem instances.
 /// </summary>
-public sealed record ContextItem
+public sealed record ContextItem : IEquatable<ContextItem>
 {
     /// <summary>
     /// The full textual content of this context item. Must not be null.
@@ -91,4 +91,56 @@ public sealed record ContextItem
     /// </summary>
     [JsonPropertyName("originalTokens")]
     public int? OriginalTokens { get; init; }
+
+    /// <inheritdoc />
+    public bool Equals(ContextItem? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+
+        return Content == other.Content
+            && Tokens == other.Tokens
+            && Kind == other.Kind
+            && Source == other.Source
+            && Priority == other.Priority
+            && Pinned == other.Pinned
+            && OriginalTokens == other.OriginalTokens
+            && FutureRelevanceHint == other.FutureRelevanceHint
+            && Timestamp == other.Timestamp
+            && Tags.SequenceEqual(other.Tags)
+            && MetadataEquals(Metadata, other.Metadata);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(Content);
+        hash.Add(Tokens);
+        hash.Add(Kind);
+        hash.Add(Source);
+        hash.Add(Priority);
+        hash.Add(Pinned);
+        // Tags: include count + first element for pragmatic O(1) contribution
+        hash.Add(Tags.Count);
+        if (Tags.Count > 0) hash.Add(Tags[0]);
+        // Metadata: include count only
+        hash.Add(Metadata.Count);
+        return hash.ToHashCode();
+    }
+
+    private static bool MetadataEquals(
+        IReadOnlyDictionary<string, object?> left,
+        IReadOnlyDictionary<string, object?> right)
+    {
+        if (left.Count != right.Count) return false;
+
+        foreach (var kvp in left)
+        {
+            if (!right.TryGetValue(kvp.Key, out var otherValue)) return false;
+            if (!Equals(kvp.Value, otherValue)) return false;
+        }
+
+        return true;
+    }
 }
