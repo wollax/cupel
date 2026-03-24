@@ -50,7 +50,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Crate scaffold + chain plumbing** `risk:medium` `depends:[]`
   > After this: `cupel-testing` crate exists, compiles, and `report.should()` returns a `SelectionReportAssertionChain` that can be chained (no assertions yet, but the plumbing works and one smoke test proves the chain compiles).
 
-- [ ] **S02: 13 assertion patterns** `risk:medium` `depends:[S01]`
+- [x] **S02: 13 assertion patterns** `risk:medium` `depends:[S01]`
   > After this: all 13 spec assertion patterns are implemented with positive/negative tests and structured panic messages; `cargo test --all-targets` passes; `cargo clippy` clean.
 
 - [ ] **S03: Integration tests + publish readiness** `risk:low` `depends:[S02]`

@@ -1,18 +1,22 @@
 # Kata State
 
 **Active Milestone:** M005 — cupel-testing crate
-**Active Slice:** S02 — 13 assertion patterns
-**Active Task:** None — S02 not yet planned
+**Active Slice:** S03 — Integration tests + publish readiness
 **Phase:** Planning
 
 ## Recent Decisions
-- D126: Separate `cupel-testing` crate (not feature flag)
-- D127: Fluent chain API (`report.should()`)
-- D128: Panic on failure (not Result)
-- D129: S01 verification strategy — contract-level (compile + test + clippy)
+- D130: S02 verification strategy — integration-level (26 tests, 2 per pattern, real mini-pipelines)
+- D131: Pattern 13 index-based approach — `Vec<(f64, usize)>` + `HashSet<usize>` edge positions (f64/Hash constraint resolved)
+- D132: ExclusionReason variant matching via `std::mem::discriminant` (not `==`)
+- D133: Ordering tests use PriorityScorer + `.priority(n)` for deterministic scores (RecencyScorer requires timestamps)
 
 ## Blockers
 - None
 
 ## Next Action
-Plan S02: decompose 13 assertion patterns into tasks, write S02-PLAN.md and task plans.
+S02 complete. Begin S03: integration tests on real `Pipeline::run_traced()` output + `cargo package` readiness + publish metadata.
+
+## Milestone Progress (M005)
+- [x] S01: Crate scaffold + chain plumbing — DONE
+- [x] S02: 13 assertion patterns — 26 tests pass, both crates clippy-clean — DONE
+- [ ] S03: Integration tests + publish readiness

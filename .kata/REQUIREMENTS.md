@@ -12,7 +12,7 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user
 - Primary owning slice: M005/S02
 - Supporting slices: M005/S01, M005/S03
-- Validation: unmapped
+- Validation: partially validated — M005/S02: all 13 assertion patterns implemented on `SelectionReportAssertionChain` with spec-compliant panic messages; 26 integration tests (2 per pattern) pass; both crates clippy-clean. Remaining: `cargo package` publishability + end-to-end integration tests on real `Pipeline::run_traced()` output (M005/S03).
 - Notes: Separate crate (not feature flag). Fluent chain (`report.should()`). Panic on failure. No snapshots (D107 — Rust callers use `insta`). D126 (separate crate), D127 (fluent chain), D128 (panic on failure).
 
 ### R050 — SelectionReport structural equality
@@ -389,7 +389,7 @@ This file is the explicit capability and coverage contract for the project.
 | R052 | core-capability | validated | M004/S03 | none | validated |
 | R053 | quality-attribute | validated | M004/S04 | none | validated |
 | R054 | core-capability | validated | M004/S05 | none | validated |
-| R060 | core-capability | active | M005/S02 | S01, S03 | unmapped |
+| R060 | core-capability | active | M005/S02 | S01, S03 | partially validated (S02) |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
