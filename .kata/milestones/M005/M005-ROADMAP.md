@@ -47,7 +47,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Crate scaffold + chain plumbing** `risk:medium` `depends:[]`
+- [x] **S01: Crate scaffold + chain plumbing** `risk:medium` `depends:[]`
   > After this: `cupel-testing` crate exists, compiles, and `report.should()` returns a `SelectionReportAssertionChain` that can be chained (no assertions yet, but the plumbing works and one smoke test proves the chain compiles).
 
 - [ ] **S02: 13 assertion patterns** `risk:medium` `depends:[S01]`

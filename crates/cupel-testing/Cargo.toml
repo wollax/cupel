@@ -1,0 +1,14 @@
+[package]
+name = "cupel-testing"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/wollax/cupel"
+description = "Fluent assertion vocabulary for cupel selection reports"
+readme = "README.md"
+categories = ["development-tools::testing"]
+keywords = ["cupel", "testing", "assertions", "fluent"]
+
+[dependencies]
+cupel = { path = "../cupel" }
