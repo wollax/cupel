@@ -54,6 +54,12 @@ Given candidates and a budget, return the optimal context selection with full ex
 - S05: Rust budget simulation parity — get_marginal_items + find_min_budget_for on Pipeline; monotonicity guards; 9 integration tests; R054 validated
 - Test counts: cargo test 158 passed, dotnet test 777 passed
 
+**M007: DryRunWithPolicy — all 3 slices complete (2026-03-24):**
+- S01: `.NET DryRunWithPolicy` + policy-based `PolicySensitivity` overload — 6+3 tests, PublicAPI updated, 679 .NET tests pass
+- S02: Rust `Policy` + `PolicyBuilder` + `Pipeline::dry_run_with_policy` — `run_with_components` refactor, 5 integration tests, 167 Rust tests pass
+- S03: Rust `policy_sensitivity` (policy-based) + `policy_sensitivity_from_pipelines` (renamed) + `run_policy` bridge + 3 integration tests; spec chapter `spec/src/analytics/policy-sensitivity.md` TBD-free; CHANGELOG.md Unreleased section; R056 validated
+- Test counts: cargo test 167 passed, dotnet test 679 passed, clippy clean
+
 ## Architecture / Key Patterns
 
 - **Tech stack**: C# / .NET 10 + Rust (Edition 2024, MSRV 1.85)
@@ -78,5 +84,4 @@ See `.kata/REQUIREMENTS.md` for the explicit capability contract, requirement st
 - [x] M004: v1.4 Diagnostics & Simulation Parity — SelectionReport structural equality, PolicySensitivityReport fork diagnostic, IQuotaPolicy abstraction + QuotaUtilization, snapshot testing in Cupel.Testing, Rust budget simulation parity (all 5 slices complete, 2026-03-23; 29 requirements validated; 158 Rust tests, 777 .NET tests)
 - [x] M005: cupel-testing crate — Rust testing vocabulary (separate `cupel-testing` crate with 13 spec assertion patterns, fluent chain API, `cargo package` exits 0; R060 validated; all 3 slices complete, 2026-03-24)
 - [x] M006: Count-Based Quotas — Implement `CountQuotaSlice` in both Rust and .NET: two-phase count-satisfy + budget-distribute algorithm, `CountCapExceeded` exclusion reason, `count_requirement_shortfalls` on SelectionReport, scarcity degradation, construction-time guards (KnapsackSlice rejection, require > cap)
-- [ ] M007: DryRunWithPolicy — `DryRunWithPolicy` method + policy-accepting `PolicySensitivity` overload in .NET; Rust `Policy` struct, `dry_run_with_policy`, and `policy_sensitivity` free function; spec chapter; R056 validated
-  - [x] S01: .NET DryRunWithPolicy and policy-accepting PolicySensitivity — complete (2026-03-24; 679 tests, 0 warnings)
+- [x] M007: DryRunWithPolicy — `DryRunWithPolicy` method + policy-accepting `PolicySensitivity` overload in .NET; Rust `Policy` struct, `dry_run_with_policy`, `policy_sensitivity`, and `policy_sensitivity_from_pipelines`; spec chapter at `spec/src/analytics/policy-sensitivity.md`; R056 validated (all 3 slices complete, 2026-03-24; 167 Rust tests, 679 .NET tests)
