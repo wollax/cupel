@@ -135,14 +135,14 @@ public sealed class CupelPolicy
                 nameof(quotas));
         }
 
-        Scorers = [..scorers];
+        Scorers = [.. scorers];
         SlicerType = slicerType;
         PlacerType = placerType;
         DeduplicationEnabled = deduplicationEnabled;
         OverflowStrategy = overflowStrategy;
         KnapsackBucketSize = knapsackBucketSize;
         StreamBatchSize = streamBatchSize;
-        Quotas = quotas is not null ? [..quotas] : null;
+        Quotas = quotas is not null ? [.. quotas] : null;
         Name = name;
         Description = description;
     }

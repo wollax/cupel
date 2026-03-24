@@ -480,60 +480,60 @@ public sealed class CupelPipeline
                         $"Selected items require {mergedTokens} tokens, exceeding the target budget of {budget.TargetTokens} tokens ({mergedTokens - budget.TargetTokens} tokens over budget).");
 
                 case OverflowStrategy.Truncate:
-                {
-                    var hasPinned = pinned.Count > 0;
-                    var truncateReason = hasPinned
-                        ? ExclusionReason.PinnedOverride
-                        : ExclusionReason.BudgetExceeded;
-
-                    // Single-pass: keep items from the front (highest-scored), skip from the back
-                    // merged = [pinned items (score 1.0)] + [sliced items (score desc)]
-                    // Walk forward, accumulate until budget exhausted, then exclude the rest
-                    var kept = new List<ScoredItem>(merged.Length);
-                    var currentTokens = 0;
-                    for (var i = 0; i < merged.Length; i++)
                     {
-                        if (merged[i].Item.Pinned || currentTokens + merged[i].Item.Tokens <= budget.TargetTokens)
-                        {
-                            kept.Add(merged[i]);
-                            currentTokens += merged[i].Item.Tokens;
-                        }
-                        else
-                        {
-                            reportBuilder?.AddExcluded(merged[i].Item, merged[i].Score, truncateReason);
-                        }
-                    }
+                        var hasPinned = pinned.Count > 0;
+                        var truncateReason = hasPinned
+                            ? ExclusionReason.PinnedOverride
+                            : ExclusionReason.BudgetExceeded;
 
-                    // Handle case where pinned items alone exceed target (best-effort)
-                    if (currentTokens > budget.TargetTokens)
-                    {
-                        trace.RecordItemEvent(new TraceEvent
+                        // Single-pass: keep items from the front (highest-scored), skip from the back
+                        // merged = [pinned items (score 1.0)] + [sliced items (score desc)]
+                        // Walk forward, accumulate until budget exhausted, then exclude the rest
+                        var kept = new List<ScoredItem>(merged.Length);
+                        var currentTokens = 0;
+                        for (var i = 0; i < merged.Length; i++)
                         {
-                            Stage = PipelineStage.Slice,
-                            Duration = TimeSpan.Zero,
-                            ItemCount = 0,
-                            Message = $"WARNING: After truncation, selected items still exceed TargetTokens ({currentTokens} > {budget.TargetTokens}). Pinned items cannot be removed."
-                        });
-                    }
+                            if (merged[i].Item.Pinned || currentTokens + merged[i].Item.Tokens <= budget.TargetTokens)
+                            {
+                                kept.Add(merged[i]);
+                                currentTokens += merged[i].Item.Tokens;
+                            }
+                            else
+                            {
+                                reportBuilder?.AddExcluded(merged[i].Item, merged[i].Score, truncateReason);
+                            }
+                        }
 
-                    merged = kept.ToArray();
-                    break;
-                }
+                        // Handle case where pinned items alone exceed target (best-effort)
+                        if (currentTokens > budget.TargetTokens)
+                        {
+                            trace.RecordItemEvent(new TraceEvent
+                            {
+                                Stage = PipelineStage.Slice,
+                                Duration = TimeSpan.Zero,
+                                ItemCount = 0,
+                                Message = $"WARNING: After truncation, selected items still exceed TargetTokens ({currentTokens} > {budget.TargetTokens}). Pinned items cannot be removed."
+                            });
+                        }
+
+                        merged = kept.ToArray();
+                        break;
+                    }
 
                 case OverflowStrategy.Proceed:
-                {
-                    var overflowItems = new ContextItem[merged.Length];
-                    for (var i = 0; i < merged.Length; i++)
-                        overflowItems[i] = merged[i].Item;
-
-                    _overflowObserver?.Invoke(new OverflowEvent
                     {
-                        TokensOverBudget = mergedTokens - budget.TargetTokens,
-                        OverflowingItems = overflowItems,
-                        Budget = budget
-                    });
-                    break;
-                }
+                        var overflowItems = new ContextItem[merged.Length];
+                        for (var i = 0; i < merged.Length; i++)
+                            overflowItems[i] = merged[i].Item;
+
+                        _overflowObserver?.Invoke(new OverflowEvent
+                        {
+                            TokensOverBudget = mergedTokens - budget.TargetTokens,
+                            OverflowingItems = overflowItems,
+                            Budget = budget
+                        });
+                        break;
+                    }
             }
         }
 
