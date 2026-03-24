@@ -739,6 +739,28 @@ impl std::fmt::Debug for Pipeline {
     }
 }
 
+/// Run a [`Policy`] against `items` and `budget` without requiring an existing [`Pipeline`] instance.
+///
+/// Constructs a minimal dummy pipeline whose own scorer/slicer/placer are fully overridden by the
+/// policy, so the dummy's own components don't affect the result. This is a `pub(crate)` helper
+/// for [`crate::analytics`] functions that operate on policies directly.
+pub(crate) fn run_policy(
+    items: &[ContextItem],
+    budget: &ContextBudget,
+    policy: &Policy,
+) -> Result<SelectionReport, CupelError> {
+    use crate::placer::ChronologicalPlacer;
+    use crate::scorer::ReflexiveScorer;
+    use crate::slicer::GreedySlice;
+    let dummy = Pipeline::builder()
+        .scorer(Box::new(ReflexiveScorer))
+        .slicer(Box::new(GreedySlice))
+        .placer(Box::new(ChronologicalPlacer))
+        .build()
+        .expect("dummy pipeline always valid");
+    dummy.dry_run_with_policy(items, budget, policy)
+}
+
 /// Builder for constructing a [`Pipeline`] with required and optional configuration.
 ///
 /// # Examples

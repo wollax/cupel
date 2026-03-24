@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use crate::diagnostics::SelectionReport;
 use crate::error::CupelError;
 use crate::model::{ContextBudget, ContextItem, ContextKind};
-use crate::pipeline::Pipeline;
+use crate::pipeline::{Pipeline, Policy, run_policy};
 use crate::slicer::{QuotaConstraintMode, QuotaPolicy};
 
 /// Fraction of the token budget consumed by the selected items.
@@ -183,13 +183,17 @@ pub struct PolicySensitivityReport {
     pub diffs: Vec<PolicySensitivityDiffEntry>,
 }
 
-/// Run multiple pipeline configurations over the same item set and compute a
+/// Run multiple [`Pipeline`] configurations over the same item set and compute a
 /// structured diff showing which items changed inclusion status.
 ///
-/// Each entry in `variants` is a `(label, pipeline)` pair. The function calls
-/// [`Pipeline::dry_run`] on each, then builds a content-keyed diff retaining
-/// only items where at least two variants disagree on inclusion.
-pub fn policy_sensitivity(
+/// Each entry in `variants` is a `(label, pipeline)` pair where the second element
+/// is a `&Pipeline` reference. The function calls [`Pipeline::dry_run`] on each,
+/// then builds a content-keyed diff retaining only items where at least two variants
+/// disagree on inclusion.
+///
+/// To compare policy configurations without constructing full pipelines, use
+/// `policy_sensitivity` instead.
+pub fn policy_sensitivity_from_pipelines(
     items: &[ContextItem],
     budget: &ContextBudget,
     variants: &[(impl AsRef<str>, &Pipeline)],
@@ -197,6 +201,69 @@ pub fn policy_sensitivity(
     let mut results: Vec<(String, SelectionReport)> = Vec::with_capacity(variants.len());
     for (label, pipeline) in variants {
         let report = pipeline.dry_run(items, budget)?;
+        results.push((label.as_ref().to_string(), report));
+    }
+
+    // Build content → Vec<(label, status)> map.
+    let mut status_map: HashMap<String, Vec<(String, ItemStatus)>> = HashMap::new();
+
+    for (label, report) in &results {
+        for inc in &report.included {
+            status_map
+                .entry(inc.item.content().to_string())
+                .or_default()
+                .push((label.clone(), ItemStatus::Included));
+        }
+        for exc in &report.excluded {
+            status_map
+                .entry(exc.item.content().to_string())
+                .or_default()
+                .push((label.clone(), ItemStatus::Excluded));
+        }
+    }
+
+    // Keep only entries where not all statuses are the same.
+    let diffs: Vec<PolicySensitivityDiffEntry> = status_map
+        .into_iter()
+        .filter(|(_, statuses)| {
+            let first = statuses.first().map(|(_, s)| *s);
+            statuses.iter().any(|(_, s)| Some(*s) != first)
+        })
+        .map(|(content, statuses)| PolicySensitivityDiffEntry { content, statuses })
+        .collect();
+
+    Ok(PolicySensitivityReport {
+        variants: results,
+        diffs,
+    })
+}
+
+/// Run multiple [`Policy`] configurations over the same item set and compute a
+/// structured diff showing which items changed inclusion status.
+///
+/// Each entry in `variants` is a `(label, policy)` pair. The function runs each
+/// policy against `items` and `budget`, then builds a content-keyed diff retaining
+/// only items where at least two variants disagree on inclusion.
+///
+/// Requires at least 2 variants — returns [`CupelError::PipelineConfig`] if fewer
+/// are provided.
+///
+/// To compare full pipeline configurations (not policies), use
+/// [`policy_sensitivity_from_pipelines`] instead.
+pub fn policy_sensitivity(
+    items: &[ContextItem],
+    budget: &ContextBudget,
+    variants: &[(impl AsRef<str>, &Policy)],
+) -> Result<PolicySensitivityReport, CupelError> {
+    if variants.len() < 2 {
+        return Err(CupelError::PipelineConfig(
+            "policy_sensitivity requires at least 2 variants".to_string(),
+        ));
+    }
+
+    let mut results: Vec<(String, SelectionReport)> = Vec::with_capacity(variants.len());
+    for (label, policy) in variants {
+        let report = run_policy(items, budget, policy)?;
         results.push((label.as_ref().to_string(), report));
     }
 

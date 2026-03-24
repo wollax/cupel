@@ -12,7 +12,8 @@ pub mod slicer;
 
 pub use analytics::{
     ItemStatus, KindQuotaUtilization, PolicySensitivityDiffEntry, PolicySensitivityReport,
-    budget_utilization, kind_diversity, policy_sensitivity, quota_utilization, timestamp_coverage,
+    budget_utilization, kind_diversity, policy_sensitivity, policy_sensitivity_from_pipelines,
+    quota_utilization, timestamp_coverage,
 };
 pub use diagnostics::{
     CountRequirementShortfall, DiagnosticTraceCollector, ExcludedItem, ExclusionReason,

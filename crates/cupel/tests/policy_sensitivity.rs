@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use cupel::{
     ChronologicalPlacer, ContextBudget, ContextItemBuilder, GreedySlice, ItemStatus,
-    OverflowStrategy, Pipeline, PriorityScorer, ReflexiveScorer, policy_sensitivity,
+    OverflowStrategy, Pipeline, PriorityScorer, ReflexiveScorer, policy_sensitivity_from_pipelines,
 };
 
 /// Build a pipeline using `ReflexiveScorer` (passes through `future_relevance_hint`
@@ -63,7 +63,7 @@ fn policy_sensitivity_two_variants_produces_diff() {
     let variants: Vec<(&str, &Pipeline)> =
         vec![("reflexive", &pipeline_a), ("priority", &pipeline_b)];
 
-    let report = policy_sensitivity(&items, &tight_budget, &variants).unwrap();
+    let report = policy_sensitivity_from_pipelines(&items, &tight_budget, &variants).unwrap();
 
     // Both variants should be present.
     assert_eq!(report.variants.len(), 2);
@@ -139,7 +139,7 @@ fn policy_sensitivity_guaranteed_diff() {
         ("priority", &pipeline_priority),
     ];
 
-    let report = policy_sensitivity(&items, &budget, &variants).unwrap();
+    let report = policy_sensitivity_from_pipelines(&items, &budget, &variants).unwrap();
 
     assert_eq!(report.variants.len(), 2);
     assert_eq!(report.variants[0].0, "reflexive");

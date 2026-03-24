@@ -58,7 +58,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Rust Policy struct and dry_run_with_policy** `risk:medium` `depends:[]`
   > After this: Rust callers can build a `Policy` via `PolicyBuilder` and call `pipeline.dry_run_with_policy(items, budget, &policy)` — returning a `SelectionReport` driven by the policy's components — verified by unit tests.
 
-- [ ] **S03: Rust policy_sensitivity and spec chapter** `risk:low` `depends:[S01,S02]`
+- [x] **S03: Rust policy_sensitivity and spec chapter** `risk:low` `depends:[S01,S02]`
   > After this: Rust `policy_sensitivity(items, budget, &[(label, &policy)])` returns a `PolicySensitivityReport`; spec chapter at `spec/src/analytics/policy-sensitivity.md` documents both languages; R056 validated.
 
 ## Boundary Map

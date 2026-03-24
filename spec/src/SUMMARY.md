@@ -47,6 +47,7 @@
 # Analytics
 
 - [Budget Simulation](analytics/budget-simulation.md)
+- [Policy Sensitivity](analytics/policy-sensitivity.md)
 
 # Conformance
 

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `.NET: \`CupelPipeline.DryRunWithPolicy(items, budget, policy)\` — run a policy configuration over an item set without constructing a new pipeline`
+- `.NET: Policy-accepting \`PolicySensitivity\` overload in \`PolicySensitivityExtensions\` — pass \`(label, CupelPolicy)\` tuples instead of pre-built pipelines`
+- `Rust: \`Policy\` struct and \`PolicyBuilder\` — construct a policy from \`Arc<dyn Scorer/Slicer/Placer>\` with deduplication and overflow flags`
+- `Rust: \`Pipeline::dry_run_with_policy\` — run a pipeline using a caller-supplied Policy instead of the pipeline's own components`
+- `Rust: \`policy_sensitivity\` — fork-diagnostic free function accepting \`&[(label, &Policy)]\` variants, returning \`PolicySensitivityReport\``
+- `Rust: \`policy_sensitivity_from_pipelines\` — pipeline-based variant (renamed from \`policy_sensitivity\` for disambiguation)`
+- `Spec: \`spec/src/analytics/policy-sensitivity.md\` — normative API contract for both languages`
+
 ## [1.1.0] - 2026-03-15
 
 ### Added

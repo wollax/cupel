@@ -1,21 +1,17 @@
 # Kata State
 
-**Active Milestone:** M007 — DryRunWithPolicy
-**Active Slice:** S03 — Rust policy_sensitivity and spec chapter
-**Active Task:** none (S03 not yet started)
-**Phase:** Executing (S02 complete → S03 ready)
+**Active Milestone:** M007 — DryRunWithPolicy (complete)
+**Active Slice:** none
+**Active Task:** none
+**Phase:** Milestone complete
 
 ## Recent Decisions
 
-- D157: KnapsackSlice::new(1) (not with_default_bucket_size()) in tight-budget integration tests — bucket_size=100 gives capacity=0 when target<100
-- D156: #[allow(clippy::too_many_arguments)] on run_with_components — 9-arg private helper; no grouping struct added
-- D155: run_with_components private helper extracted from run_traced — both run_traced and dry_run_with_policy delegate to it
-- D154: S02 verification strategy — 5 integration tests in dry_run_with_policy.rs + full cargo test regression
-- D153: Policy-based PolicySensitivity overload restates the content-keyed diff loop (not extracted to shared helper)
-- D152: S01 verification strategy — contract + integration (9 new tests + full-suite regression)
-- D151: CupelPolicy cannot express CountQuotaSlice — documented gap, no code workaround
-- D150: Rust policy_sensitivity is a free function, not a Pipeline method
-- D149: Rust Policy struct uses Arc<dyn Trait> for scorer/slicer/placer
+- D160: `policy_sensitivity` uses dummy-pipeline approach to call `dry_run_with_policy` — dummy's scorer/slicer/placer overridden by policy anyway
+- D159: `policy_sensitivity` gets primary name; pipeline-based variant renamed to `policy_sensitivity_from_pipelines`
+- D158: S03 verification strategy — ≥3 integration tests in policy_sensitivity_from_policies.rs + rename regression + full regression
+- D157: KnapsackSlice::new(1) (not with_default_bucket_size()) in tight-budget integration tests
+- D156: #[allow(clippy::too_many_arguments)] on run_with_components
 
 ## Blockers
 
@@ -25,14 +21,17 @@
 
 - [x] S01: .NET DryRunWithPolicy and policy-accepting PolicySensitivity
 - [x] S02: Rust Policy struct and dry_run_with_policy
-- [ ] S03: Rust policy_sensitivity and spec chapter (depends: S01, S02 — both complete)
+- [x] S03: Rust policy_sensitivity and spec chapter
+
+## M007 Status
+
+**COMPLETE.** All 3 slices done. R056 validated. Deliverables:
+- .NET: `CupelPipeline.DryRunWithPolicy`, `PolicySensitivity` policy overload — 679 tests pass
+- Rust: `Policy` + `PolicyBuilder` + `dry_run_with_policy` + `policy_sensitivity` + `policy_sensitivity_from_pipelines` — 167 tests pass
+- Spec: `spec/src/analytics/policy-sensitivity.md` TBD-free, linked from SUMMARY.md
+- `CHANGELOG.md` Unreleased section with 7 entries
+- R056 validated in REQUIREMENTS.md (Validated: 32, Active: 0)
 
 ## Next Action
 
-S03: Implement `policy_sensitivity(items, budget, &[(label, &Policy)])` free function returning `PolicySensitivityReport`; add `PolicySensitivityReport` and `PolicySensitivityDiffEntry` types; write spec chapter at `spec/src/analytics/policy-sensitivity.md`; mark R056 validated.
-
-Key context for S03:
-- Policy fields are pub(crate) — analytics.rs can access policy.scorer.as_ref() etc. directly
-- Arc::clone the policy's scorer/slicer/placer fields per variant run; pass as_ref() to run_with_components
-- DiagnosticTraceCollector::new(TraceDetailLevel::Item) is the correct collector for SelectionReport
-- Content-keyed diff via HashMap (same algorithm as existing Rust policy_sensitivity in analytics.rs)
+M007 is complete. No active milestone. Start `/kata` to plan the next milestone or queue future work.
