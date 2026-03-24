@@ -87,10 +87,7 @@ mod tests {
     #[test]
     fn tag_scorer_zero_total_weight() {
         // All weights are 0.0 → total_weight == 0.0 → score always returns 0.0
-        let weights = HashMap::from([
-            ("important".to_string(), 0.0),
-            ("recent".to_string(), 0.0),
-        ]);
+        let weights = HashMap::from([("important".to_string(), 0.0), ("recent".to_string(), 0.0)]);
         let scorer = TagScorer::new(weights).unwrap();
         let item = ContextItemBuilder::new("item", 5)
             .tags(vec!["important".to_string()])

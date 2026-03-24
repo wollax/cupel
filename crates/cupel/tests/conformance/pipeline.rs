@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
-use cupel::{ContextBudget, DiagnosticTraceCollector, ExclusionReason, OverflowStrategy,
-             Pipeline, TraceDetailLevel};
+use cupel::{
+    ContextBudget, DiagnosticTraceCollector, ExclusionReason, OverflowStrategy, Pipeline,
+    TraceDetailLevel,
+};
 
 use super::{
     assert_ordered_eq, build_items, build_placer_by_type, build_scorer_by_type,
@@ -189,7 +191,9 @@ fn run_pipeline_diagnostics_test(vector_path: &str) {
         .and_then(|e| e.get("diagnostics"))
         .expect("missing [expected.diagnostics]");
 
-    let summary = diag.get("summary").expect("missing [expected.diagnostics.summary]");
+    let summary = diag
+        .get("summary")
+        .expect("missing [expected.diagnostics.summary]");
 
     let expected_tc = summary["total_candidates"]
         .as_integer()
@@ -244,7 +248,8 @@ fn run_pipeline_diagnostics_test(vector_path: &str) {
             );
             let actual_reason_tag = inclusion_reason_tag(&actual.reason);
             assert_eq!(
-                actual_reason_tag, exp_reason,
+                actual_reason_tag,
+                exp_reason,
                 "included[{i}] inclusion_reason mismatch for '{}': expected '{exp_reason}', got '{actual_reason_tag}'",
                 actual.item.content()
             );
@@ -286,7 +291,8 @@ fn run_pipeline_diagnostics_test(vector_path: &str) {
             );
             let actual_reason_tag = exclusion_reason_tag(&actual.reason);
             assert_eq!(
-                actual_reason_tag, exp_reason_str,
+                actual_reason_tag,
+                exp_reason_str,
                 "excluded[{i}] exclusion_reason mismatch for '{}': expected '{exp_reason_str}', got '{actual_reason_tag}'",
                 actual.item.content()
             );
@@ -304,24 +310,38 @@ fn run_pipeline_diagnostics_test(vector_path: &str) {
                     }
                 }
                 "Deduplicated" => {
-                    if let Some(exp_against) = exp.get("deduplicated_against").and_then(|v| v.as_str()) {
-                        if let ExclusionReason::Deduplicated { deduplicated_against } = &actual.reason {
+                    if let Some(exp_against) =
+                        exp.get("deduplicated_against").and_then(|v| v.as_str())
+                    {
+                        if let ExclusionReason::Deduplicated {
+                            deduplicated_against,
+                        } = &actual.reason
+                        {
                             assert_eq!(
-                                deduplicated_against.as_str(), exp_against,
+                                deduplicated_against.as_str(),
+                                exp_against,
                                 "excluded[{i}] Deduplicated.deduplicated_against mismatch: expected '{exp_against}', got '{deduplicated_against}'"
                             );
                         }
                     }
                 }
                 "BudgetExceeded" => {
-                    if let ExclusionReason::BudgetExceeded { item_tokens, available_tokens } = &actual.reason {
-                        if let Some(exp_item_tokens) = exp.get("item_tokens").and_then(|v| v.as_integer()) {
+                    if let ExclusionReason::BudgetExceeded {
+                        item_tokens,
+                        available_tokens,
+                    } = &actual.reason
+                    {
+                        if let Some(exp_item_tokens) =
+                            exp.get("item_tokens").and_then(|v| v.as_integer())
+                        {
                             assert_eq!(
                                 *item_tokens, exp_item_tokens,
                                 "excluded[{i}] BudgetExceeded.item_tokens mismatch: expected {exp_item_tokens}, got {item_tokens}"
                             );
                         }
-                        if let Some(exp_avail) = exp.get("available_tokens").and_then(|v| v.as_integer()) {
+                        if let Some(exp_avail) =
+                            exp.get("available_tokens").and_then(|v| v.as_integer())
+                        {
                             assert_eq!(
                                 *available_tokens, exp_avail,
                                 "excluded[{i}] BudgetExceeded.available_tokens mismatch: expected {exp_avail}, got {available_tokens}"
@@ -330,10 +350,12 @@ fn run_pipeline_diagnostics_test(vector_path: &str) {
                     }
                 }
                 "PinnedOverride" => {
-                    if let Some(exp_displaced_by) = exp.get("displaced_by").and_then(|v| v.as_str()) {
+                    if let Some(exp_displaced_by) = exp.get("displaced_by").and_then(|v| v.as_str())
+                    {
                         if let ExclusionReason::PinnedOverride { displaced_by } = &actual.reason {
                             assert_eq!(
-                                displaced_by.as_str(), exp_displaced_by,
+                                displaced_by.as_str(),
+                                exp_displaced_by,
                                 "excluded[{i}] PinnedOverride.displaced_by mismatch: expected '{exp_displaced_by}', got '{displaced_by}'"
                             );
                         }

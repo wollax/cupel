@@ -9,10 +9,7 @@ type ClassifyResult = Result<(Vec<ContextItem>, Vec<ContextItem>, Vec<ContextIte
 /// Items with `tokens < 0` are excluded (checked before pinned status) and
 /// returned as the third tuple element so callers can record them.
 /// Validates that pinned items fit within `maxTokens - outputReserve`.
-pub(crate) fn classify(
-    items: &[ContextItem],
-    budget: &ContextBudget,
-) -> ClassifyResult {
+pub(crate) fn classify(items: &[ContextItem], budget: &ContextBudget) -> ClassifyResult {
     let mut pinned = Vec::new();
     let mut scoreable = Vec::new();
     let mut neg_items = Vec::new();

@@ -162,7 +162,11 @@ fn de_excluded_items<'de, D: serde::Deserializer<'de>>(
 ) -> Result<Vec<(ExcludedItem, usize)>, D::Error> {
     use serde::Deserialize;
     let items = Vec::<ExcludedItem>::deserialize(deserializer)?;
-    Ok(items.into_iter().enumerate().map(|(i, item)| (item, i)).collect())
+    Ok(items
+        .into_iter()
+        .enumerate()
+        .map(|(i, item)| (item, i))
+        .collect())
 }
 
 // ── DiagnosticTraceCollector ──────────────────────────────────────────────────
@@ -192,7 +196,13 @@ pub struct DiagnosticTraceCollector {
     included: Vec<IncludedItem>,
     /// Each entry pairs an `ExcludedItem` with its insertion index, which is
     /// used to implement a stable descending-score sort in `into_report`.
-    #[cfg_attr(feature = "serde", serde(serialize_with = "ser_excluded_items", deserialize_with = "de_excluded_items"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            serialize_with = "ser_excluded_items",
+            deserialize_with = "de_excluded_items"
+        )
+    )]
     excluded: Vec<(ExcludedItem, usize)>,
     total_candidates: usize,
     total_tokens_considered: i64,
@@ -257,9 +267,8 @@ impl DiagnosticTraceCollector {
     /// deterministically rather than causing undefined ordering.
     pub fn into_report(mut self) -> SelectionReport {
         // Sort excluded by score descending, stable by insertion index on ties.
-        self.excluded.sort_by(|(a, ai), (b, bi)| {
-            b.score.total_cmp(&a.score).then_with(|| ai.cmp(bi))
-        });
+        self.excluded
+            .sort_by(|(a, ai), (b, bi)| b.score.total_cmp(&a.score).then_with(|| ai.cmp(bi)));
         let excluded: Vec<ExcludedItem> = self.excluded.into_iter().map(|(item, _)| item).collect();
 
         SelectionReport {
@@ -306,7 +315,11 @@ impl TraceCollector for DiagnosticTraceCollector {
 
     /// Pushes an [`IncludedItem`] onto the internal buffer.
     fn record_included(&mut self, item: ContextItem, score: f64, reason: InclusionReason) {
-        self.included.push(IncludedItem { item, score, reason });
+        self.included.push(IncludedItem {
+            item,
+            score,
+            reason,
+        });
     }
 
     /// Pushes an [`ExcludedItem`] (with its insertion index) onto the internal
@@ -314,7 +327,14 @@ impl TraceCollector for DiagnosticTraceCollector {
     /// to produce a stable sort.
     fn record_excluded(&mut self, item: ContextItem, score: f64, reason: ExclusionReason) {
         let idx = self.excluded.len();
-        self.excluded.push((ExcludedItem { item, score, reason }, idx));
+        self.excluded.push((
+            ExcludedItem {
+                item,
+                score,
+                reason,
+            },
+            idx,
+        ));
     }
 
     /// Stores the total candidate count and total tokens considered.
@@ -331,7 +351,10 @@ mod tests {
     use super::*;
     use crate::diagnostics::{ExclusionReason, InclusionReason, PipelineStage, TraceEvent};
     use crate::model::ContextItemBuilder;
-    use std::sync::{Arc, atomic::{AtomicU32, Ordering}};
+    use std::sync::{
+        Arc,
+        atomic::{AtomicU32, Ordering},
+    };
 
     /// Creates a minimal `ContextItem` for use in tests.
     fn make_item(content: &str, tokens: i64) -> ContextItem {
@@ -367,11 +390,7 @@ mod tests {
         let _ = c.is_enabled();
         c.record_stage_event(make_event(PipelineStage::Classify));
         c.record_item_event(make_event(PipelineStage::Score));
-        c.record_included(
-            make_item("inc", 5),
-            1.0,
-            InclusionReason::Scored,
-        );
+        c.record_included(make_item("inc", 5), 1.0, InclusionReason::Scored);
         c.record_excluded(
             make_item("exc", 5),
             0.5,
@@ -450,12 +469,18 @@ mod tests {
         c.record_excluded(
             make_item("low", 5),
             2.0,
-            ExclusionReason::BudgetExceeded { item_tokens: 5, available_tokens: 0 },
+            ExclusionReason::BudgetExceeded {
+                item_tokens: 5,
+                available_tokens: 0,
+            },
         );
         c.record_excluded(
             make_item("high", 5),
             5.0,
-            ExclusionReason::BudgetExceeded { item_tokens: 5, available_tokens: 0 },
+            ExclusionReason::BudgetExceeded {
+                item_tokens: 5,
+                available_tokens: 0,
+            },
         );
         let report = c.into_report();
         assert_eq!(report.excluded.len(), 2);
@@ -468,12 +493,18 @@ mod tests {
         c.record_excluded(
             make_item("first", 5),
             3.0,
-            ExclusionReason::BudgetExceeded { item_tokens: 5, available_tokens: 0 },
+            ExclusionReason::BudgetExceeded {
+                item_tokens: 5,
+                available_tokens: 0,
+            },
         );
         c.record_excluded(
             make_item("second", 5),
             3.0,
-            ExclusionReason::BudgetExceeded { item_tokens: 5, available_tokens: 0 },
+            ExclusionReason::BudgetExceeded {
+                item_tokens: 5,
+                available_tokens: 0,
+            },
         );
         let report = c.into_report();
         // Stable sort: equal scores preserve insertion order.
@@ -490,7 +521,10 @@ mod tests {
         c.record_excluded(
             make_item("item_b", 100),
             1.0,
-            ExclusionReason::BudgetExceeded { item_tokens: 100, available_tokens: 50 },
+            ExclusionReason::BudgetExceeded {
+                item_tokens: 100,
+                available_tokens: 50,
+            },
         );
         c.set_candidates(2, 60);
         let report = c.into_report();

@@ -41,7 +41,11 @@ use crate::slicer::Slicer;
 pub struct GreedySlice;
 
 impl Slicer for GreedySlice {
-    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError> {
+    fn slice(
+        &self,
+        sorted: &[ScoredItem],
+        budget: &ContextBudget,
+    ) -> Result<Vec<ContextItem>, CupelError> {
         if sorted.is_empty() || budget.target_tokens() <= 0 {
             return Ok(Vec::new());
         }
@@ -109,9 +113,9 @@ mod tests {
         let b = item("B", 50);
         let c = item("C", 200);
         let items = vec![
-            scored(a, 1.0),   // density = 1.0/100 = 0.01
-            scored(b, 0.5),   // density = 0.5/50  = 0.01
-            scored(c, 2.0),   // density = 2.0/200 = 0.01
+            scored(a, 1.0), // density = 1.0/100 = 0.01
+            scored(b, 0.5), // density = 0.5/50  = 0.01
+            scored(c, 2.0), // density = 2.0/200 = 0.01
         ];
 
         let result = GreedySlice.slice(&items, &budget(400)).unwrap();
@@ -128,11 +132,7 @@ mod tests {
         let x = item("X", 0);
         let y = item("Y", 0);
         let z = item("Z", 0);
-        let items = vec![
-            scored(x, 0.3),
-            scored(y, 0.9),
-            scored(z, 0.1),
-        ];
+        let items = vec![scored(x, 0.3), scored(y, 0.9), scored(z, 0.1)];
 
         let result = GreedySlice.slice(&items, &budget(50)).unwrap();
 
@@ -150,9 +150,9 @@ mod tests {
         let b = item("second", 30);
         let c = item("third", 30);
         let items = vec![
-            scored(a, 0.6),   // density = 0.6/30 = 0.02
-            scored(b, 0.6),   // density = 0.6/30 = 0.02
-            scored(c, 0.6),   // density = 0.6/30 = 0.02
+            scored(a, 0.6), // density = 0.6/30 = 0.02
+            scored(b, 0.6), // density = 0.6/30 = 0.02
+            scored(c, 0.6), // density = 0.6/30 = 0.02
         ];
         // Budget fits 60 tokens = 2 items
         let result = GreedySlice.slice(&items, &budget(60)).unwrap();
@@ -169,11 +169,7 @@ mod tests {
             let a = item("A", 20);
             let b = item("B", 20);
             let c = item("C", 20);
-            let items = vec![
-                scored(a, 0.4),
-                scored(b, 0.4),
-                scored(c, 0.4),
-            ];
+            let items = vec![scored(a, 0.4), scored(b, 0.4), scored(c, 0.4)];
             // Budget fits 2 items (40 tokens)
             let result = GreedySlice.slice(&items, &budget(40)).unwrap();
 

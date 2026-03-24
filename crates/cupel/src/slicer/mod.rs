@@ -46,8 +46,8 @@ pub use greedy::GreedySlice;
 pub use knapsack::KnapsackSlice;
 pub use quota::{QuotaEntry, QuotaSlice};
 
-use crate::model::{ContextBudget, ContextItem, ContextKind, ScoredItem};
 use crate::CupelError;
+use crate::model::{ContextBudget, ContextItem, ContextKind, ScoredItem};
 
 // ── QuotaPolicy abstraction ──────────────────────────────────────────────────
 
@@ -104,7 +104,11 @@ pub trait QuotaPolicy {
 /// ```
 pub trait Slicer: Send + Sync {
     /// Selects items from `sorted` that fit within `budget`.
-    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError>;
+    fn slice(
+        &self,
+        sorted: &[ScoredItem],
+        budget: &ContextBudget,
+    ) -> Result<Vec<ContextItem>, CupelError>;
 
     /// Returns `true` if this slicer is a [`KnapsackSlice`].
     ///

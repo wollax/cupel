@@ -44,7 +44,9 @@ pub enum CupelError {
     #[error("cycle detected: scorer appears in its own dependency graph")]
     CycleDetected,
 
-    #[error("KnapsackSlice DP table exceeds the 50,000,000-cell limit: candidates={candidates}, capacity={capacity}, cells={cells}")]
+    #[error(
+        "KnapsackSlice DP table exceeds the 50,000,000-cell limit: candidates={candidates}, capacity={capacity}, cells={cells}"
+    )]
     TableTooLarge {
         candidates: usize,
         capacity: usize,

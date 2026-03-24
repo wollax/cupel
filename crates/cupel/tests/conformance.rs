@@ -380,10 +380,12 @@ mod conformance {
                         let kind = e["kind"].as_str().expect("entry missing kind");
                         let require_count = e["require_count"]
                             .as_integer()
-                            .expect("entry missing require_count") as usize;
+                            .expect("entry missing require_count")
+                            as usize;
                         let cap_count = e["cap_count"]
                             .as_integer()
-                            .expect("entry missing cap_count") as usize;
+                            .expect("entry missing cap_count")
+                            as usize;
                         CountQuotaEntry::new(
                             ContextKind::new(kind).unwrap(),
                             require_count,

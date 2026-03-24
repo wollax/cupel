@@ -59,10 +59,12 @@ fn run(
 fn include_item_with_kind_passes() {
     let pipeline = make_pipeline();
     let kind = ContextKind::new("Message").unwrap();
-    let items = vec![ContextItemBuilder::new("hello world", 5)
-        .kind(kind.clone())
-        .build()
-        .unwrap()];
+    let items = vec![
+        ContextItemBuilder::new("hello world", 5)
+            .kind(kind.clone())
+            .build()
+            .unwrap(),
+    ];
     let report = run(&pipeline, &items, &budget(100));
     // Should not panic: there is one included item with kind=Message
     report.should().include_item_with_kind(kind);
@@ -73,10 +75,12 @@ fn include_item_with_kind_passes() {
 fn include_item_with_kind_panics() {
     let pipeline = make_pipeline();
     let msg_kind = ContextKind::new("Message").unwrap();
-    let items = vec![ContextItemBuilder::new("hello world", 5)
-        .kind(msg_kind)
-        .build()
-        .unwrap()];
+    let items = vec![
+        ContextItemBuilder::new("hello world", 5)
+            .kind(msg_kind)
+            .build()
+            .unwrap(),
+    ];
     let report = run(&pipeline, &items, &budget(100));
     // Panics: no included item has kind=Document
     report
@@ -89,9 +93,11 @@ fn include_item_with_kind_panics() {
 #[test]
 fn include_item_matching_passes() {
     let pipeline = make_pipeline();
-    let items = vec![ContextItemBuilder::new("special-content", 5)
-        .build()
-        .unwrap()];
+    let items = vec![
+        ContextItemBuilder::new("special-content", 5)
+            .build()
+            .unwrap(),
+    ];
     let report = run(&pipeline, &items, &budget(100));
     report
         .should()
@@ -136,10 +142,12 @@ fn include_exact_n_items_with_kind_passes() {
 fn include_exact_n_items_with_kind_panics() {
     let pipeline = make_pipeline();
     let kind = ContextKind::new("Message").unwrap();
-    let items = vec![ContextItemBuilder::new("msg1", 5)
-        .kind(kind.clone())
-        .build()
-        .unwrap()];
+    let items = vec![
+        ContextItemBuilder::new("msg1", 5)
+            .kind(kind.clone())
+            .build()
+            .unwrap(),
+    ];
     let report = run(&pipeline, &items, &budget(100));
     // Panics: only 1 item with kind=Message, not 5
     report.should().include_exact_n_items_with_kind(kind, 5);
@@ -193,15 +201,13 @@ fn exclude_item_matching_with_reason_passes() {
     ];
     let report = run(&pipeline, &items, &budget(20));
     // The "giant" item is excluded with BudgetExceeded
-    report
-        .should()
-        .exclude_item_matching_with_reason(
-            |e| e.item.content() == "giant",
-            ExclusionReason::BudgetExceeded {
-                item_tokens: 0,
-                available_tokens: 0,
-            },
-        );
+    report.should().exclude_item_matching_with_reason(
+        |e| e.item.content() == "giant",
+        ExclusionReason::BudgetExceeded {
+            item_tokens: 0,
+            available_tokens: 0,
+        },
+    );
 }
 
 #[test]
@@ -214,14 +220,12 @@ fn exclude_item_matching_with_reason_panics() {
     ];
     let report = run(&pipeline, &items, &budget(20));
     // "giant" is excluded, but with BudgetExceeded, not Deduplicated
-    report
-        .should()
-        .exclude_item_matching_with_reason(
-            |e| e.item.content() == "giant",
-            ExclusionReason::Deduplicated {
-                deduplicated_against: String::new(),
-            },
-        );
+    report.should().exclude_item_matching_with_reason(
+        |e| e.item.content() == "giant",
+        ExclusionReason::Deduplicated {
+            deduplicated_against: String::new(),
+        },
+    );
 }
 
 // ── Pattern 6: have_excluded_item_with_budget_details ──────────────────────
@@ -242,19 +246,20 @@ fn have_excluded_item_with_budget_details_passes() {
         .iter()
         .find(|e| matches!(e.reason, ExclusionReason::BudgetExceeded { .. }))
         .expect("expected a BudgetExceeded exclusion");
-    let (actual_it, actual_at) =
-        if let ExclusionReason::BudgetExceeded { item_tokens, available_tokens } = budget_item.reason {
-            (item_tokens, available_tokens)
-        } else {
-            panic!("unexpected reason");
-        };
-    report
-        .should()
-        .have_excluded_item_with_budget_details(
-            |e| e.item.content() == "giant",
-            actual_it,
-            actual_at,
-        );
+    let (actual_it, actual_at) = if let ExclusionReason::BudgetExceeded {
+        item_tokens,
+        available_tokens,
+    } = budget_item.reason
+    {
+        (item_tokens, available_tokens)
+    } else {
+        panic!("unexpected reason");
+    };
+    report.should().have_excluded_item_with_budget_details(
+        |e| e.item.content() == "giant",
+        actual_it,
+        actual_at,
+    );
 }
 
 #[test]
@@ -267,13 +272,11 @@ fn have_excluded_item_with_budget_details_panics() {
     ];
     let report = run(&pipeline, &items, &budget(10));
     // Wrong token values → should panic
-    report
-        .should()
-        .have_excluded_item_with_budget_details(
-            |e| e.item.content() == "giant",
-            999_999, // wrong expected_item_tokens
-            999_999, // wrong expected_available_tokens
-        );
+    report.should().have_excluded_item_with_budget_details(
+        |e| e.item.content() == "giant",
+        999_999, // wrong expected_item_tokens
+        999_999, // wrong expected_available_tokens
+    );
 }
 
 // ── Pattern 7: have_no_exclusions_for_kind ─────────────────────────────────
@@ -371,7 +374,9 @@ fn excluded_items_are_sorted_by_score_descending_vacuous_pass_on_zero_or_one() {
     // Empty excluded list: vacuous truth, always passes.
     let items = vec![ContextItemBuilder::new("fits", 5).build().unwrap()];
     let report = run(&pipeline, &items, &budget(100));
-    report.should().excluded_items_are_sorted_by_score_descending();
+    report
+        .should()
+        .excluded_items_are_sorted_by_score_descending();
     // NOTE: A truly failing case (out-of-order excluded list) cannot be
     // constructed without direct SelectionReport construction (non_exhaustive).
     // The assertion logic checks adjacent pairs and panics on any score inversion;
@@ -446,9 +451,18 @@ fn place_item_at_edge_passes() {
     // PriorityScorer assigns scores by priority value.
     // "first" has the highest priority → highest score → lands at position 0 (edge).
     let items = vec![
-        ContextItemBuilder::new("first", 10).priority(30).build().unwrap(),
-        ContextItemBuilder::new("second", 10).priority(20).build().unwrap(),
-        ContextItemBuilder::new("third", 10).priority(10).build().unwrap(),
+        ContextItemBuilder::new("first", 10)
+            .priority(30)
+            .build()
+            .unwrap(),
+        ContextItemBuilder::new("second", 10)
+            .priority(20)
+            .build()
+            .unwrap(),
+        ContextItemBuilder::new("third", 10)
+            .priority(10)
+            .build()
+            .unwrap(),
     ];
     let report = run(&pipeline, &items, &budget(100));
     // The highest-scored item is at position 0 (edge)
@@ -464,10 +478,22 @@ fn place_item_at_edge_panics() {
     // 4 items: UShapedPlacer places top-scored at 0, 2nd at 3, 3rd at 1, 4th at 2.
     // "third" (priority 20) is the 3rd-highest → lands at position 1 (not an edge).
     let items = vec![
-        ContextItemBuilder::new("first", 10).priority(40).build().unwrap(),  // score=1.0 → pos 0
-        ContextItemBuilder::new("second", 10).priority(30).build().unwrap(), // score≈0.67 → pos 3
-        ContextItemBuilder::new("third", 10).priority(20).build().unwrap(),  // score≈0.33 → pos 1
-        ContextItemBuilder::new("fourth", 10).priority(10).build().unwrap(), // score=0.0 → pos 2
+        ContextItemBuilder::new("first", 10)
+            .priority(40)
+            .build()
+            .unwrap(), // score=1.0 → pos 0
+        ContextItemBuilder::new("second", 10)
+            .priority(30)
+            .build()
+            .unwrap(), // score≈0.67 → pos 3
+        ContextItemBuilder::new("third", 10)
+            .priority(20)
+            .build()
+            .unwrap(), // score≈0.33 → pos 1
+        ContextItemBuilder::new("fourth", 10)
+            .priority(10)
+            .build()
+            .unwrap(), // score=0.0 → pos 2
     ];
     let report = run(&pipeline, &items, &budget(100));
     // "third" lands at position 1 — not an edge position → panics
@@ -507,10 +533,22 @@ fn place_top_n_scored_at_edges_n2_passes() {
     //   4th-scored  (priority=10, score=0.0)  → position 2
     // So top-2 items should occupy positions 0 and 3 (the two edge positions).
     let items = vec![
-        ContextItemBuilder::new("item0", 10).priority(40).build().unwrap(),
-        ContextItemBuilder::new("item1", 10).priority(30).build().unwrap(),
-        ContextItemBuilder::new("item2", 10).priority(20).build().unwrap(),
-        ContextItemBuilder::new("item3", 10).priority(10).build().unwrap(),
+        ContextItemBuilder::new("item0", 10)
+            .priority(40)
+            .build()
+            .unwrap(),
+        ContextItemBuilder::new("item1", 10)
+            .priority(30)
+            .build()
+            .unwrap(),
+        ContextItemBuilder::new("item2", 10)
+            .priority(20)
+            .build()
+            .unwrap(),
+        ContextItemBuilder::new("item3", 10)
+            .priority(10)
+            .build()
+            .unwrap(),
     ];
     let report = run(&pipeline, &items, &budget(100));
     // Top-2 (item0 and item1) should occupy positions 0 and 3 (edges)

@@ -64,7 +64,11 @@ impl Slicer for KnapsackSlice {
         true
     }
 
-    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError> {
+    fn slice(
+        &self,
+        sorted: &[ScoredItem],
+        budget: &ContextBudget,
+    ) -> Result<Vec<ContextItem>, CupelError> {
         if sorted.is_empty() || budget.target_tokens() <= 0 {
             return Ok(Vec::new());
         }
@@ -106,7 +110,11 @@ impl Slicer for KnapsackSlice {
         // Guard: reject table sizes that would cause OOM
         let cells = (capacity as u64) * (n as u64);
         if cells > 50_000_000 {
-            return Err(CupelError::TableTooLarge { candidates: n, capacity, cells });
+            return Err(CupelError::TableTooLarge {
+                candidates: n,
+                capacity,
+                cells,
+            });
         }
 
         let discretized_weights: Vec<usize> = weights
@@ -174,12 +182,16 @@ mod tests {
             })
             .collect();
 
-        let budget = ContextBudget::new(100_000, 50_001, 0, HashMap::new(), 0.0)
-            .expect("valid budget");
+        let budget =
+            ContextBudget::new(100_000, 50_001, 0, HashMap::new(), 0.0).expect("valid budget");
 
         let result = slicer.slice(&items, &budget);
         match result {
-            Err(CupelError::TableTooLarge { candidates, capacity, cells }) => {
+            Err(CupelError::TableTooLarge {
+                candidates,
+                capacity,
+                cells,
+            }) => {
                 assert_eq!(candidates, 1001);
                 assert_eq!(capacity, 50_001);
                 assert!(cells > 50_000_000, "cells={cells} should exceed limit");

@@ -10,8 +10,8 @@
 use std::collections::HashMap;
 
 use cupel::{
-    ContextBudget, ContextItemBuilder, ContextKind, ContextSource, Pipeline, RecencyScorer,
-    GreedySlice, ChronologicalPlacer,
+    ChronologicalPlacer, ContextBudget, ContextItemBuilder, ContextKind, ContextSource,
+    GreedySlice, Pipeline, RecencyScorer,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

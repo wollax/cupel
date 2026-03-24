@@ -1,7 +1,7 @@
+use cupel::SelectionReport;
 use cupel::analytics;
 use cupel::diagnostics::{ExcludedItem, ExclusionReason, IncludedItem};
 use cupel::model::{ContextBudget, ContextKind};
-use cupel::SelectionReport;
 
 /// A fluent assertion chain for inspecting a [`SelectionReport`].
 ///
@@ -147,10 +147,9 @@ impl<'a> SelectionReportAssertionChain<'a> {
     ) -> &mut Self {
         let excluded = &self.report.excluded;
         // Find the first predicate-matching BudgetExceeded item.
-        let budget_match = excluded.iter().find(|e| {
-            predicate(e)
-                && matches!(e.reason, ExclusionReason::BudgetExceeded { .. })
-        });
+        let budget_match = excluded
+            .iter()
+            .find(|e| predicate(e) && matches!(e.reason, ExclusionReason::BudgetExceeded { .. }));
         match budget_match {
             Some(e) => {
                 if let ExclusionReason::BudgetExceeded {
@@ -189,10 +188,7 @@ impl<'a> SelectionReportAssertionChain<'a> {
     /// Asserts that no excluded item has the given `kind`.
     pub fn have_no_exclusions_for_kind(&mut self, kind: ContextKind) -> &mut Self {
         let excluded = &self.report.excluded;
-        let matching: Vec<_> = excluded
-            .iter()
-            .filter(|e| e.item.kind() == &kind)
-            .collect();
+        let matching: Vec<_> = excluded.iter().filter(|e| e.item.kind() == &kind).collect();
         if !matching.is_empty() {
             let first = &matching[0];
             panic!(
@@ -290,15 +286,15 @@ impl<'a> SelectionReportAssertionChain<'a> {
     // ── Pattern 12: Ordering ────────────────────────────────────────────────
 
     /// Asserts that an included item matching `predicate` is at position 0 or position `count−1`.
-    pub fn place_item_at_edge(
-        &mut self,
-        predicate: impl Fn(&IncludedItem) -> bool,
-    ) -> &mut Self {
+    pub fn place_item_at_edge(&mut self, predicate: impl Fn(&IncludedItem) -> bool) -> &mut Self {
         let included = &self.report.included;
         let count = included.len();
 
         // Find first matching item and its index.
-        let found = included.iter().enumerate().find(|(_, item)| predicate(item));
+        let found = included
+            .iter()
+            .enumerate()
+            .find(|(_, item)| predicate(item));
 
         match found {
             None => {
@@ -347,10 +343,7 @@ impl<'a> SelectionReportAssertionChain<'a> {
 
         // Top-N entries and the minimum score among them.
         let top_n = &scored[..n];
-        let min_top_score = top_n
-            .iter()
-            .map(|(s, _)| *s)
-            .fold(f64::INFINITY, f64::min);
+        let min_top_score = top_n.iter().map(|(s, _)| *s).fold(f64::INFINITY, f64::min);
 
         // Build the expected edge positions: 0, count-1, 1, count-2, …
         let mut edge_positions: Vec<usize> = Vec::with_capacity(n);
@@ -365,8 +358,7 @@ impl<'a> SelectionReportAssertionChain<'a> {
             hi = hi.saturating_sub(1);
         }
 
-        let edge_set: std::collections::HashSet<usize> =
-            edge_positions.iter().copied().collect();
+        let edge_set: std::collections::HashSet<usize> = edge_positions.iter().copied().collect();
 
         // Count top-N items not at expected edge positions.
         let mut fail_count = 0usize;

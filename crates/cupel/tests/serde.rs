@@ -4,8 +4,8 @@ use std::collections::HashMap;
 
 use chrono::{TimeZone, Utc};
 use cupel::{
-    ContextBudget, ContextItem, ContextItemBuilder, ContextKind, ContextSource, DiagnosticTraceCollector,
-    ExclusionReason, InclusionReason, OverflowStrategy, QuotaEntry,
+    ContextBudget, ContextItem, ContextItemBuilder, ContextKind, ContextSource,
+    DiagnosticTraceCollector, ExclusionReason, InclusionReason, OverflowStrategy, QuotaEntry,
     ScoredItem, SelectionReport, TraceCollector, TraceDetailLevel,
 };
 
@@ -450,8 +450,7 @@ fn inclusion_reason_scored_wire_format() {
     let json = serde_json::to_string(&reason).unwrap();
     // Unit variant must produce {"reason":"Scored"}, NOT the bare string "Scored".
     assert_eq!(
-        json,
-        r#"{"reason":"Scored"}"#,
+        json, r#"{"reason":"Scored"}"#,
         "expected internally-tagged wire format"
     );
 }
@@ -571,8 +570,12 @@ fn roundtrip_inclusion_zero_token() {
 #[test]
 fn roundtrip_selection_report_full() {
     // Build a SelectionReport via DiagnosticTraceCollector.
-    let included_item = ContextItemBuilder::new("included content", 50).build().unwrap();
-    let excluded_item = ContextItemBuilder::new("excluded content", 9999).build().unwrap();
+    let included_item = ContextItemBuilder::new("included content", 50)
+        .build()
+        .unwrap();
+    let excluded_item = ContextItemBuilder::new("excluded content", 9999)
+        .build()
+        .unwrap();
 
     let mut collector = DiagnosticTraceCollector::new(TraceDetailLevel::Item);
     collector.record_included(included_item, 0.9, InclusionReason::Scored);
@@ -629,8 +632,7 @@ fn reject_selection_report_total_candidates_mismatch() {
 #[test]
 fn exclusion_reason_unknown_variant_graceful() {
     // A future spec variant not known to this version must deserialize to _Unknown.
-    let result =
-        serde_json::from_str::<ExclusionReason>(r#"{"reason":"FutureVariantFromSpec3"}"#);
+    let result = serde_json::from_str::<ExclusionReason>(r#"{"reason":"FutureVariantFromSpec3"}"#);
     let reason = result.expect("deserialization of unknown variant must not panic or error");
     assert!(
         matches!(reason, ExclusionReason::_Unknown),

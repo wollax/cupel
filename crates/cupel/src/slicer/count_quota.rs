@@ -80,7 +80,11 @@ impl CountQuotaEntry {
     /// Returns [`CupelError::SlicerConfig`] if:
     /// - `require_count > cap_count`
     /// - `cap_count == 0 && require_count > 0`
-    pub fn new(kind: ContextKind, require_count: usize, cap_count: usize) -> Result<Self, CupelError> {
+    pub fn new(
+        kind: ContextKind,
+        require_count: usize,
+        cap_count: usize,
+    ) -> Result<Self, CupelError> {
         if cap_count == 0 && require_count > 0 {
             return Err(CupelError::SlicerConfig(format!(
                 "kind {:?}: cap_count is 0 but require_count is {require_count}; \
@@ -94,7 +98,11 @@ impl CountQuotaEntry {
                 kind.as_str(),
             )));
         }
-        Ok(Self { kind, require_count, cap_count })
+        Ok(Self {
+            kind,
+            require_count,
+            cap_count,
+        })
     }
 
     /// The context kind this entry applies to.
@@ -220,7 +228,11 @@ impl CountQuotaSlice {
                     .to_owned(),
             ));
         }
-        Ok(Self { entries, inner, scarcity })
+        Ok(Self {
+            entries,
+            inner,
+            scarcity,
+        })
     }
 
     /// Returns the configured quota entries.
@@ -250,7 +262,11 @@ impl Slicer for CountQuotaSlice {
     ///
     /// Returns the union of Phase 1 committed items and Phase 2 inner slicer results
     /// (with cap enforcement applied to Phase 2 output).
-    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError> {
+    fn slice(
+        &self,
+        sorted: &[ScoredItem],
+        budget: &ContextBudget,
+    ) -> Result<Vec<ContextItem>, CupelError> {
         if sorted.is_empty() || budget.target_tokens() <= 0 {
             return Ok(Vec::new());
         }
@@ -266,7 +282,10 @@ impl Slicer for CountQuotaSlice {
         // Partition all sorted items by kind, preserving score order.
         let mut partitions: HashMap<ContextKind, Vec<&ScoredItem>> = HashMap::new();
         for si in sorted {
-            partitions.entry(si.item.kind().clone()).or_default().push(si);
+            partitions
+                .entry(si.item.kind().clone())
+                .or_default()
+                .push(si);
         }
         // Each partition is already in the caller's score-descending order (sorted input),
         // but to be safe we sort explicitly.
@@ -346,23 +365,24 @@ impl Slicer for CountQuotaSlice {
             .cloned()
             .collect();
 
-        let mut phase2_selected: Vec<ContextItem> = if residual_budget_tokens > 0 && !remaining.is_empty() {
-            // Create a sub-budget for the inner slicer.
-            // total_tokens = residual_budget_tokens (generous upper bound),
-            // target_tokens = residual_budget_tokens.
-            let sub_budget = ContextBudget::new(
-                residual_budget_tokens,
-                residual_budget_tokens,
-                0,
-                HashMap::new(),
-                0.0,
-            )
-            .expect("residual budget is non-negative");
+        let mut phase2_selected: Vec<ContextItem> =
+            if residual_budget_tokens > 0 && !remaining.is_empty() {
+                // Create a sub-budget for the inner slicer.
+                // total_tokens = residual_budget_tokens (generous upper bound),
+                // target_tokens = residual_budget_tokens.
+                let sub_budget = ContextBudget::new(
+                    residual_budget_tokens,
+                    residual_budget_tokens,
+                    0,
+                    HashMap::new(),
+                    0.0,
+                )
+                .expect("residual budget is non-negative");
 
-            self.inner.slice(&remaining, &sub_budget)?
-        } else {
-            Vec::new()
-        };
+                self.inner.slice(&remaining, &sub_budget)?
+            } else {
+                Vec::new()
+            };
 
         // ── Phase 3: Cap Enforcement ──────────────────────────────────────────
         //
@@ -421,7 +441,7 @@ mod tests {
 
     use super::*;
     use crate::model::ContextBudget;
-    use crate::{ContextItemBuilder, ContextKind, KnapsackSlice, GreedySlice, ScoredItem};
+    use crate::{ContextItemBuilder, ContextKind, GreedySlice, KnapsackSlice, ScoredItem};
 
     fn make_item(content: &str, tokens: i64, kind: &str, score: f64) -> ScoredItem {
         ScoredItem {
@@ -441,16 +461,23 @@ mod tests {
 
     #[test]
     fn count_quota_construction_rejects_knapsack_inner() {
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 1, 2).unwrap(),
-        ];
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 1, 2).unwrap()];
         let inner = Box::new(KnapsackSlice::with_default_bucket_size());
         let result = CountQuotaSlice::new(entries, inner, ScarcityBehavior::Degrade);
         match result {
             Err(CupelError::SlicerConfig(msg)) => {
-                assert!(msg.contains("CountQuotaSlice"), "expected message to name CountQuotaSlice");
-                assert!(msg.contains("KnapsackSlice"), "expected message to name KnapsackSlice");
-                assert!(msg.contains("GreedySlice"), "expected message to name GreedySlice");
+                assert!(
+                    msg.contains("CountQuotaSlice"),
+                    "expected message to name CountQuotaSlice"
+                );
+                assert!(
+                    msg.contains("KnapsackSlice"),
+                    "expected message to name KnapsackSlice"
+                );
+                assert!(
+                    msg.contains("GreedySlice"),
+                    "expected message to name GreedySlice"
+                );
             }
             other => panic!("expected Err(SlicerConfig), got {other:?}"),
         }
@@ -486,10 +513,10 @@ mod tests {
 
     #[test]
     fn count_quota_v1_baseline_count_satisfaction() {
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 2, 4).unwrap(),
-        ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade).unwrap();
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 2, 4).unwrap()];
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade)
+                .unwrap();
 
         let items = vec![
             make_item("tool-a", 100, "tool", 0.9),
@@ -504,8 +531,14 @@ mod tests {
 
         // Verify Phase 1 committed items are in result (by content).
         let contents: Vec<&str> = selected.iter().map(|i| i.content()).collect();
-        assert!(contents.contains(&"tool-a"), "tool-a (score 0.9) must be committed");
-        assert!(contents.contains(&"tool-b"), "tool-b (score 0.7) must be committed");
+        assert!(
+            contents.contains(&"tool-a"),
+            "tool-a (score 0.9) must be committed"
+        );
+        assert!(
+            contents.contains(&"tool-b"),
+            "tool-b (score 0.7) must be committed"
+        );
     }
 
     // ── Vector 2: Count-Cap Exclusion ────────────────────────────────────────
@@ -514,10 +547,10 @@ mod tests {
 
     #[test]
     fn count_quota_v2_cap_exclusion() {
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 0, 1).unwrap(),
-        ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade).unwrap();
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 0, 1).unwrap()];
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade)
+                .unwrap();
 
         let items = vec![
             make_item("tool-a", 100, "tool", 0.9),
@@ -528,8 +561,16 @@ mod tests {
         let selected = slicer.slice(&items, &budget).unwrap();
 
         // Only 1 tool item should survive the cap.
-        let tool_items: Vec<_> = selected.iter().filter(|i| i.kind().as_str().eq_ignore_ascii_case("tool")).collect();
-        assert_eq!(tool_items.len(), 1, "cap of 1 should exclude 2 tool items; got {}", tool_items.len());
+        let tool_items: Vec<_> = selected
+            .iter()
+            .filter(|i| i.kind().as_str().eq_ignore_ascii_case("tool"))
+            .collect();
+        assert_eq!(
+            tool_items.len(),
+            1,
+            "cap of 1 should exclude 2 tool items; got {}",
+            tool_items.len()
+        );
     }
 
     // ── Vector 4: Scarcity Degrade ───────────────────────────────────────────
@@ -538,14 +579,12 @@ mod tests {
 
     #[test]
     fn count_quota_v4_scarcity_degrade() {
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 3, 5).unwrap(),
-        ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade).unwrap();
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 3, 5).unwrap()];
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade)
+                .unwrap();
 
-        let items = vec![
-            make_item("tool-a", 100, "tool", 0.9),
-        ];
+        let items = vec![make_item("tool-a", 100, "tool", 0.9)];
         let budget = make_budget(1000);
         let selected = slicer.slice(&items, &budget).unwrap();
 
@@ -555,16 +594,18 @@ mod tests {
 
     #[test]
     fn count_quota_v4_scarcity_throw() {
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 3, 5).unwrap(),
-        ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Throw).unwrap();
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 3, 5).unwrap()];
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Throw).unwrap();
 
         let items = vec![make_item("tool-a", 100, "tool", 0.9)];
         let budget = make_budget(1000);
 
         let result = slicer.slice(&items, &budget);
-        assert!(matches!(result, Err(CupelError::SlicerConfig(_))), "Throw mode should return error on scarcity");
+        assert!(
+            matches!(result, Err(CupelError::SlicerConfig(_))),
+            "Throw mode should return error on scarcity"
+        );
     }
 
     // ── Vector 5: Tag Non-Exclusivity ─────────────────────────────────────────
@@ -575,20 +616,20 @@ mod tests {
 
     #[test]
     fn count_quota_empty_input_returns_empty() {
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 2, 4).unwrap(),
-        ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade).unwrap();
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 2, 4).unwrap()];
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade)
+                .unwrap();
         let selected = slicer.slice(&[], &make_budget(1000)).unwrap();
         assert!(selected.is_empty());
     }
 
     #[test]
     fn count_quota_zero_budget_returns_empty() {
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 2, 4).unwrap(),
-        ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade).unwrap();
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 2, 4).unwrap()];
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade)
+                .unwrap();
         let items = vec![make_item("tool-a", 100, "tool", 0.9)];
         // ContextBudget with target=0 is invalid; target must be > 0.
         // We test with a budget that provides exactly 0 target_tokens via a negative pre-allocation.
@@ -600,10 +641,10 @@ mod tests {
     #[test]
     fn count_quota_no_require_only_cap() {
         // Only cap configured; no require. Phase 1 commits nothing; Phase 2 enforces cap.
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 0, 2).unwrap(),
-        ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade).unwrap();
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 0, 2).unwrap()];
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade)
+                .unwrap();
 
         let items = vec![
             make_item("tool-a", 100, "tool", 0.9),
@@ -613,17 +654,23 @@ mod tests {
         let budget = make_budget(1000);
         let selected = slicer.slice(&items, &budget).unwrap();
 
-        let tool_count = selected.iter().filter(|i| i.kind().as_str().eq_ignore_ascii_case("tool")).count();
-        assert_eq!(tool_count, 2, "cap of 2 should allow exactly 2 tool items; got {tool_count}");
+        let tool_count = selected
+            .iter()
+            .filter(|i| i.kind().as_str().eq_ignore_ascii_case("tool"))
+            .count();
+        assert_eq!(
+            tool_count, 2,
+            "cap of 2 should allow exactly 2 tool items; got {tool_count}"
+        );
     }
 
     #[test]
     fn count_quota_require_equals_cap_fills_exactly() {
         // require == cap: Phase 1 commits exactly cap items; Phase 2 cannot add more.
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 2, 2).unwrap(),
-        ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade).unwrap();
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 2, 2).unwrap()];
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade)
+                .unwrap();
 
         let items = vec![
             make_item("tool-a", 100, "tool", 0.9),
@@ -633,12 +680,21 @@ mod tests {
         let budget = make_budget(1000);
         let selected = slicer.slice(&items, &budget).unwrap();
 
-        let tool_count = selected.iter().filter(|i| i.kind().as_str().eq_ignore_ascii_case("tool")).count();
-        assert_eq!(tool_count, 2, "require==cap should yield exactly 2 tool items; got {tool_count}");
+        let tool_count = selected
+            .iter()
+            .filter(|i| i.kind().as_str().eq_ignore_ascii_case("tool"))
+            .count();
+        assert_eq!(
+            tool_count, 2,
+            "require==cap should yield exactly 2 tool items; got {tool_count}"
+        );
         let contents: Vec<&str> = selected.iter().map(|i| i.content()).collect();
         assert!(contents.contains(&"tool-a"));
         assert!(contents.contains(&"tool-b"));
-        assert!(!contents.contains(&"tool-c"), "tool-c must be excluded by cap");
+        assert!(
+            !contents.contains(&"tool-c"),
+            "tool-c must be excluded by cap"
+        );
     }
 
     #[test]
@@ -648,47 +704,73 @@ mod tests {
             CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 1, 2).unwrap(),
             CountQuotaEntry::new(ContextKind::new("system").unwrap(), 1, 1).unwrap(),
         ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade).unwrap();
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade)
+                .unwrap();
 
         let items = vec![
             make_item("tool-a", 100, "tool", 0.9),
             make_item("tool-b", 100, "tool", 0.7),
-            make_item("sys-a",  100, "system", 0.8),
-            make_item("sys-b",  100, "system", 0.6),
+            make_item("sys-a", 100, "system", 0.8),
+            make_item("sys-b", 100, "system", 0.6),
         ];
         let budget = make_budget(1000);
         let selected = slicer.slice(&items, &budget).unwrap();
 
-        let tool_count = selected.iter().filter(|i| i.kind().as_str().eq_ignore_ascii_case("tool")).count();
-        let sys_count  = selected.iter().filter(|i| i.kind().as_str().eq_ignore_ascii_case("system")).count();
+        let tool_count = selected
+            .iter()
+            .filter(|i| i.kind().as_str().eq_ignore_ascii_case("tool"))
+            .count();
+        let sys_count = selected
+            .iter()
+            .filter(|i| i.kind().as_str().eq_ignore_ascii_case("system"))
+            .count();
 
         // tool: require 1, cap 2 → up to 2 selected
-        assert!(tool_count <= 2, "tool count must not exceed cap of 2; got {tool_count}");
-        assert!(tool_count >= 1, "tool count must satisfy require of 1; got {tool_count}");
+        assert!(
+            tool_count <= 2,
+            "tool count must not exceed cap of 2; got {tool_count}"
+        );
+        assert!(
+            tool_count >= 1,
+            "tool count must satisfy require of 1; got {tool_count}"
+        );
 
         // system: require 1, cap 1 → exactly 1
-        assert_eq!(sys_count, 1, "system cap of 1 must yield exactly 1; got {sys_count}");
+        assert_eq!(
+            sys_count, 1,
+            "system cap of 1 must yield exactly 1; got {sys_count}"
+        );
     }
 
     // ── is_knapsack integration ───────────────────────────────────────────────
 
     #[test]
     fn is_knapsack_false_for_count_quota_slice() {
-        let entries = vec![
-            CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 1, 2).unwrap(),
-        ];
-        let slicer = CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade).unwrap();
-        assert!(!slicer.is_knapsack(), "CountQuotaSlice.is_knapsack() must return false");
+        let entries = vec![CountQuotaEntry::new(ContextKind::new("tool").unwrap(), 1, 2).unwrap()];
+        let slicer =
+            CountQuotaSlice::new(entries, Box::new(GreedySlice), ScarcityBehavior::Degrade)
+                .unwrap();
+        assert!(
+            !slicer.is_knapsack(),
+            "CountQuotaSlice.is_knapsack() must return false"
+        );
     }
 
     #[test]
     fn is_knapsack_true_for_knapsack_slice() {
         let slicer = KnapsackSlice::with_default_bucket_size();
-        assert!(slicer.is_knapsack(), "KnapsackSlice.is_knapsack() must return true");
+        assert!(
+            slicer.is_knapsack(),
+            "KnapsackSlice.is_knapsack() must return true"
+        );
     }
 
     #[test]
     fn is_knapsack_false_for_greedy_slice() {
-        assert!(!GreedySlice.is_knapsack(), "GreedySlice.is_knapsack() must return false");
+        assert!(
+            !GreedySlice.is_knapsack(),
+            "GreedySlice.is_knapsack() must return false"
+        );
     }
 }

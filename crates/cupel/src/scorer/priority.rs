@@ -58,12 +58,21 @@ mod tests {
         // 5 items with priorities 1..=5; all scores in [0.0, 1.0];
         // highest priority (5) → 1.0, lowest priority (1) → 0.0
         let items: Vec<ContextItem> = (1..=5)
-            .map(|p| ContextItemBuilder::new(p.to_string().as_str(), 5).priority(p).build().unwrap())
+            .map(|p| {
+                ContextItemBuilder::new(p.to_string().as_str(), 5)
+                    .priority(p)
+                    .build()
+                    .unwrap()
+            })
             .collect();
 
         for item in &items {
             let score = PriorityScorer.score(item, &items);
-            assert!((0.0..=1.0).contains(&score), "score {score} out of range for priority {:?}", item.priority());
+            assert!(
+                (0.0..=1.0).contains(&score),
+                "score {score} out of range for priority {:?}",
+                item.priority()
+            );
         }
 
         // Item with priority 5 should score 1.0

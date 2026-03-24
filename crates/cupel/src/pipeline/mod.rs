@@ -60,11 +60,11 @@ mod sort;
 use std::time::Instant;
 
 use crate::CupelError;
-use crate::diagnostics::{
-    ExclusionReason, InclusionReason, PipelineStage, SelectionReport, TraceEvent,
-};
 use crate::diagnostics::trace_collector::{
     DiagnosticTraceCollector, TraceCollector, TraceDetailLevel,
+};
+use crate::diagnostics::{
+    ExclusionReason, InclusionReason, PipelineStage, SelectionReport, TraceEvent,
 };
 use crate::model::{ContextBudget, ContextItem, OverflowStrategy};
 use crate::placer::Placer;
@@ -226,7 +226,9 @@ impl Pipeline {
                 collector.record_excluded(
                     item.clone(),
                     0.0,
-                    ExclusionReason::NegativeTokens { tokens: item.tokens() },
+                    ExclusionReason::NegativeTokens {
+                        tokens: item.tokens(),
+                    },
                 );
             }
             collector.record_stage_event(TraceEvent {
@@ -274,8 +276,10 @@ impl Pipeline {
         let sorted = sort::sort_scored(deduped);
 
         // Build score lookup for inclusion recording later
-        let score_lookup: std::collections::HashMap<&str, f64> =
-            sorted.iter().map(|si| (si.item.content(), si.score)).collect();
+        let score_lookup: std::collections::HashMap<&str, f64> = sorted
+            .iter()
+            .map(|si| (si.item.content(), si.score))
+            .collect();
 
         // Compute effective budget parameters needed for PinnedOverride detection
         let pinned_tokens: i64 = pinned.iter().map(|i: &ContextItem| i.tokens()).sum();
@@ -344,8 +348,8 @@ impl Pipeline {
         )?;
         if collector.is_enabled() {
             for (item, score) in &truncated {
-                let available_tokens = budget.target_tokens()
-                    - result.iter().map(|i| i.tokens()).sum::<i64>();
+                let available_tokens =
+                    budget.target_tokens() - result.iter().map(|i| i.tokens()).sum::<i64>();
                 collector.record_excluded(
                     item.clone(),
                     *score,
@@ -768,6 +772,10 @@ mod tests {
         let budget = ContextBudget::new(4096, 200, 0, HashMap::new(), 0.0).unwrap();
 
         let result = pipeline.run(&items, &budget).unwrap();
-        assert!(result.is_empty(), "expected empty result; got {}", result.len());
+        assert!(
+            result.is_empty(),
+            "expected empty result; got {}",
+            result.len()
+        );
     }
 }

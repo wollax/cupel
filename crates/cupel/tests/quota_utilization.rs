@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use cupel::{
-    quota_utilization, ChronologicalPlacer, ContextBudget, ContextItemBuilder, ContextKind,
-    CountQuotaEntry, CountQuotaSlice, GreedySlice, OverflowStrategy, Pipeline,
-    QuotaConstraintMode, QuotaEntry, QuotaSlice, ReflexiveScorer, ScarcityBehavior,
+    ChronologicalPlacer, ContextBudget, ContextItemBuilder, ContextKind, CountQuotaEntry,
+    CountQuotaSlice, GreedySlice, OverflowStrategy, Pipeline, QuotaConstraintMode, QuotaEntry,
+    QuotaSlice, ReflexiveScorer, ScarcityBehavior, quota_utilization,
 };
 
 fn kind(name: &str) -> ContextKind {
@@ -217,11 +217,13 @@ fn quota_utilization_kind_in_policy_absent_from_report() {
     )
     .unwrap();
 
-    let items = vec![ContextItemBuilder::new("msg-1", 50)
-        .kind(kind("Message"))
-        .future_relevance_hint(0.9)
-        .build()
-        .unwrap()];
+    let items = vec![
+        ContextItemBuilder::new("msg-1", 50)
+            .kind(kind("Message"))
+            .future_relevance_hint(0.9)
+            .build()
+            .unwrap(),
+    ];
 
     let b = budget(1000, 1000);
     let report = greedy_pipeline().dry_run(&items, &b).unwrap();

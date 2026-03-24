@@ -171,7 +171,11 @@ impl QuotaSlice {
 }
 
 impl Slicer for QuotaSlice {
-    fn slice(&self, sorted: &[ScoredItem], budget: &ContextBudget) -> Result<Vec<ContextItem>, CupelError> {
+    fn slice(
+        &self,
+        sorted: &[ScoredItem],
+        budget: &ContextBudget,
+    ) -> Result<Vec<ContextItem>, CupelError> {
         if sorted.is_empty() || budget.target_tokens() <= 0 {
             return Ok(Vec::new());
         }

@@ -20,7 +20,9 @@ fn run_slicing_test(vector_path: &str) {
     let budget = ContextBudget::new(max_tokens, target_tokens, 0, HashMap::new(), 0.0)
         .expect("budget should be valid");
 
-    let selected = slicer.slice(&scored_items, &budget).expect("conformance vector slicing should not error");
+    let selected = slicer
+        .slice(&scored_items, &budget)
+        .expect("conformance vector slicing should not error");
     let actual_contents: Vec<String> = selected.iter().map(|i| i.content().to_owned()).collect();
 
     let expected_contents: Vec<String> = vector["expected"]["selected_contents"]
@@ -91,16 +93,20 @@ fn run_count_quota_full_test(vector_path: &str) {
     let budget = ContextBudget::new(max_tokens, target_tokens, 0, HashMap::new(), 0.0)
         .expect("budget should be valid");
 
-    let selected =
-        slicer.slice(&scored_items, &budget).expect("conformance vector slicing should not error");
-    let actual_contents: Vec<String> =
-        selected.iter().map(|i| i.content().to_owned()).collect();
+    let selected = slicer
+        .slice(&scored_items, &budget)
+        .expect("conformance vector slicing should not error");
+    let actual_contents: Vec<String> = selected.iter().map(|i| i.content().to_owned()).collect();
 
     let expected_contents: Vec<String> = vector["expected"]["selected_contents"]
         .as_array()
         .expect("missing expected.selected_contents")
         .iter()
-        .map(|v| v.as_str().expect("expected content must be string").to_owned())
+        .map(|v| {
+            v.as_str()
+                .expect("expected content must be string")
+                .to_owned()
+        })
         .collect();
 
     assert_set_eq(&expected_contents, &actual_contents);
@@ -110,10 +116,13 @@ fn run_count_quota_full_test(vector_path: &str) {
     // Shortfalls occur when a kind has fewer candidates than require_count.
     // Recompute from vector data to avoid needing pipeline-level access to
     // SelectionReport::count_requirement_shortfalls.
-    if let Some(expected_shortfall_count) =
-        vector["expected"].get("shortfall_count").and_then(|v| v.as_integer())
+    if let Some(expected_shortfall_count) = vector["expected"]
+        .get("shortfall_count")
+        .and_then(|v| v.as_integer())
     {
-        let cfg = vector.get("config").expect("count_quota test needs [config]");
+        let cfg = vector
+            .get("config")
+            .expect("count_quota test needs [config]");
         let entries_arr = cfg
             .get("entries")
             .and_then(|v| v.as_array())
@@ -132,8 +141,10 @@ fn run_count_quota_full_test(vector_path: &str) {
             .iter()
             .filter(|e| {
                 let kind = e["kind"].as_str().expect("entry missing kind");
-                let require_count =
-                    e["require_count"].as_integer().expect("entry missing require_count") as usize;
+                let require_count = e["require_count"]
+                    .as_integer()
+                    .expect("entry missing require_count")
+                    as usize;
                 if require_count == 0 {
                     return false;
                 }
@@ -153,8 +164,9 @@ fn run_count_quota_full_test(vector_path: &str) {
     // Items not in selected but that fit within the total budget were excluded by cap.
     // For test vectors where sum(item_tokens) << budget, this equals
     // total_items - selected_items.len().
-    if let Some(expected_cap_excluded) =
-        vector["expected"].get("cap_excluded_count").and_then(|v| v.as_integer())
+    if let Some(expected_cap_excluded) = vector["expected"]
+        .get("cap_excluded_count")
+        .and_then(|v| v.as_integer())
     {
         let total_tokens: i64 = scored_items.iter().map(|si| si.item.tokens()).sum();
         assert!(
@@ -163,8 +175,7 @@ fn run_count_quota_full_test(vector_path: &str) {
              (total_tokens={total_tokens}, budget={target_tokens})"
         );
 
-        let actual_cap_excluded =
-            (scored_items.len() as i64) - (actual_contents.len() as i64);
+        let actual_cap_excluded = (scored_items.len() as i64) - (actual_contents.len() as i64);
 
         assert_eq!(
             expected_cap_excluded, actual_cap_excluded,

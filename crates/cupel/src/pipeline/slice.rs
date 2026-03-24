@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
+use crate::CupelError;
 use crate::model::{ContextBudget, ContextItem, ScoredItem};
 use crate::slicer::Slicer;
-use crate::CupelError;
 
 /// Computes the effective budget after accounting for pinned items and output reserve.
 ///

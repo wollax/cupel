@@ -32,7 +32,6 @@ impl ScaledScorer {
     pub fn new(inner: Box<dyn Scorer>) -> Self {
         Self { inner }
     }
-
 }
 
 impl Scorer for ScaledScorer {
@@ -95,7 +94,11 @@ mod tests {
         // All inner scores equal → max == min → returns 0.5
         let scorer = ScaledScorer::new(Box::new(ConstantScorer(0.7)));
         let items: Vec<ContextItem> = (0..3)
-            .map(|i| ContextItemBuilder::new(i.to_string().as_str(), 5).build().unwrap())
+            .map(|i| {
+                ContextItemBuilder::new(i.to_string().as_str(), 5)
+                    .build()
+                    .unwrap()
+            })
             .collect();
 
         for item in &items {

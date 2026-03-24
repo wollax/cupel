@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use cupel::{
-    policy_sensitivity, ChronologicalPlacer, ContextBudget, ContextItemBuilder, GreedySlice,
-    ItemStatus, OverflowStrategy, Pipeline, PriorityScorer, ReflexiveScorer,
+    ChronologicalPlacer, ContextBudget, ContextItemBuilder, GreedySlice, ItemStatus,
+    OverflowStrategy, Pipeline, PriorityScorer, ReflexiveScorer, policy_sensitivity,
 };
 
 /// Build a pipeline using `ReflexiveScorer` (passes through `future_relevance_hint`

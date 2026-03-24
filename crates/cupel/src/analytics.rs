@@ -118,10 +118,7 @@ pub fn quota_utilization(
     let mut results: Vec<KindQuotaUtilization> = constraints
         .iter()
         .map(|c| {
-            let (token_sum, count) = kind_stats
-                .get(&c.kind)
-                .copied()
-                .unwrap_or((0, 0));
+            let (token_sum, count) = kind_stats.get(&c.kind).copied().unwrap_or((0, 0));
 
             let actual = match c.mode {
                 QuotaConstraintMode::Percentage => {
@@ -258,8 +255,8 @@ mod tests {
     }
 
     fn make_included(tokens: i64, kind: &str, with_timestamp: bool) -> IncludedItem {
-        let mut builder = ContextItemBuilder::new("content", tokens)
-            .kind(ContextKind::new(kind).unwrap());
+        let mut builder =
+            ContextItemBuilder::new("content", tokens).kind(ContextKind::new(kind).unwrap());
         if with_timestamp {
             builder = builder.timestamp(Utc::now());
         }
@@ -296,7 +293,10 @@ mod tests {
         };
         let b = budget(1000);
         let util = budget_utilization(&report, &b);
-        assert!((util - 0.5).abs() < f64::EPSILON, "expected 0.5, got {util}");
+        assert!(
+            (util - 0.5).abs() < f64::EPSILON,
+            "expected 0.5, got {util}"
+        );
     }
 
     // ── kind_diversity ────────────────────────────────────────────────────────

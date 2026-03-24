@@ -54,8 +54,7 @@ pub(crate) fn place_items(
 
     let truncated: Vec<ScoredItem>;
     if merged_tokens > budget.target_tokens() {
-        let (kept, dropped) =
-            handle_overflow(merged, budget.target_tokens(), overflow_strategy)?;
+        let (kept, dropped) = handle_overflow(merged, budget.target_tokens(), overflow_strategy)?;
         merged = kept;
         truncated = dropped;
     } else {
@@ -64,8 +63,10 @@ pub(crate) fn place_items(
 
     // Step 3: Delegate to placer for final ordering
     let result = placer.place(&merged);
-    let truncated_with_scores: Vec<(ContextItem, f64)> =
-        truncated.into_iter().map(|si| (si.item, si.score)).collect();
+    let truncated_with_scores: Vec<(ContextItem, f64)> = truncated
+        .into_iter()
+        .map(|si| (si.item, si.score))
+        .collect();
 
     Ok((result, truncated_with_scores))
 }

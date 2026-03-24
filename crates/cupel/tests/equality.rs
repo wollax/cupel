@@ -51,9 +51,14 @@ fn make_report_with_exclusion(
         .build()
         .unwrap();
     // Budget fits only item1
-    let budget =
-        ContextBudget::new(included_tokens + 1, included_tokens + 1, 0, HashMap::new(), 0.0)
-            .unwrap();
+    let budget = ContextBudget::new(
+        included_tokens + 1,
+        included_tokens + 1,
+        0,
+        HashMap::new(),
+        0.0,
+    )
+    .unwrap();
     let mut collector = DiagnosticTraceCollector::new(TraceDetailLevel::Item);
     let pipeline = build_pipeline(OverflowStrategy::Throw);
     let _result = pipeline.run_traced(&[item1, item2], &budget, &mut collector);

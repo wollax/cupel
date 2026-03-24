@@ -372,4 +372,6 @@ impl<'de> serde::Deserialize<'de> for SelectionReport {
 }
 
 pub mod trace_collector;
-pub use trace_collector::{TraceDetailLevel, TraceCollector, NullTraceCollector, DiagnosticTraceCollector};
+pub use trace_collector::{
+    DiagnosticTraceCollector, NullTraceCollector, TraceCollector, TraceDetailLevel,
+};

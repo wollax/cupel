@@ -17,21 +17,19 @@ fn greedy_pipeline() -> Pipeline {
 }
 
 fn quota_pipeline() -> Pipeline {
-    let quotas = vec![
-        QuotaEntry::new(ContextKind::new("msg").unwrap(), 10.0, 90.0).unwrap(),
-    ];
+    let quotas = vec![QuotaEntry::new(ContextKind::new("msg").unwrap(), 10.0, 90.0).unwrap()];
     Pipeline::builder()
         .scorer(Box::new(RecencyScorer))
-        .slicer(Box::new(QuotaSlice::new(quotas, Box::new(GreedySlice)).unwrap()))
+        .slicer(Box::new(
+            QuotaSlice::new(quotas, Box::new(GreedySlice)).unwrap(),
+        ))
         .placer(Box::new(ChronologicalPlacer))
         .build()
         .unwrap()
 }
 
 fn count_quota_pipeline() -> Pipeline {
-    let entries = vec![
-        CountQuotaEntry::new(ContextKind::new("msg").unwrap(), 1, 5).unwrap(),
-    ];
+    let entries = vec![CountQuotaEntry::new(ContextKind::new("msg").unwrap(), 1, 5).unwrap()];
     Pipeline::builder()
         .scorer(Box::new(RecencyScorer))
         .slicer(Box::new(
@@ -68,9 +66,7 @@ fn get_marginal_items_basic() {
     let budget = ContextBudget::new(500, 500, 0, HashMap::new(), 0.0).unwrap();
 
     // Reduce by 200 tokens — reduced budget = 300, can't fit all 3 items (500 total)
-    let marginal = pipeline
-        .get_marginal_items(&items, &budget, 200)
-        .unwrap();
+    let marginal = pipeline.get_marginal_items(&items, &budget, 200).unwrap();
 
     // With 500 target, all fit. With 300 target, only some items fit.
     // The pipeline scores by recency (most recent = highest score), then greedy by density.
@@ -184,7 +180,10 @@ fn find_min_budget_basic() {
         .included
         .iter()
         .any(|i| i.item.content() == "target-item");
-    assert!(found, "target should be included at min budget {min_budget}");
+    assert!(
+        found,
+        "target should be included at min budget {min_budget}"
+    );
 }
 
 #[test]
