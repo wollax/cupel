@@ -50,14 +50,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R054 — Rust budget simulation parity
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Implement `get_marginal_items` and `find_min_budget_for` in the Rust `cupel` crate matching the .NET `BudgetSimulationExtensions` API. `find_min_budget_for` returns `Option<i32>`. Monotonicity guard for `QuotaSlice`/`CountQuotaSlice` inner slicers.
 - Why it matters: .NET has budget simulation since M003/S06; Rust callers are second-class without parity. Agent orchestrators using the Rust crate need "what's the minimum budget to include this item?" for adaptive budget strategies.
 - Source: brainstorm (March 21 — Rust parity orphan from M003/S06)
 - Primary owning slice: M004/S05
 - Supporting slices: none
-- Validation: unmapped
-- Notes: .NET implementation in `src/Wollax.Cupel/BudgetSimulationExtensions.cs`. Spec chapter in `spec/src/analytics/budget-simulation.md`. D069 (explicit budget param), D098 (API shape), D099 (tiebreak contract) all locked.
+- Validation: validated — `Pipeline::get_marginal_items` and `Pipeline::find_min_budget_for` implemented as `impl Pipeline` methods; `is_quota()` and `is_count_quota()` defaulted trait methods on `Slicer` with overrides in `QuotaSlice` and `CountQuotaSlice`; content-based matching (D113); binary search checks both low and high boundaries (matching .NET); 9 integration tests in `crates/cupel/tests/budget_simulation.rs`; `cargo test --all-targets` 158 passed; `cargo clippy --all-targets -- -D warnings` clean
+- Notes: .NET implementation in `src/Wollax.Cupel/BudgetSimulationExtensions.cs`. Spec chapter in `spec/src/analytics/budget-simulation.md`. D069 (explicit budget param), D098 (API shape), D099 (tiebreak contract), D122-D125 (S05 implementation decisions) all locked.
 
 ### R040 — Count-based quota design resolution
 - Class: differentiator
@@ -377,7 +377,7 @@ This file is the explicit capability and coverage contract for the project.
 | R051 | differentiator | validated | M004/S02 | none | validated |
 | R052 | core-capability | validated | M004/S03 | none | validated |
 | R053 | quality-attribute | validated | M004/S04 | none | validated |
-| R054 | core-capability | active | M004/S05 | none | unmapped |
+| R054 | core-capability | validated | M004/S05 | none | validated |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
@@ -390,7 +390,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 1 (R054)
-- Mapped to slices: 1 (R054→M004/S05)
-- Validated: 28 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R053)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 29 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054)
 - Unmapped active requirements: 0

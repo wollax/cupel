@@ -46,7 +46,7 @@
 
 ## Tasks
 
-- [ ] **T01: Extend Slicer trait with is_quota/is_count_quota and add budget simulation methods** `est:45m`
+- [x] **T01: Extend Slicer trait with is_quota/is_count_quota and add budget simulation methods** `est:45m`
   - Why: Implements the full feature — trait extension, both budget simulation methods, and all tests. The scope is manageable in one task because the methods are thin orchestration over `dry_run` (~80 lines total) plus trait additions (~10 lines) and tests (~150 lines).
   - Files: `crates/cupel/src/slicer/mod.rs`, `crates/cupel/src/slicer/quota.rs`, `crates/cupel/src/slicer/count_quota.rs`, `crates/cupel/src/pipeline/mod.rs`, `crates/cupel/src/lib.rs`, `crates/cupel/tests/budget_simulation.rs`
   - Do: Add `is_quota()` and `is_count_quota()` defaulted methods to `Slicer` trait; override in `QuotaSlice` and `CountQuotaSlice`; implement `get_marginal_items` and `find_min_budget_for` as `impl Pipeline` methods in `pipeline/mod.rs` (or a new `pipeline/budget_simulation.rs` submodule); use content-based matching via `HashMap<&str, usize>` (D113 pattern); write integration tests in `tests/budget_simulation.rs` covering basic behavior, edge cases, monotonicity guards, and precondition violations.

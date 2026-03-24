@@ -278,6 +278,10 @@ impl Slicer for QuotaSlice {
 
         Ok(all_selected)
     }
+
+    fn is_quota(&self) -> bool {
+        true
+    }
 }
 
 impl QuotaPolicy for QuotaSlice {

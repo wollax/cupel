@@ -64,7 +64,7 @@ This milestone is complete only when all are true:
 - [x] **S04: Snapshot testing in Cupel.Testing** `risk:medium` `depends:[S01]`
   > After this: `report.Should().MatchSnapshot("name")` creates, reads, and updates JSON snapshot files in .NET; `CUPEL_UPDATE_SNAPSHOTS=1` rewrites snapshots; a test proves the full create→match→fail→update cycle.
 
-- [ ] **S05: Rust budget simulation parity** `risk:medium` `depends:[]`
+- [x] **S05: Rust budget simulation parity** `risk:medium` `depends:[]`
   > After this: `get_marginal_items` and `find_min_budget_for` are callable on Rust `Pipeline`; `find_min_budget_for` returns `Option<i32>`; monotonicity guard rejects QuotaSlice/CountQuotaSlice inner slicers; unit tests match .NET behavior.
 
 ## Boundary Map

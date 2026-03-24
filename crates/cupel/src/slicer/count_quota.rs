@@ -393,6 +393,10 @@ impl Slicer for CountQuotaSlice {
         result.extend(filtered_phase2);
         Ok(result)
     }
+
+    fn is_count_quota(&self) -> bool {
+        true
+    }
 }
 
 impl QuotaPolicy for CountQuotaSlice {

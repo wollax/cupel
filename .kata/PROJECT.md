@@ -46,6 +46,14 @@ Given candidates and a budget, return the optimal context selection with full ex
 - S06: Budget simulation (GetMarginalItems + FindMinBudgetFor) + deterministic tie-break contract + spec navigation/changelog alignment
 - Test counts: cargo test 128 passed, dotnet test 737 passed, drift guard clean
 
+**M004: v1.4 Diagnostics & Simulation Parity — all 5 slices complete (2026-03-23):**
+- S01: SelectionReport structural equality — PartialEq (Rust, D109) + IEquatable (.NET); 15 Rust + 28 .NET equality tests; R050 validated
+- S02: PolicySensitivityReport — fork diagnostic with content-keyed diff; D113 content matching; R051 validated
+- S03: IQuotaPolicy/QuotaPolicy abstraction + QuotaUtilization — implemented by QuotaSlice and CountQuotaSlice; R052 validated
+- S04: Snapshot testing — MatchSnapshot on SelectionReportAssertionChain; JSON serialization; CUPEL_UPDATE_SNAPSHOTS env var; full create→match→fail→update cycle; R053 validated
+- S05: Rust budget simulation parity — get_marginal_items + find_min_budget_for on Pipeline; monotonicity guards; 9 integration tests; R054 validated
+- Test counts: cargo test 158 passed, dotnet test 777 passed
+
 ## Architecture / Key Patterns
 
 - **Tech stack**: C# / .NET 10 + Rust (Edition 2024, MSRV 1.85)
@@ -67,4 +75,4 @@ See `.kata/REQUIREMENTS.md` for the explicit capability contract, requirement st
 - [x] M001: v1.2 Rust Parity & Quality Hardening — Close diagnostics gap between Rust and .NET, harden API surface, batch quality issues; ship v1.2 (all 7 slices complete; v1.2.0 tag pending manual publish)
 - [x] M002: v1.3 Design Sprint — Resolve deferred design problems (count-based quotas, Cupel.Testing vocabulary, metadata convention system, future features specs) and close spec quality debt; produce spec chapters and design decision records ready for v1.3 implementation (all 6 slices complete, 2026-03-21)
 - [x] M003: v1.3 Implementation Sprint — Implement all M002-designed features: DecayScorer, MetadataTrustScorer, CountQuotaSlice, core analytics extension methods, budget simulation, Cupel.Testing vocabulary package, and OTel bridge companion package (2026-03-23 — all 6 slices complete; all 23 requirements validated; 737 .NET tests, 128 Rust tests)
-- [ ] M004: v1.4 Diagnostics & Simulation Parity — SelectionReport structural equality, PolicySensitivityReport fork diagnostic, IQuotaPolicy abstraction + QuotaUtilization, snapshot testing in Cupel.Testing, Rust budget simulation parity (5 slices planned)
+- [x] M004: v1.4 Diagnostics & Simulation Parity — SelectionReport structural equality, PolicySensitivityReport fork diagnostic, IQuotaPolicy abstraction + QuotaUtilization, snapshot testing in Cupel.Testing, Rust budget simulation parity (all 5 slices complete, 2026-03-23; 29 requirements validated; 158 Rust tests, 777 .NET tests)

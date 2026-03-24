@@ -116,4 +116,26 @@ pub trait Slicer: Send + Sync {
     fn is_knapsack(&self) -> bool {
         false
     }
+
+    /// Returns `true` if this slicer is a [`QuotaSlice`].
+    ///
+    /// Used by budget simulation methods to reject non-monotonic slicers.
+    /// `QuotaSlice` produces non-monotonic inclusion as budget changes shift
+    /// percentage allocations.
+    ///
+    /// The default implementation returns `false`.
+    fn is_quota(&self) -> bool {
+        false
+    }
+
+    /// Returns `true` if this slicer is a [`CountQuotaSlice`].
+    ///
+    /// Used by budget simulation methods to reject non-monotonic slicers.
+    /// `CountQuotaSlice` produces non-monotonic inclusion as budget changes
+    /// shift count allocations.
+    ///
+    /// The default implementation returns `false`.
+    fn is_count_quota(&self) -> bool {
+        false
+    }
 }

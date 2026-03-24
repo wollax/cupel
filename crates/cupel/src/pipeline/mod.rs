@@ -435,6 +435,194 @@ impl Pipeline {
         self.run_traced(items, budget, &mut collector)?;
         Ok(collector.into_report())
     }
+
+    /// Identifies items included in a full-budget run but excluded when the budget
+    /// is reduced by `slack_tokens`.
+    ///
+    /// This is useful for understanding which items are "on the margin" — items that
+    /// would be dropped if the budget were slightly smaller.
+    ///
+    /// # Monotonicity guard
+    ///
+    /// Returns [`CupelError::PipelineConfig`] if the pipeline's slicer is a
+    /// [`QuotaSlice`](crate::QuotaSlice), which produces non-monotonic inclusion as
+    /// budget changes shift percentage allocations.
+    ///
+    /// # Short-circuit
+    ///
+    /// Returns an empty vec immediately if `slack_tokens == 0`.
+    ///
+    /// # Errors
+    ///
+    /// - [`CupelError::PipelineConfig`] if the slicer is a `QuotaSlice`.
+    /// - Any error propagated from [`dry_run`](Pipeline::dry_run) or [`ContextBudget::new`].
+    pub fn get_marginal_items(
+        &self,
+        items: &[ContextItem],
+        budget: &ContextBudget,
+        slack_tokens: i32,
+    ) -> Result<Vec<ContextItem>, CupelError> {
+        if self.slicer.is_quota() {
+            return Err(CupelError::PipelineConfig(
+                "GetMarginalItems requires monotonic item inclusion. QuotaSlice produces \
+                 non-monotonic inclusion as budget changes shift percentage allocations."
+                    .to_owned(),
+            ));
+        }
+
+        if slack_tokens == 0 {
+            return Ok(vec![]);
+        }
+
+        // Full-budget dry run
+        let primary_report = self.dry_run(items, budget)?;
+
+        // Reduced-budget dry run
+        let reduced_budget = ContextBudget::new(
+            budget.max_tokens() - slack_tokens as i64,
+            budget.target_tokens() - slack_tokens as i64,
+            budget.output_reserve(),
+            std::collections::HashMap::new(),
+            0.0,
+        )?;
+        let margin_report = self.dry_run(items, &reduced_budget)?;
+
+        // Build a set of content strings from the reduced run's included items
+        let mut margin_content: std::collections::HashMap<&str, usize> =
+            std::collections::HashMap::new();
+        for inc in &margin_report.included {
+            *margin_content.entry(inc.item.content()).or_insert(0) += 1;
+        }
+
+        // Diff: items in primary but not in margin (content-based matching)
+        let mut marginal = Vec::new();
+        for inc in &primary_report.included {
+            let content = inc.item.content();
+            if let Some(count) = margin_content.get_mut(content) {
+                if *count > 0 {
+                    *count -= 1;
+                    continue;
+                }
+            }
+            marginal.push(inc.item.clone());
+        }
+
+        Ok(marginal)
+    }
+
+    /// Finds the minimum token budget (within a search ceiling) at which `target`
+    /// would be included in the selection result. Uses binary search over real dry runs.
+    ///
+    /// Returns `Ok(Some(budget))` if the target is included at that budget, or `Ok(None)`
+    /// if the target is not selectable within the ceiling.
+    ///
+    /// # Monotonicity guard
+    ///
+    /// Returns [`CupelError::PipelineConfig`] if the pipeline's slicer is a
+    /// [`QuotaSlice`](crate::QuotaSlice) or [`CountQuotaSlice`](crate::CountQuotaSlice),
+    /// which produce non-monotonic inclusion as budget changes shift allocations.
+    ///
+    /// # Preconditions
+    ///
+    /// - `target` must be present in `items` (matched by content).
+    /// - `search_ceiling` must be `>= target.tokens()`.
+    ///
+    /// # Errors
+    ///
+    /// - [`CupelError::PipelineConfig`] if the slicer is `QuotaSlice` or `CountQuotaSlice`.
+    /// - [`CupelError::InvalidBudget`] if `target` is not in `items` or `search_ceiling` is
+    ///   below the target's token count.
+    pub fn find_min_budget_for(
+        &self,
+        items: &[ContextItem],
+        budget: &ContextBudget,
+        target: &ContextItem,
+        search_ceiling: i32,
+    ) -> Result<Option<i32>, CupelError> {
+        if self.slicer.is_quota() || self.slicer.is_count_quota() {
+            return Err(CupelError::PipelineConfig(
+                "FindMinBudgetFor requires monotonic item inclusion. QuotaSlice and \
+                 CountQuotaSlice produce non-monotonic inclusion as budget changes shift \
+                 allocations. Use a GreedySlice or KnapsackSlice inner slicer for budget \
+                 simulation."
+                    .to_owned(),
+            ));
+        }
+
+        // Precondition: target must be in items (by content)
+        let target_found = items.iter().any(|i| i.content() == target.content());
+        if !target_found {
+            return Err(CupelError::InvalidBudget(
+                "target item must be an element of items (matched by content)".to_owned(),
+            ));
+        }
+
+        if (search_ceiling as i64) < target.tokens() {
+            return Err(CupelError::InvalidBudget(format!(
+                "search_ceiling ({search_ceiling}) must be >= target.tokens() ({})",
+                target.tokens()
+            )));
+        }
+
+        let _ = budget; // explicit budget param per D069 — not used in binary search
+
+        // Binary search over [target.tokens(), search_ceiling]
+        let mut low = target.tokens() as i32;
+        let mut high = search_ceiling;
+
+        while high - low > 1 {
+            let mid = low + (high - low) / 2;
+            let mid_budget = ContextBudget::new(
+                mid as i64,
+                mid as i64,
+                0,
+                std::collections::HashMap::new(),
+                0.0,
+            )?;
+            let report = self.dry_run(items, &mid_budget)?;
+
+            if Self::contains_item_by_content(&report, target) {
+                high = mid;
+            } else {
+                low = mid;
+            }
+        }
+
+        // Check low first, then high (matching .NET behavior)
+        let low_budget = ContextBudget::new(
+            low as i64,
+            low as i64,
+            0,
+            std::collections::HashMap::new(),
+            0.0,
+        )?;
+        let low_report = self.dry_run(items, &low_budget)?;
+        if Self::contains_item_by_content(&low_report, target) {
+            return Ok(Some(low));
+        }
+
+        let high_budget = ContextBudget::new(
+            high as i64,
+            high as i64,
+            0,
+            std::collections::HashMap::new(),
+            0.0,
+        )?;
+        let high_report = self.dry_run(items, &high_budget)?;
+        if Self::contains_item_by_content(&high_report, target) {
+            return Ok(Some(high));
+        }
+
+        Ok(None)
+    }
+
+    /// Checks whether the report's included items contain the target by content comparison.
+    fn contains_item_by_content(report: &SelectionReport, target: &ContextItem) -> bool {
+        report
+            .included
+            .iter()
+            .any(|inc| inc.item.content() == target.content())
+    }
 }
 
 impl std::fmt::Debug for Pipeline {
