@@ -53,7 +53,7 @@ This milestone is complete only when all are true:
 - [x] **S02: 13 assertion patterns** `risk:medium` `depends:[S01]`
   > After this: all 13 spec assertion patterns are implemented with positive/negative tests and structured panic messages; `cargo test --all-targets` passes; `cargo clippy` clean.
 
-- [ ] **S03: Integration tests + publish readiness** `risk:low` `depends:[S02]`
+- [x] **S03: Integration tests + publish readiness** `risk:low` `depends:[S02]`
   > After this: integration tests exercise assertions on real `Pipeline::run_traced()` output; `cargo package` succeeds; crate is ready for `cargo publish`.
 
 ## Boundary Map

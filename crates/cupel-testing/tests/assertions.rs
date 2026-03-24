@@ -516,3 +516,38 @@ fn place_top_n_scored_at_edges_n2_passes() {
     // Top-2 (item0 and item1) should occupy positions 0 and 3 (edges)
     report.should().place_top_n_scored_at_edges(2);
 }
+
+// ── End-to-end chained assertion ────────────────────────────────────────────
+
+/// Proves that `&mut Self` return composes end-to-end across three assertion
+/// methods on a single real `Pipeline::run_traced()` output.
+///
+/// Pipeline: 2 items fit the budget (one per unique kind), 1 is oversized and
+/// excluded. The chain calls `include_item_with_kind`, `have_at_least_n_exclusions`,
+/// and `excluded_items_are_sorted_by_score_descending` on the same `should()` instance.
+#[test]
+fn chained_assertions_pass() {
+    let pipeline = make_pipeline();
+    let msg_kind = ContextKind::new("Message").unwrap();
+    let doc_kind = ContextKind::new("Document").unwrap();
+    let items = vec![
+        ContextItemBuilder::new("msg", 10)
+            .kind(msg_kind.clone())
+            .build()
+            .unwrap(),
+        ContextItemBuilder::new("doc", 10)
+            .kind(doc_kind)
+            .build()
+            .unwrap(),
+        ContextItemBuilder::new("oversized", 9999)
+            .kind(msg_kind.clone())
+            .build()
+            .unwrap(),
+    ];
+    let report = run(&pipeline, &items, &budget(100));
+    report
+        .should()
+        .include_item_with_kind(msg_kind)
+        .have_at_least_n_exclusions(1)
+        .excluded_items_are_sorted_by_score_descending();
+}

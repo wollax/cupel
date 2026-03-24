@@ -4,17 +4,6 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Active
 
-### R060 — cupel-testing crate: Rust testing vocabulary
-- Class: core-capability
-- Status: active
-- Description: Separate `cupel-testing` crate published to crates.io implementing the 13 spec assertion patterns from `spec/src/testing/vocabulary.md`. Fluent chain API: `report.should().include_item_with_kind(kind)`. Panics on failure (standard Rust test convention). No snapshot support — callers use `insta` directly.
-- Why it matters: .NET has `Wollax.Cupel.Testing` with 13 assertions + snapshots. Rust callers currently hand-roll assertions or use raw `assert!()` — there is no idiomatic testing vocabulary for `SelectionReport`. This closes the parity gap for Rust callers writing pipeline tests.
-- Source: user
-- Primary owning slice: M005/S02
-- Supporting slices: M005/S01, M005/S03
-- Validation: partially validated — M005/S02: all 13 assertion patterns implemented on `SelectionReportAssertionChain` with spec-compliant panic messages; 26 integration tests (2 per pattern) pass; both crates clippy-clean. Remaining: `cargo package` publishability + end-to-end integration tests on real `Pipeline::run_traced()` output (M005/S03).
-- Notes: Separate crate (not feature flag). Fluent chain (`report.should()`). Panic on failure. No snapshots (D107 — Rust callers use `insta`). D126 (separate crate), D127 (fluent chain), D128 (panic on failure).
-
 ### R050 — SelectionReport structural equality
 - Class: core-capability
 - Status: validated
@@ -296,6 +285,19 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: validated — `Wollax.Cupel.Diagnostics.OpenTelemetry` companion package implemented at `src/Wollax.Cupel.Diagnostics.OpenTelemetry/`; `CupelOpenTelemetryTraceCollector` implements `ITraceCollector` with structured `OnPipelineCompleted` handoff; `CupelOpenTelemetryVerbosity` enum (StageOnly, StageAndExclusions, Full); `AddCupelInstrumentation()` extension on `TracerProviderBuilder`; `ActivitySource("Wollax.Cupel")` emits `cupel.pipeline` root + 5 `cupel.stage.*` children with exact `cupel.*` attributes; 7 SDK-backed in-memory exporter tests pass; 7 core seam tests pass; consumption smoke test passes from local-feed nupkg; `dotnet test --configuration Release` → 737 passed, 0 failed; redaction enforced (no content/metadata leakage)
 - Notes: Companion package, not core — zero-dep constraint on core preserved; D043 (cupel.* namespace, pre-stable), D068 (5 Activities, Sort omitted), D100 (structured completion handoff), D101 (SDK-backed verification), D102 (package-specific verbosity enum) all locked and implemented.
 
+## Validated (M005)
+
+### R060 — cupel-testing crate: Rust testing vocabulary
+- Class: core-capability
+- Status: validated
+- Description: Separate `cupel-testing` crate published to crates.io implementing the 13 spec assertion patterns from `spec/src/testing/vocabulary.md`. Fluent chain API: `report.should().include_item_with_kind(kind)`. Panics on failure (standard Rust test convention). No snapshot support — callers use `insta` directly.
+- Why it matters: .NET has `Wollax.Cupel.Testing` with 13 assertions + snapshots. Rust callers currently hand-roll assertions or use raw `assert!()` — there is no idiomatic testing vocabulary for `SelectionReport`. This closes the parity gap for Rust callers writing pipeline tests.
+- Source: user
+- Primary owning slice: M005/S02
+- Supporting slices: M005/S01, M005/S03
+- Validation: validated — all 13 spec assertion patterns implemented on `SelectionReportAssertionChain` with 26+1 integration tests (26 per-pattern + 1 chained end-to-end); `cargo package` exits 0 for `cupel-testing`; both crates `cargo test --all-targets` + clippy clean; M005/S03 complete
+- Notes: Separate crate (not feature flag). Fluent chain (`report.should()`). Panic on failure. No snapshots (D107 — Rust callers use `insta`). D126 (separate crate), D127 (fluent chain), D128 (panic on failure).
+
 ## Deferred
 
 ### R055 — ProfiledPlacer companion package
@@ -389,7 +391,7 @@ This file is the explicit capability and coverage contract for the project.
 | R052 | core-capability | validated | M004/S03 | none | validated |
 | R053 | quality-attribute | validated | M004/S04 | none | validated |
 | R054 | core-capability | validated | M004/S05 | none | validated |
-| R060 | core-capability | active | M005/S02 | S01, S03 | partially validated (S02) |
+| R060 | core-capability | validated | M005/S02 | S01, S03 | validated — all 13 patterns, 26+1 tests, cargo package exits 0 |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
@@ -402,7 +404,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 1 (R060)
-- Mapped to slices: 1 (R060 → M005/S02)
-- Validated: 29 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 30 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R060)
 - Unmapped active requirements: 0

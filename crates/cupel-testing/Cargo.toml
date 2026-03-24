@@ -9,6 +9,7 @@ description = "Fluent assertion vocabulary for cupel selection reports"
 readme = "README.md"
 categories = ["development-tools::testing"]
 keywords = ["cupel", "testing", "assertions", "fluent"]
+include = ["src/**/*.rs", "tests/**/*.rs", "Cargo.toml", "LICENSE", "README.md"]
 
 [dependencies]
-cupel = { path = "../cupel" }
+cupel = { version = "1.1", path = "../cupel" }
