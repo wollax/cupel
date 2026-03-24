@@ -61,7 +61,7 @@ This milestone is complete only when all are true:
 - [x] **S03: IQuotaPolicy abstraction + QuotaUtilization** `risk:high` `depends:[S01]`
   > After this: `QuotaSlice` and `CountQuotaSlice` both implement `IQuotaPolicy`; `QuotaUtilization(report, policy)` returns per-kind utilization data in both languages; PublicAPI analyzers clean; no breaking changes.
 
-- [ ] **S04: Snapshot testing in Cupel.Testing** `risk:medium` `depends:[S01]`
+- [x] **S04: Snapshot testing in Cupel.Testing** `risk:medium` `depends:[S01]`
   > After this: `report.Should().MatchSnapshot("name")` creates, reads, and updates JSON snapshot files in .NET; `CUPEL_UPDATE_SNAPSHOTS=1` rewrites snapshots; a test proves the full create→match→fail→update cycle.
 
 - [ ] **S05: Rust budget simulation parity** `risk:medium` `depends:[]`

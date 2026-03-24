@@ -39,14 +39,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R053 — Snapshot testing in Cupel.Testing
 - Class: quality-attribute
-- Status: active
+- Status: validated
 - Description: Add snapshot assertion methods to `Wollax.Cupel.Testing` that serialize `SelectionReport` to JSON, compare against stored `.json` snapshot files, and support `CUPEL_UPDATE_SNAPSHOTS=1` environment variable for in-place snapshot updates. .NET only (Rust has `insta` crate).
 - Why it matters: Reduces test authoring cost for callers — instead of writing 10 chained assertions, take a snapshot and diff. Previously blocked on tiebreaker rule (shipped in M003/S06) and structural equality (R050).
 - Source: brainstorm (March 21 — unblocked after tiebreak shipped)
 - Primary owning slice: M004/S04
 - Supporting slices: none
-- Validation: unmapped
-- Notes: JSON format. Tiebreaker rule already shipped (D099). Depends on R050 for meaningful equality comparisons. Snapshot files stored alongside test files. Update workflow via env var, not CLI tool.
+- Validation: validated — `MatchSnapshot(string name)` method on `SelectionReportAssertionChain` using `[CallerFilePath]` for snapshot path resolution; `SnapshotMismatchException` with structured fields (snapshotName, snapshotPath, expected, actual); JSON serialization via `System.Text.Json` (camelCase, indented, enum strings); `CUPEL_UPDATE_SNAPSHOTS=1` env var triggers in-place rewrite; snapshots at `{callerDir}/__snapshots__/{name}.json`; 5 lifecycle tests in `SnapshotTests.cs` prove create→match→fail→update→no-update cycle; `dotnet test` 777 passed; PublicAPI.Unshipped.txt updated; `dotnet build` 0 warnings
+- Notes: JSON format. Tiebreaker rule already shipped (D099). Depends on R050 for meaningful equality comparisons. Snapshot files stored alongside test files. Update workflow via env var, not CLI tool. D119 (internal MatchSnapshotCore for testability), D120 (System.Text.Json, no Cupel.Json dep), D121 ([NotInParallel] for env var isolation).
 
 ### R054 — Rust budget simulation parity
 - Class: core-capability
@@ -376,7 +376,7 @@ This file is the explicit capability and coverage contract for the project.
 | R050 | core-capability | validated | M004/S01 | none | validated |
 | R051 | differentiator | validated | M004/S02 | none | validated |
 | R052 | core-capability | validated | M004/S03 | none | validated |
-| R053 | quality-attribute | active | M004/S04 | none | unmapped |
+| R053 | quality-attribute | validated | M004/S04 | none | validated |
 | R054 | core-capability | active | M004/S05 | none | unmapped |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
@@ -390,7 +390,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 2 (R053–R054)
-- Mapped to slices: 2 (R053→M004/S04, R054→M004/S05)
-- Validated: 27 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R052)
+- Active requirements: 1 (R054)
+- Mapped to slices: 1 (R054→M004/S05)
+- Validated: 28 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R053)
 - Unmapped active requirements: 0

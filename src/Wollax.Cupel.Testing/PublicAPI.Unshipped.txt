@@ -17,3 +17,10 @@ Wollax.Cupel.Testing.SelectionReportAssertionChain.HaveBudgetUtilizationAbove(do
 Wollax.Cupel.Testing.SelectionReportAssertionChain.HaveKindCoverageCount(int n) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
 Wollax.Cupel.Testing.SelectionReportAssertionChain.PlaceItemAtEdge(System.Func<Wollax.Cupel.Diagnostics.IncludedItem!, bool>! predicate) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
 Wollax.Cupel.Testing.SelectionReportAssertionChain.PlaceTopNScoredAtEdges(int n) -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SelectionReportAssertionChain.MatchSnapshot(string! name, string! callerFilePath = "") -> Wollax.Cupel.Testing.SelectionReportAssertionChain!
+Wollax.Cupel.Testing.SnapshotMismatchException
+Wollax.Cupel.Testing.SnapshotMismatchException.SnapshotMismatchException(string! snapshotName, string! snapshotPath, string! expected, string! actual) -> void
+Wollax.Cupel.Testing.SnapshotMismatchException.SnapshotName.get -> string!
+Wollax.Cupel.Testing.SnapshotMismatchException.SnapshotPath.get -> string!
+Wollax.Cupel.Testing.SnapshotMismatchException.Expected.get -> string!
+Wollax.Cupel.Testing.SnapshotMismatchException.Actual.get -> string!

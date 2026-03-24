@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Wollax.Cupel.Testing.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../Wollax.Cupel/Wollax.Cupel.csproj" />
   </ItemGroup>
 

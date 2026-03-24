@@ -1,4 +1,6 @@
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Wollax.Cupel;
 using Wollax.Cupel.Diagnostics;
 
@@ -275,5 +277,63 @@ public sealed class SelectionReportAssertionChain
                 $"Top items: [{topItems}]. Edge positions: [{edgePos}].");
         }
         return this;
+    }
+
+    // ── Snapshot ────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Asserts that the report matches a stored JSON snapshot file.
+    /// On first run (no snapshot file), creates the snapshot.
+    /// On mismatch, throws <see cref="SnapshotMismatchException"/> unless
+    /// the <c>CUPEL_UPDATE_SNAPSHOTS</c> environment variable is set to <c>"1"</c>,
+    /// in which case the snapshot file is overwritten.
+    /// </summary>
+    /// <param name="name">
+    /// Snapshot name used as the filename (without extension).
+    /// The snapshot is stored at <c>{callerDir}/__snapshots__/{name}.json</c>.
+    /// </param>
+    /// <param name="callerFilePath">
+    /// Automatically populated by <see cref="CallerFilePathAttribute"/>.
+    /// Do not pass this parameter explicitly — use the internal
+    /// <see cref="MatchSnapshotCore"/> overload for testing.
+    /// </param>
+    public SelectionReportAssertionChain MatchSnapshot(
+        string name,
+        [CallerFilePath] string callerFilePath = "")
+    {
+        return MatchSnapshotCore(name, callerFilePath);
+    }
+
+    /// <summary>
+    /// Internal entry point for snapshot matching, accepting an explicit caller file path.
+    /// Enables tests to pass temp-directory paths without <see cref="CallerFilePathAttribute"/> interference.
+    /// </summary>
+    internal SelectionReportAssertionChain MatchSnapshotCore(string name, string callerFilePath)
+    {
+        var snapshotDir = Path.Combine(Path.GetDirectoryName(callerFilePath)!, "__snapshots__");
+        var snapshotPath = Path.Combine(snapshotDir, $"{name}.json");
+        var actualJson = SnapshotSerializer.Serialize(_report);
+
+        if (!File.Exists(snapshotPath))
+        {
+            Directory.CreateDirectory(snapshotDir);
+            File.WriteAllText(snapshotPath, actualJson);
+            return this;
+        }
+
+        var expectedJson = File.ReadAllText(snapshotPath);
+
+        if (expectedJson == actualJson)
+        {
+            return this;
+        }
+
+        if (Environment.GetEnvironmentVariable("CUPEL_UPDATE_SNAPSHOTS") == "1")
+        {
+            File.WriteAllText(snapshotPath, actualJson);
+            return this;
+        }
+
+        throw new SnapshotMismatchException(name, snapshotPath, expectedJson, actualJson);
     }
 }
