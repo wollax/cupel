@@ -6,13 +6,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R061 — CountQuotaSlice: count-based quota enforcement
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: `CountQuotaSlice` decorator slicer enforcing absolute item-count requirements (`require_count`) and per-kind item caps (`cap_count`) before delegating to an inner slicer. Two-phase algorithm: Phase 1 commits top-N candidates by score for each required kind; Phase 2 distributes the residual budget via the inner slicer with cap enforcement. Non-exclusive tag semantics (multi-tag items count toward all matching constraints). Scarcity degrades gracefully by default (`ScarcityBehavior::Degrade`). Both Rust and .NET.
 - Why it matters: `QuotaSlice` controls token budget fractions; `CountQuotaSlice` controls item cardinality. Callers with hard cardinality requirements (e.g., "always include at least 2 tool results") cannot express this with percentage constraints alone. Composable with `QuotaSlice` for combined count + percentage constraints.
 - Source: user
 - Primary owning slice: M006/S01 (Rust), M006/S02 (.NET)
 - Supporting slices: M006/S03
-- Validation: active — full design settled in M002/S03; implementation in progress
+- Validation: validated — Rust: 5 conformance integration tests in crates/cupel/tests/conformance.rs; CountCapExceeded in report.excluded + count_requirement_shortfalls in report via dry_run() proven in S01; CountQuotaSlice+QuotaSlice composition proven in crates/cupel/tests/count_quota_composition.rs; cargo test --all-targets passes. .NET: 5 conformance integration tests in CountQuotaIntegrationTests.cs; CountCapExceeded + CountRequirementShortfalls in DryRun() report proven in S02; CountQuotaSlice+QuotaSlice composition proven in CountQuotaCompositionTests.cs; dotnet test --solution Cupel.slnx passes; PublicAPI.Unshipped.txt complete; dotnet build 0 warnings
 - Notes: Design doc at `.planning/design/count-quota-design.md` is authoritative. D040, D046, D052–D057, D084–D087 are all locked. `CountConstrainedKnapsackSlice` deferred to later milestone (D052).
 
 ### R050 — SelectionReport structural equality
@@ -402,7 +402,7 @@ This file is the explicit capability and coverage contract for the project.
 | R052 | core-capability | validated | M004/S03 | none | validated |
 | R053 | quality-attribute | validated | M004/S04 | none | validated |
 | R054 | core-capability | validated | M004/S05 | none | validated |
-| R061 | core-capability | active | M006/S01, M006/S02 | M006/S03 | active — design settled, implementation in progress |
+| R061 | core-capability | validated | M006/S01, M006/S02 | M006/S03 | validated |
 | R060 | core-capability | validated | M005/S02 | S01, S03 | validated — all 13 patterns, 26+1 tests, cargo package exits 0 |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
@@ -416,7 +416,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 1 (R061)
-- Mapped to slices: 1 (R061 → M006/S01, M006/S02)
-- Validated: 30 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R060)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 31 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R060–R061)
 - Unmapped active requirements: 0

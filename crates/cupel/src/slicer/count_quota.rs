@@ -417,6 +417,13 @@ impl Slicer for CountQuotaSlice {
     fn is_count_quota(&self) -> bool {
         true
     }
+
+    fn count_cap_map(&self) -> std::collections::HashMap<ContextKind, usize> {
+        self.entries
+            .iter()
+            .map(|e| (e.kind().clone(), e.cap_count()))
+            .collect()
+    }
 }
 
 impl QuotaPolicy for CountQuotaSlice {

@@ -58,7 +58,7 @@ This milestone is complete only when all are true:
 - [x] **S02: .NET CountQuotaSlice — audit, complete, and test** `risk:medium` `depends:[S01]`
   > After this: `CountQuotaSlice` is fully implemented in .NET; all 5 conformance scenarios pass in `Wollax.Cupel.Tests`; `QuotaViolations` and `CountCapExceeded` appear in real pipeline output; `dotnet build` 0 warnings; `quota_utilization` with `CountQuotaSlice` tested.
 
-- [ ] **S03: Integration proof + summaries** `risk:low` `depends:[S01,S02]`
+- [x] **S03: Integration proof + summaries** `risk:low` `depends:[S01,S02]`
   > After this: `CountQuotaSlice + QuotaSlice` composition tested end-to-end in both languages; `PublicAPI.Unshipped.txt` updated in .NET; `REQUIREMENTS.md` R061 validated; all tests pass in full solution; M006 complete.
 
 ## Boundary Map

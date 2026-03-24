@@ -300,6 +300,25 @@ impl Pipeline {
                 *sliced_count.entry(item.content()).or_insert(0) += 1;
             }
 
+            // For CountQuotaSlice: reconstruct per-kind selected counts from the
+            // actual slice output (mirrors .NET D141 pattern). Used to classify
+            // excluded items as CountCapExceeded instead of BudgetExceeded when the
+            // item fits the budget but the kind's cap was reached.
+            let count_cap_map = if self.slicer.is_count_quota() {
+                self.slicer.count_cap_map()
+            } else {
+                std::collections::HashMap::new()
+            };
+            let mut selected_kind_counts: std::collections::HashMap<
+                &crate::model::ContextKind,
+                usize,
+            > = std::collections::HashMap::new();
+            if !count_cap_map.is_empty() {
+                for item in &sliced {
+                    *selected_kind_counts.entry(item.kind()).or_insert(0) += 1;
+                }
+            }
+
             for si in &sorted {
                 let content = si.item.content();
                 if let Some(count) = sliced_count.get_mut(content) {
@@ -318,6 +337,33 @@ impl Pipeline {
                             .first()
                             .map(|p| p.content().to_owned())
                             .unwrap_or_default(),
+                    }
+                } else if !count_cap_map.is_empty() {
+                    // Check whether this kind's cap is saturated and the item fits budget.
+                    // If so, classify as CountCapExceeded rather than BudgetExceeded.
+                    let kind = si.item.kind();
+                    if let Some(&cap) = count_cap_map.get(kind) {
+                        let current = selected_kind_counts.get(kind).copied().unwrap_or(0);
+                        if current >= cap && si.item.tokens() <= effective_target {
+                            // Kind cap saturated and item fits budget → count-cap exclusion.
+                            // Increment the counter so subsequent items of same kind
+                            // also carry CountCapExceeded (count reflects cap at time of exclusion).
+                            ExclusionReason::CountCapExceeded {
+                                kind: kind.as_str().to_owned(),
+                                cap,
+                                count: current,
+                            }
+                        } else {
+                            ExclusionReason::BudgetExceeded {
+                                item_tokens: si.item.tokens(),
+                                available_tokens,
+                            }
+                        }
+                    } else {
+                        ExclusionReason::BudgetExceeded {
+                            item_tokens: si.item.tokens(),
+                            available_tokens,
+                        }
                     }
                 } else {
                     ExclusionReason::BudgetExceeded {

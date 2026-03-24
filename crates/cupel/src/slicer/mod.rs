@@ -142,4 +142,16 @@ pub trait Slicer: Send + Sync {
     fn is_count_quota(&self) -> bool {
         false
     }
+
+    /// Returns the per-kind count caps configured on this slicer, or an empty map
+    /// if this slicer does not enforce count caps.
+    ///
+    /// Used by the pipeline's Slice stage to emit
+    /// [`ExclusionReason::CountCapExceeded`](crate::ExclusionReason::CountCapExceeded)
+    /// for items excluded due to a count cap rather than budget exhaustion.
+    ///
+    /// The default implementation returns an empty map.
+    fn count_cap_map(&self) -> std::collections::HashMap<ContextKind, usize> {
+        std::collections::HashMap::new()
+    }
 }
