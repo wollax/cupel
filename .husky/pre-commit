@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# pre-commit: fast checks only — fail fast before writing history
+set -e
+
+echo "⏳ pre-commit: running format & lint checks..."
+
+# ── .NET ──────────────────────────────────────────────────────────────────────
+# 2>/dev/null suppresses harmless workspace warnings (duplicate PublicAPI source files)
+echo "  [.NET] format check..."
+dotnet format --verify-no-changes --severity warn 2>/dev/null
+
+# ── Rust ──────────────────────────────────────────────────────────────────────
+for manifest in crates/*/Cargo.toml; do
+  crate=$(dirname "$manifest")
+  echo "  [Rust] fmt check — $crate..."
+  cargo fmt --manifest-path "$manifest" -- --check
+
+  echo "  [Rust] clippy (deny warnings) — $crate..."
+  cargo clippy --manifest-path "$manifest" --all-targets --all-features -- -D warnings
+done
+
+echo "✅ pre-commit passed."

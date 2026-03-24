@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+# pre-push: full build + all tests — nothing broken reaches origin
+set -e
+
+echo "⏳ pre-push: running full build & tests..."
+
+# ── .NET ──────────────────────────────────────────────────────────────────────
+echo "  [.NET] restore..."
+dotnet restore
+
+echo "  [.NET] build..."
+dotnet build --no-restore -warnaserror -p:TreatWarningsAsErrors=true
+
+echo "  [.NET] test..."
+dotnet test --no-build --verbosity minimal
+
+# ── Rust ──────────────────────────────────────────────────────────────────────
+for manifest in crates/*/Cargo.toml; do
+  crate=$(dirname "$manifest")
+  echo "  [Rust] build — $crate..."
+  cargo build --manifest-path "$manifest" --all-targets --all-features
+
+  echo "  [Rust] test — $crate..."
+  cargo test --manifest-path "$manifest" --all-features
+done
+
+echo "✅ pre-push passed."
