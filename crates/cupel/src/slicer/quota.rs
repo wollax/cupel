@@ -5,7 +5,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer, ser::SerializeStru
 
 use crate::CupelError;
 use crate::model::{ContextBudget, ContextItem, ContextKind, ScoredItem};
-use crate::slicer::Slicer;
+use crate::slicer::{QuotaConstraint, QuotaConstraintMode, QuotaPolicy, Slicer};
 
 /// A single quota entry specifying require and cap percentages for a kind.
 ///
@@ -277,5 +277,19 @@ impl Slicer for QuotaSlice {
         }
 
         Ok(all_selected)
+    }
+}
+
+impl QuotaPolicy for QuotaSlice {
+    fn quota_constraints(&self) -> Vec<QuotaConstraint> {
+        self.quotas
+            .iter()
+            .map(|q| QuotaConstraint {
+                kind: q.kind().clone(),
+                mode: QuotaConstraintMode::Percentage,
+                require: q.require(),
+                cap: q.cap(),
+            })
+            .collect()
     }
 }

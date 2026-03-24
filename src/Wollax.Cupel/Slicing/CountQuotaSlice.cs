@@ -23,7 +23,7 @@ namespace Wollax.Cupel.Slicing;
 /// <see cref="ExclusionReason.CountCapExceeded"/> trace event is recorded.
 /// </para>
 /// </remarks>
-public sealed class CountQuotaSlice : ISlicer
+public sealed class CountQuotaSlice : ISlicer, IQuotaPolicy
 {
     private const string KnapsackGuardMessage =
         "CountQuotaSlice does not support KnapsackSlice as the inner slicer in this version. " +
@@ -75,6 +75,22 @@ public sealed class CountQuotaSlice : ISlicer
         _innerSlicer = innerSlicer;
         _entries = entries;
         _scarcity = scarcity;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<QuotaConstraint> GetConstraints()
+    {
+        var constraints = new List<QuotaConstraint>(_entries.Count);
+        for (var i = 0; i < _entries.Count; i++)
+        {
+            var entry = _entries[i];
+            constraints.Add(new QuotaConstraint(
+                entry.Kind,
+                QuotaConstraintMode.Count,
+                entry.RequireCount,
+                entry.CapCount));
+        }
+        return constraints;
     }
 
     /// <inheritdoc />

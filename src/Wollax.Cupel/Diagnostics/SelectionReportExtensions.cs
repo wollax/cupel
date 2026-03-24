@@ -1,3 +1,5 @@
+using Wollax.Cupel.Slicing;
+
 namespace Wollax.Cupel.Diagnostics;
 
 /// <summary>
@@ -42,4 +44,62 @@ public static class SelectionReportExtensions
         report.Included.Count == 0
             ? 0.0
             : report.Included.Count(i => i.Item.Timestamp.HasValue) / (double)report.Included.Count;
+
+    /// <summary>
+    /// Compute per-kind quota utilization from a selection report against a quota policy.
+    /// </summary>
+    /// <remarks>
+    /// Returns one <see cref="KindQuotaUtilization"/> per constraint in the policy,
+    /// sorted by kind for determinism.
+    /// <para>
+    /// For percentage-mode constraints, <c>Actual</c> is
+    /// <c>sum(tokens for kind) / targetTokens * 100.0</c>. For count-mode constraints,
+    /// <c>Actual</c> is the count of included items of that kind.
+    /// </para>
+    /// </remarks>
+    public static IReadOnlyList<KindQuotaUtilization> QuotaUtilization(
+        this SelectionReport report,
+        IQuotaPolicy policy,
+        ContextBudget budget)
+    {
+        var constraints = policy.GetConstraints();
+
+        // Pre-aggregate included items by kind: (tokenSum, count).
+        var kindStats = new Dictionary<ContextKind, (long TokenSum, int Count)>();
+        for (var i = 0; i < report.Included.Count; i++)
+        {
+            var item = report.Included[i].Item;
+            var kind = item.Kind;
+            kindStats.TryGetValue(kind, out var stats);
+            kindStats[kind] = (stats.TokenSum + item.Tokens, stats.Count + 1);
+        }
+
+        var targetTokens = (double)budget.TargetTokens;
+
+        var results = new List<KindQuotaUtilization>(constraints.Count);
+        for (var i = 0; i < constraints.Count; i++)
+        {
+            var c = constraints[i];
+            kindStats.TryGetValue(c.Kind, out var stats);
+
+            var actual = c.Mode switch
+            {
+                QuotaConstraintMode.Percentage => targetTokens == 0.0
+                    ? 0.0
+                    : stats.TokenSum / targetTokens * 100.0,
+                QuotaConstraintMode.Count => stats.Count,
+                _ => 0.0
+            };
+
+            var utilization = c.Cap == 0.0
+                ? 0.0
+                : Math.Clamp(actual / c.Cap, 0.0, 1.0);
+
+            results.Add(new KindQuotaUtilization(
+                c.Kind, c.Mode, c.Require, c.Cap, actual, utilization));
+        }
+
+        results.Sort((a, b) => string.Compare(a.Kind.Value, b.Kind.Value, StringComparison.Ordinal));
+        return results;
+    }
 }

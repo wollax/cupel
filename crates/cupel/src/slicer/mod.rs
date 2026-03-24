@@ -46,8 +46,46 @@ pub use greedy::GreedySlice;
 pub use knapsack::KnapsackSlice;
 pub use quota::{QuotaEntry, QuotaSlice};
 
-use crate::model::{ContextBudget, ContextItem, ScoredItem};
+use crate::model::{ContextBudget, ContextItem, ContextKind, ScoredItem};
 use crate::CupelError;
+
+// ── QuotaPolicy abstraction ──────────────────────────────────────────────────
+
+/// Whether a quota constraint is expressed as a percentage of the token budget
+/// or as an absolute item count.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum QuotaConstraintMode {
+    /// Constraint values are percentages of the token budget (0.0–100.0).
+    Percentage,
+    /// Constraint values are absolute item counts (as `f64` for uniformity).
+    Count,
+}
+
+/// A single per-kind quota constraint describing the require and cap thresholds.
+///
+/// For [`QuotaConstraintMode::Percentage`], `require` and `cap` are percentages (0–100).
+/// For [`QuotaConstraintMode::Count`], they are absolute item counts (as `f64`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct QuotaConstraint {
+    /// The context kind this constraint applies to.
+    pub kind: ContextKind,
+    /// Whether the constraint is percentage-based or count-based.
+    pub mode: QuotaConstraintMode,
+    /// Minimum threshold (percentage or count).
+    pub require: f64,
+    /// Maximum threshold (percentage or count).
+    pub cap: f64,
+}
+
+/// A trait for slicers that expose per-kind quota constraints.
+///
+/// Implemented by [`QuotaSlice`] (percentage-based) and [`CountQuotaSlice`]
+/// (count-based). The returned constraints are consumed by analytics functions
+/// such as `quota_utilization` to compute how fully each kind's quota is used.
+pub trait QuotaPolicy {
+    /// Returns all per-kind constraints configured on this slicer.
+    fn quota_constraints(&self) -> Vec<QuotaConstraint>;
+}
 
 /// A slicer selects items from a sorted list to fit within a token budget.
 ///

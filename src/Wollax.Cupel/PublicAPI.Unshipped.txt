@@ -84,3 +84,35 @@ Wollax.Cupel.Diagnostics.PolicySensitivityReport.Variants.get -> System.Collecti
 Wollax.Cupel.Diagnostics.PolicySensitivityReport.Variants.init -> void
 Wollax.Cupel.Diagnostics.PolicySensitivityExtensions
 static Wollax.Cupel.Diagnostics.PolicySensitivityExtensions.PolicySensitivity(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.ContextBudget! budget, params (string! Label, Wollax.Cupel.CupelPipeline! Pipeline)[]! variants) -> Wollax.Cupel.Diagnostics.PolicySensitivityReport!
+Wollax.Cupel.Slicing.QuotaConstraintMode
+Wollax.Cupel.Slicing.QuotaConstraintMode.Percentage = 0 -> Wollax.Cupel.Slicing.QuotaConstraintMode
+Wollax.Cupel.Slicing.QuotaConstraintMode.Count = 1 -> Wollax.Cupel.Slicing.QuotaConstraintMode
+Wollax.Cupel.Slicing.QuotaConstraint
+Wollax.Cupel.Slicing.QuotaConstraint.QuotaConstraint(Wollax.Cupel.ContextKind! Kind, Wollax.Cupel.Slicing.QuotaConstraintMode Mode, double Require, double Cap) -> void
+Wollax.Cupel.Slicing.QuotaConstraint.Kind.get -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.Slicing.QuotaConstraint.Kind.init -> void
+Wollax.Cupel.Slicing.QuotaConstraint.Mode.get -> Wollax.Cupel.Slicing.QuotaConstraintMode
+Wollax.Cupel.Slicing.QuotaConstraint.Mode.init -> void
+Wollax.Cupel.Slicing.QuotaConstraint.Require.get -> double
+Wollax.Cupel.Slicing.QuotaConstraint.Require.init -> void
+Wollax.Cupel.Slicing.QuotaConstraint.Cap.get -> double
+Wollax.Cupel.Slicing.QuotaConstraint.Cap.init -> void
+Wollax.Cupel.Slicing.IQuotaPolicy
+Wollax.Cupel.Slicing.IQuotaPolicy.GetConstraints() -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaConstraint!>!
+Wollax.Cupel.Slicing.QuotaSlice.GetConstraints() -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaConstraint!>!
+Wollax.Cupel.Slicing.CountQuotaSlice.GetConstraints() -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaConstraint!>!
+Wollax.Cupel.Diagnostics.KindQuotaUtilization
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.KindQuotaUtilization(Wollax.Cupel.ContextKind! Kind, Wollax.Cupel.Slicing.QuotaConstraintMode Mode, double Require, double Cap, double Actual, double Utilization) -> void
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Kind.get -> Wollax.Cupel.ContextKind!
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Kind.init -> void
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Mode.get -> Wollax.Cupel.Slicing.QuotaConstraintMode
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Mode.init -> void
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Require.get -> double
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Require.init -> void
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Cap.get -> double
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Cap.init -> void
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Actual.get -> double
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Actual.init -> void
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Utilization.get -> double
+Wollax.Cupel.Diagnostics.KindQuotaUtilization.Utilization.init -> void
+static Wollax.Cupel.Diagnostics.SelectionReportExtensions.QuotaUtilization(this Wollax.Cupel.Diagnostics.SelectionReport! report, Wollax.Cupel.Slicing.IQuotaPolicy! policy, Wollax.Cupel.ContextBudget! budget) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.KindQuotaUtilization!>!

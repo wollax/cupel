@@ -28,14 +28,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R052 — IQuotaPolicy abstraction + QuotaUtilization
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: Extract a shared `IQuotaPolicy` interface from `QuotaSlice` and `CountQuotaSlice` that exposes per-kind quota constraints. Add `QuotaUtilization(report, policy)` extension method returning per-kind utilization data. Both languages.
 - Why it matters: Callers tuning quota configurations need to know how close each kind is to its cap/require thresholds. Without a shared abstraction, each quota type needs its own utilization API.
 - Source: brainstorm (March 21 — `QuotaUtilization` candidate) + user (chose `IQuotaPolicy` over direct `CountQuotaSlice` config)
 - Primary owning slice: M004/S03
 - Supporting slices: none
-- Validation: unmapped
-- Notes: `IQuotaPolicy` must be backward-compatible — `QuotaSlice` and `CountQuotaSlice` implement it without breaking changes. Rust equivalent is a `QuotaPolicy` trait.
+- Validation: validated — Rust: `QuotaPolicy` trait with `quota_constraints()` method; implemented by `QuotaSlice` (percentage mode) and `CountQuotaSlice` (count mode); `quota_utilization` free function in `analytics.rs`; `KindQuotaUtilization` struct; 4 integration tests in `quota_utilization.rs`; `cargo test --all-targets` 149 passed. .NET: `IQuotaPolicy` interface with `GetConstraints()`; implemented by both slicers; `QuotaUtilization` extension method on `SelectionReport`; `QuotaConstraint`, `QuotaConstraintMode`, `KindQuotaUtilization` types; 5 tests; PublicAPI.Unshipped.txt updated; `dotnet test` 772 passed; `dotnet build` 0 warnings; no breaking changes
+- Notes: `IQuotaPolicy` must be backward-compatible — `QuotaSlice` and `CountQuotaSlice` implement it without breaking changes. Rust equivalent is a `QuotaPolicy` trait. D105 (abstraction over direct config), D116 (f64 for both modes), D117 (explicit budget parameter).
 
 ### R053 — Snapshot testing in Cupel.Testing
 - Class: quality-attribute
@@ -392,5 +392,5 @@ This file is the explicit capability and coverage contract for the project.
 
 - Active requirements: 3 (R052–R054)
 - Mapped to slices: 3 (R052→M004/S03, R053→M004/S04, R054→M004/S05)
-- Validated: 25 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R051)
+- Validated: 26 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R052)
 - Unmapped active requirements: 0

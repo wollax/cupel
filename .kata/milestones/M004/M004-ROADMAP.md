@@ -58,7 +58,7 @@ This milestone is complete only when all are true:
 - [x] **S02: PolicySensitivityReport — fork diagnostic** `risk:high` `depends:[S01]`
   > After this: `RunPolicySensitivity(items, [(label, pipeline)])` returns labeled `SelectionReport`s plus a structured diff showing items that changed status; proved by a test exercising ≥2 pipeline configurations in both languages.
 
-- [ ] **S03: IQuotaPolicy abstraction + QuotaUtilization** `risk:high` `depends:[S01]`
+- [x] **S03: IQuotaPolicy abstraction + QuotaUtilization** `risk:high` `depends:[S01]`
   > After this: `QuotaSlice` and `CountQuotaSlice` both implement `IQuotaPolicy`; `QuotaUtilization(report, policy)` returns per-kind utilization data in both languages; PublicAPI analyzers clean; no breaking changes.
 
 - [ ] **S04: Snapshot testing in Cupel.Testing** `risk:medium` `depends:[S01]`

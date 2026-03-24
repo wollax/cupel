@@ -11,8 +11,8 @@ pub mod scorer;
 pub mod slicer;
 
 pub use analytics::{
-    budget_utilization, kind_diversity, policy_sensitivity, timestamp_coverage, ItemStatus,
-    PolicySensitivityDiffEntry, PolicySensitivityReport,
+    budget_utilization, kind_diversity, policy_sensitivity, quota_utilization, timestamp_coverage,
+    ItemStatus, KindQuotaUtilization, PolicySensitivityDiffEntry, PolicySensitivityReport,
 };
 pub use diagnostics::{
     CountRequirementShortfall, DiagnosticTraceCollector, ExcludedItem, ExclusionReason,
@@ -33,5 +33,6 @@ pub use scorer::{
 };
 pub use slicer::{
     CountQuotaEntry, CountQuotaSlice, GreedySlice, KnapsackSlice,
-    QuotaEntry, QuotaSlice, ScarcityBehavior, Slicer,
+    QuotaConstraint, QuotaConstraintMode, QuotaEntry, QuotaPolicy, QuotaSlice,
+    ScarcityBehavior, Slicer,
 };

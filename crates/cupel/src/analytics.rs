@@ -8,8 +8,9 @@ use std::collections::HashMap;
 
 use crate::diagnostics::SelectionReport;
 use crate::error::CupelError;
-use crate::model::{ContextBudget, ContextItem};
+use crate::model::{ContextBudget, ContextItem, ContextKind};
 use crate::pipeline::Pipeline;
+use crate::slicer::{QuotaConstraintMode, QuotaPolicy};
 
 /// Fraction of the token budget consumed by the selected items.
 ///
@@ -57,6 +58,101 @@ pub fn timestamp_coverage(report: &SelectionReport) -> f64 {
         .filter(|i| i.item.timestamp().is_some())
         .count() as f64
         / report.included.len() as f64
+}
+
+// ── Quota utilization ─────────────────────────────────────────────────────────
+
+/// Per-kind utilization of a quota constraint, computed from a
+/// [`SelectionReport`] against a [`QuotaPolicy`].
+///
+/// For [`QuotaConstraintMode::Percentage`] mode, `actual` is the percentage of
+/// `target_tokens` consumed by items of this kind. For
+/// [`QuotaConstraintMode::Count`] mode, `actual` is the number of included
+/// items of this kind (as `f64`).
+///
+/// `utilization` is `actual / cap`, clamped to `[0.0, 1.0]`. When `cap` is
+/// zero, `utilization` is `0.0`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct KindQuotaUtilization {
+    /// The context kind this utilization applies to.
+    pub kind: ContextKind,
+    /// Whether the constraint is percentage-based or count-based.
+    pub mode: QuotaConstraintMode,
+    /// Minimum threshold from the policy constraint.
+    pub require: f64,
+    /// Maximum threshold from the policy constraint.
+    pub cap: f64,
+    /// Actual value achieved: percentage of target_tokens for percentage mode,
+    /// item count for count mode.
+    pub actual: f64,
+    /// `actual / cap`, clamped to `[0.0, 1.0]`. `0.0` when `cap` is zero.
+    pub utilization: f64,
+}
+
+/// Compute per-kind quota utilization from a selection report against a quota
+/// policy.
+///
+/// Returns one [`KindQuotaUtilization`] per constraint in the policy, sorted by
+/// kind for determinism.
+///
+/// For percentage-mode constraints, `actual` is
+/// `sum(tokens for kind) / target_tokens * 100.0`. For count-mode constraints,
+/// `actual` is the count of included items of that kind.
+pub fn quota_utilization(
+    report: &SelectionReport,
+    policy: &dyn QuotaPolicy,
+    budget: &ContextBudget,
+) -> Vec<KindQuotaUtilization> {
+    let constraints = policy.quota_constraints();
+
+    // Pre-aggregate included items by kind: (token_sum, count).
+    let mut kind_stats: HashMap<&ContextKind, (i64, usize)> = HashMap::new();
+    for inc in &report.included {
+        let entry = kind_stats.entry(inc.item.kind()).or_insert((0, 0));
+        entry.0 += inc.item.tokens();
+        entry.1 += 1;
+    }
+
+    let target_tokens = budget.target_tokens() as f64;
+
+    let mut results: Vec<KindQuotaUtilization> = constraints
+        .iter()
+        .map(|c| {
+            let (token_sum, count) = kind_stats
+                .get(&c.kind)
+                .copied()
+                .unwrap_or((0, 0));
+
+            let actual = match c.mode {
+                QuotaConstraintMode::Percentage => {
+                    if target_tokens == 0.0 {
+                        0.0
+                    } else {
+                        token_sum as f64 / target_tokens * 100.0
+                    }
+                }
+                QuotaConstraintMode::Count => count as f64,
+            };
+
+            let utilization = if c.cap == 0.0 {
+                0.0
+            } else {
+                (actual / c.cap).clamp(0.0, 1.0)
+            };
+
+            KindQuotaUtilization {
+                kind: c.kind.clone(),
+                mode: c.mode,
+                require: c.require,
+                cap: c.cap,
+                actual,
+                utilization,
+            }
+        })
+        .collect();
+
+    results.sort_by(|a, b| a.kind.as_str().cmp(b.kind.as_str()));
+    results
 }
 
 // ── Policy sensitivity ────────────────────────────────────────────────────────

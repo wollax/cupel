@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use crate::CupelError;
 use crate::diagnostics::CountRequirementShortfall;
 use crate::model::{ContextBudget, ContextItem, ContextKind, ScoredItem};
-use crate::slicer::Slicer;
+use crate::slicer::{QuotaConstraint, QuotaConstraintMode, QuotaPolicy, Slicer};
 
 // ── ScarcityBehavior ──────────────────────────────────────────────────────────
 
@@ -392,6 +392,20 @@ impl Slicer for CountQuotaSlice {
         let mut result = committed;
         result.extend(filtered_phase2);
         Ok(result)
+    }
+}
+
+impl QuotaPolicy for CountQuotaSlice {
+    fn quota_constraints(&self) -> Vec<QuotaConstraint> {
+        self.entries
+            .iter()
+            .map(|e| QuotaConstraint {
+                kind: e.kind().clone(),
+                mode: QuotaConstraintMode::Count,
+                require: e.require_count() as f64,
+                cap: e.cap_count() as f64,
+            })
+            .collect()
     }
 }
 

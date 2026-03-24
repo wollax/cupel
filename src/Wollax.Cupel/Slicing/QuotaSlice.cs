@@ -18,7 +18,7 @@ namespace Wollax.Cupel.Slicing;
 /// against quotas.
 /// </para>
 /// </remarks>
-public sealed class QuotaSlice : ISlicer
+public sealed class QuotaSlice : ISlicer, IQuotaPolicy
 {
     private readonly ISlicer _innerSlicer;
 
@@ -42,6 +42,22 @@ public sealed class QuotaSlice : ISlicer
         ArgumentNullException.ThrowIfNull(quotas);
         _innerSlicer = innerSlicer;
         Quotas = quotas;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<QuotaConstraint> GetConstraints()
+    {
+        var kinds = Quotas.Kinds;
+        var constraints = new List<QuotaConstraint>(kinds.Count);
+        foreach (var kind in kinds)
+        {
+            constraints.Add(new QuotaConstraint(
+                kind,
+                QuotaConstraintMode.Percentage,
+                Quotas.GetRequire(kind),
+                Quotas.GetCap(kind)));
+        }
+        return constraints;
     }
 
     /// <inheritdoc />
