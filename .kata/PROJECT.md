@@ -79,3 +79,4 @@ See `.kata/REQUIREMENTS.md` for the explicit capability contract, requirement st
 - [x] M005: cupel-testing crate — Rust testing vocabulary (separate `cupel-testing` crate with 13 spec assertion patterns, fluent chain API, `cargo package` exits 0; R060 validated; all 3 slices complete, 2026-03-24)
 - [x] M006: Count-Based Quotas — Implement `CountQuotaSlice` in both Rust and .NET: two-phase count-satisfy + budget-distribute algorithm, `CountCapExceeded` exclusion reason, `count_requirement_shortfalls` on SelectionReport, scarcity degradation, construction-time guards (KnapsackSlice rejection, require > cap)
 - [ ] M007: DryRunWithPolicy — `DryRunWithPolicy` method + policy-accepting `PolicySensitivity` overload in .NET; Rust `Policy` struct, `dry_run_with_policy`, and `policy_sensitivity` free function; spec chapter; R056 validated
+  - [x] S01: .NET DryRunWithPolicy and policy-accepting PolicySensitivity — complete (2026-03-24; 679 tests, 0 warnings)

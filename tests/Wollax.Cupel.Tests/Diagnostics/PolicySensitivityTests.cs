@@ -143,6 +143,120 @@ public class PolicySensitivityTests
         await Assert.That(act).Throws<ArgumentException>();
     }
 
+    // ---------------------------------------------------------------------------
+    // Policy-based overload tests (CupelPolicy variants)
+    // ---------------------------------------------------------------------------
+
+    /// <summary>
+    /// Two CupelPolicy objects with ScorerType.Reflexive vs ScorerType.Recency produce
+    /// different selections under the same items+budget, resulting in a non-empty diff.
+    /// Items with high FutureRelevanceHint rank high under Reflexive but all score 0.5
+    /// under Recency (null timestamps), so the top-2 sets differ when relevance varies.
+    /// </summary>
+    [Test]
+    public async Task PolicyOverload_TwoPoliciesWithDifferentScorers_ProducesMeaningfulDiff()
+    {
+        // 4 items each 100t, budget 200t (fits exactly 2).
+        // Reflexive scorer: orders by FutureRelevanceHint → picks alpha+beta.
+        // Recency scorer: all items have null Timestamp → uniform score → picks in
+        // original order → picks alpha+beta (same set). Use Priority scorer instead:
+        // Priority scorer picks items with highest Priority value.
+        var items = new List<ContextItem>
+        {
+            new() { Content = "alpha", Tokens = 100, Kind = ContextKind.Message, FutureRelevanceHint = 0.9, Priority = 1 },
+            new() { Content = "beta",  Tokens = 100, Kind = ContextKind.Message, FutureRelevanceHint = 0.7, Priority = 2 },
+            new() { Content = "gamma", Tokens = 100, Kind = ContextKind.Message, FutureRelevanceHint = 0.3, Priority = 3 },
+            new() { Content = "delta", Tokens = 100, Kind = ContextKind.Message, FutureRelevanceHint = 0.1, Priority = 4 },
+        };
+
+        var budget = new ContextBudget(maxTokens: 400, targetTokens: 200);
+
+        // PolicyA: Reflexive scorer — picks by FutureRelevanceHint → alpha + beta (highest hints)
+        var policyA = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, weight: 1.0)],
+            slicerType: SlicerType.Greedy,
+            placerType: PlacerType.Chronological);
+
+        // PolicyB: Priority scorer — picks by Priority value → gamma + delta (highest priority ints)
+        var policyB = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Priority, weight: 1.0)],
+            slicerType: SlicerType.Greedy,
+            placerType: PlacerType.Chronological);
+
+        var report = PolicySensitivityExtensions.PolicySensitivity(
+            items,
+            budget,
+            ("reflexive", policyA),
+            ("priority", policyB));
+
+        await Assert.That(report.Variants.Count).IsEqualTo(2);
+        await Assert.That(report.Diffs.Count).IsGreaterThanOrEqualTo(1);
+    }
+
+    [Test]
+    public async Task PolicyOverload_ThrowsWhenFewerThanTwoVariants()
+    {
+        var items = new List<ContextItem>();
+        var budget = new ContextBudget(maxTokens: 100, targetTokens: 100);
+
+        var policy = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, weight: 1.0)]);
+
+        var act = () => PolicySensitivityExtensions.PolicySensitivity(
+            items, budget, ("only", policy));
+
+        await Assert.That(act).Throws<ArgumentException>();
+    }
+
+    /// <summary>
+    /// When policy-based and pipeline-based calls use equivalent scorers and slicers,
+    /// both should produce the same number of variants and the same diff count.
+    /// (Both produce 0 diffs when the two policies/pipelines are equivalent.)
+    /// </summary>
+    [Test]
+    public async Task PolicyOverload_MatchesPipelineOverload_WhenEquivalentConfiguration()
+    {
+        var items = new List<ContextItem>
+        {
+            new() { Content = "alpha", Tokens = 100, Kind = ContextKind.Message, FutureRelevanceHint = 0.9 },
+            new() { Content = "beta",  Tokens = 100, Kind = ContextKind.Message, FutureRelevanceHint = 0.5 },
+            new() { Content = "gamma", Tokens = 100, Kind = ContextKind.Message, FutureRelevanceHint = 0.1 },
+        };
+
+        var budget = new ContextBudget(maxTokens: 400, targetTokens: 200);
+
+        // Two equivalent policies (same scorer + slicer)
+        var policyA = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, weight: 1.0)],
+            slicerType: SlicerType.Greedy);
+
+        var policyB = new CupelPolicy(
+            scorers: [new ScorerEntry(ScorerType.Reflexive, weight: 1.0)],
+            slicerType: SlicerType.Greedy);
+
+        // Two equivalent pipelines (same scorer + slicer)
+        var pipelineA = CupelPipeline.CreateBuilder()
+            .WithBudget(budget)
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var pipelineB = CupelPipeline.CreateBuilder()
+            .WithBudget(budget)
+            .WithScorer(new ReflexiveScorer())
+            .Build();
+
+        var policyReport = PolicySensitivityExtensions.PolicySensitivity(
+            items, budget, ("policyA", policyA), ("policyB", policyB));
+
+        var pipelineReport = PolicySensitivityExtensions.PolicySensitivity(
+            items, budget, ("pipelineA", pipelineA), ("pipelineB", pipelineB));
+
+        // Both should agree on: 2 variants, 0 diffs (both configurations are equivalent)
+        await Assert.That(policyReport.Variants.Count).IsEqualTo(pipelineReport.Variants.Count);
+        await Assert.That(policyReport.Diffs.Count).IsEqualTo(pipelineReport.Diffs.Count);
+        await Assert.That(policyReport.Diffs.Count).IsEqualTo(0);
+    }
+
     /// <summary>
     /// Helper scorer that inverts FutureRelevanceHint: score = 1.0 - hint.
     /// </summary>

@@ -52,10 +52,10 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: .NET DryRunWithPolicy and policy-accepting PolicySensitivity** `risk:low` `depends:[]`
+- [x] **S01: .NET DryRunWithPolicy and policy-accepting PolicySensitivity** `risk:low` `depends:[]`
   > After this: `.NET` callers can call `pipeline.DryRunWithPolicy(items, budget, policy)` and `CupelPipeline.PolicySensitivity(items, budget, (label, policy)[])` — both verified by passing tests.
 
-- [ ] **S02: Rust Policy struct and dry_run_with_policy** `risk:medium` `depends:[]`
+- [x] **S02: Rust Policy struct and dry_run_with_policy** `risk:medium` `depends:[]`
   > After this: Rust callers can build a `Policy` via `PolicyBuilder` and call `pipeline.dry_run_with_policy(items, budget, &policy)` — returning a `SelectionReport` driven by the policy's components — verified by unit tests.
 
 - [ ] **S03: Rust policy_sensitivity and spec chapter** `risk:low` `depends:[S01,S02]`

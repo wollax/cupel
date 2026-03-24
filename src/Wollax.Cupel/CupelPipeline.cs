@@ -103,6 +103,46 @@ public sealed class CupelPipeline
         return ExecuteCore(items, trace, temporaryBudget);
     }
 
+    /// <summary>
+    /// Executes the pipeline in dry-run mode using the given <paramref name="policy"/> instead
+    /// of this pipeline's own scorer, slicer, and placer. Useful for comparing configurations
+    /// without building separate pipelines.
+    /// </summary>
+    /// <param name="items">The context items to process.</param>
+    /// <param name="budget">The token budget to use. Must be provided explicitly — policies do not carry a budget.</param>
+    /// <param name="policy">The policy that drives scorer, slicer, placer, deduplication, and overflow strategy.</param>
+    /// <returns>The pipeline result with a fully populated <see cref="SelectionReport"/>.</returns>
+    /// <remarks>
+    /// <para>
+    /// <b>CountQuota limitation:</b> <see cref="CupelPolicy"/> does not support count-based quota
+    /// configurations (<c>CountQuotaSlice</c>). Callers needing count-quota fork diagnostics
+    /// must use the pipeline-based <see cref="PolicySensitivityExtensions.PolicySensitivity"/>
+    /// overload with pre-constructed pipelines.
+    /// </para>
+    /// <para>
+    /// <b>Stream slicer fallback:</b> When <paramref name="policy"/> specifies
+    /// <see cref="SlicerType.Stream"/>, the synchronous <see cref="Slicing.GreedySlice"/> is used
+    /// as the slicer (the same fallback applied by <see cref="PipelineBuilder.WithPolicy"/>).
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="items"/>, <paramref name="budget"/>, or <paramref name="policy"/> is <see langword="null"/>.
+    /// </exception>
+    public ContextResult DryRunWithPolicy(
+        IReadOnlyList<ContextItem> items,
+        ContextBudget budget,
+        CupelPolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(budget);
+        ArgumentNullException.ThrowIfNull(policy);
+        var tempPipeline = CreateBuilder()
+            .WithBudget(budget)
+            .WithPolicy(policy)
+            .Build();
+        return tempPipeline.DryRunWithBudget(items, budget);
+    }
+
     private ContextResult ExecuteCore(
         IReadOnlyList<ContextItem> items,
         ITraceCollector trace,

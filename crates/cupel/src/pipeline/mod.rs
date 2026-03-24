@@ -57,6 +57,7 @@ mod score;
 mod slice;
 mod sort;
 
+use std::sync::Arc;
 use std::time::Instant;
 
 use crate::CupelError;
@@ -216,6 +217,34 @@ impl Pipeline {
         budget: &ContextBudget,
         collector: &mut C,
     ) -> Result<Vec<ContextItem>, CupelError> {
+        self.run_with_components(
+            items,
+            budget,
+            self.scorer.as_ref(),
+            self.slicer.as_ref(),
+            self.placer.as_ref(),
+            self.deduplication,
+            self.overflow_strategy,
+            collector,
+        )
+    }
+
+    /// Private helper that executes the 6-stage pipeline with injected strategy components.
+    ///
+    /// This allows `dry_run_with_policy` to override scorer/slicer/placer/flags without
+    /// duplicating the stage logic. `run_traced` delegates here using `self.*` fields.
+    #[allow(clippy::too_many_arguments)]
+    fn run_with_components<C: TraceCollector>(
+        &self,
+        items: &[ContextItem],
+        budget: &ContextBudget,
+        scorer: &dyn Scorer,
+        slicer: &dyn Slicer,
+        placer: &dyn Placer,
+        deduplication: bool,
+        overflow_strategy: OverflowStrategy,
+        collector: &mut C,
+    ) -> Result<Vec<ContextItem>, CupelError> {
         collector.set_candidates(items.len(), items.iter().map(|i| i.tokens()).sum());
 
         // Stage 1: Classify
@@ -241,7 +270,7 @@ impl Pipeline {
 
         // Stage 2: Score
         let t = Instant::now();
-        let scored = score::score_items(&scoreable, self.scorer.as_ref());
+        let scored = score::score_items(&scoreable, scorer);
         if collector.is_enabled() {
             collector.record_stage_event(TraceEvent {
                 stage: PipelineStage::Score,
@@ -253,7 +282,7 @@ impl Pipeline {
 
         // Stage 3: Deduplicate
         let t = Instant::now();
-        let (deduped, ded_excluded) = deduplicate::deduplicate(scored, self.deduplication);
+        let (deduped, ded_excluded) = deduplicate::deduplicate(scored, deduplication);
         if collector.is_enabled() {
             for si in &ded_excluded {
                 collector.record_excluded(
@@ -288,7 +317,7 @@ impl Pipeline {
 
         // Stage 5: Slice
         let t = Instant::now();
-        let sliced = slice::slice_items(&sorted, budget, pinned_tokens, self.slicer.as_ref())?;
+        let sliced = slice::slice_items(&sorted, budget, pinned_tokens, slicer)?;
         if collector.is_enabled() {
             let sliced_total: i64 = sliced.iter().map(|i| i.tokens()).sum();
             let available_tokens = effective_target - sliced_total;
@@ -304,8 +333,8 @@ impl Pipeline {
             // actual slice output (mirrors .NET D141 pattern). Used to classify
             // excluded items as CountCapExceeded instead of BudgetExceeded when the
             // item fits the budget but the kind's cap was reached.
-            let count_cap_map = if self.slicer.is_count_quota() {
-                self.slicer.count_cap_map()
+            let count_cap_map = if slicer.is_count_quota() {
+                slicer.count_cap_map()
             } else {
                 std::collections::HashMap::new()
             };
@@ -389,8 +418,8 @@ impl Pipeline {
             &sliced,
             &sorted,
             budget,
-            self.overflow_strategy,
-            self.placer.as_ref(),
+            overflow_strategy,
+            placer,
         )?;
         if collector.is_enabled() {
             for (item, score) in &truncated {
@@ -673,6 +702,38 @@ impl Pipeline {
             .iter()
             .any(|inc| inc.item.content() == target.content())
     }
+
+    /// Runs the pipeline stages using the strategy components from `policy` instead of
+    /// the pipeline's own scorer/slicer/placer/flags, and returns a [`SelectionReport`].
+    ///
+    /// This is the primary entry point for fork diagnostics: callers build a [`Policy`]
+    /// via [`PolicyBuilder`] and call this method to observe how a different combination
+    /// of strategies would have selected from the same items and budget, without
+    /// constructing a separate full [`Pipeline`].
+    ///
+    /// # Errors
+    ///
+    /// Returns the same errors as [`Pipeline::run`]. The error surface is identical to
+    /// [`dry_run`](Pipeline::dry_run) — only the strategy components differ.
+    pub fn dry_run_with_policy(
+        &self,
+        items: &[ContextItem],
+        budget: &ContextBudget,
+        policy: &Policy,
+    ) -> Result<SelectionReport, CupelError> {
+        let mut collector = DiagnosticTraceCollector::new(TraceDetailLevel::Item);
+        self.run_with_components(
+            items,
+            budget,
+            policy.scorer.as_ref(),
+            policy.slicer.as_ref(),
+            policy.placer.as_ref(),
+            policy.deduplication,
+            policy.overflow_strategy,
+            &mut collector,
+        )?;
+        Ok(collector.into_report())
+    }
 }
 
 impl std::fmt::Debug for Pipeline {
@@ -774,6 +835,160 @@ impl PipelineBuilder {
             deduplication: self.deduplication,
             overflow_strategy: self.overflow_strategy,
         })
+    }
+}
+
+/// A set of strategy components (scorer, slicer, placer, flags) that can be injected
+/// into an existing [`Pipeline`] via [`Pipeline::dry_run_with_policy`].
+///
+/// Use [`PolicyBuilder`] to construct a `Policy`. Fields are `pub(crate)` to allow
+/// the pipeline to access components directly without trait method dispatch overhead
+/// on the builder side.
+///
+/// # Examples
+///
+/// ```
+/// use std::sync::Arc;
+/// use cupel::{PolicyBuilder, GreedySlice, ChronologicalPlacer, ReflexiveScorer, OverflowStrategy};
+///
+/// let policy = PolicyBuilder::new()
+///     .scorer(Arc::new(ReflexiveScorer))
+///     .slicer(Arc::new(GreedySlice))
+///     .placer(Arc::new(ChronologicalPlacer))
+///     .overflow_strategy(OverflowStrategy::Truncate)
+///     .build()?;
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
+pub struct Policy {
+    pub(crate) scorer: Arc<dyn Scorer>,
+    pub(crate) slicer: Arc<dyn Slicer>,
+    pub(crate) placer: Arc<dyn Placer>,
+    pub(crate) deduplication: bool,
+    pub(crate) overflow_strategy: OverflowStrategy,
+}
+
+impl std::fmt::Debug for Policy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Policy")
+            .field("scorer", &"<dyn Scorer>")
+            .field("slicer", &"<dyn Slicer>")
+            .field("placer", &"<dyn Placer>")
+            .field("deduplication", &self.deduplication)
+            .field("overflow_strategy", &self.overflow_strategy)
+            .finish()
+    }
+}
+
+/// Builder for constructing a [`Policy`] with required and optional configuration.
+///
+/// Mirrors [`PipelineBuilder`] but accepts `Arc<dyn Trait>` instead of `Box<dyn Trait>`
+/// so that strategy components can be shared across multiple policies without cloning.
+///
+/// # Examples
+///
+/// ```
+/// use std::sync::Arc;
+/// use cupel::{PolicyBuilder, PriorityScorer, KnapsackSlice, ChronologicalPlacer};
+///
+/// let policy = PolicyBuilder::new()
+///     .scorer(Arc::new(PriorityScorer))
+///     .slicer(Arc::new(KnapsackSlice::with_default_bucket_size()))
+///     .placer(Arc::new(ChronologicalPlacer))
+///     .build()?;
+/// # Ok::<(), cupel::CupelError>(())
+/// ```
+pub struct PolicyBuilder {
+    scorer: Option<Arc<dyn Scorer>>,
+    slicer: Option<Arc<dyn Slicer>>,
+    placer: Option<Arc<dyn Placer>>,
+    deduplication: bool,
+    overflow_strategy: OverflowStrategy,
+}
+
+impl std::fmt::Debug for PolicyBuilder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PolicyBuilder")
+            .field("scorer", &self.scorer.is_some())
+            .field("slicer", &self.slicer.is_some())
+            .field("placer", &self.placer.is_some())
+            .field("deduplication", &self.deduplication)
+            .field("overflow_strategy", &self.overflow_strategy)
+            .finish()
+    }
+}
+
+impl PolicyBuilder {
+    /// Creates a new `PolicyBuilder` with defaults matching [`PipelineBuilder`]:
+    /// deduplication enabled, overflow strategy set to the default ([`OverflowStrategy::default()`]).
+    pub fn new() -> Self {
+        Self {
+            scorer: None,
+            slicer: None,
+            placer: None,
+            deduplication: true,
+            overflow_strategy: OverflowStrategy::default(),
+        }
+    }
+
+    /// Sets the scorer strategy (required).
+    pub fn scorer(mut self, scorer: Arc<dyn Scorer>) -> Self {
+        self.scorer = Some(scorer);
+        self
+    }
+
+    /// Sets the slicer strategy (required).
+    pub fn slicer(mut self, slicer: Arc<dyn Slicer>) -> Self {
+        self.slicer = Some(slicer);
+        self
+    }
+
+    /// Sets the placer strategy (required).
+    pub fn placer(mut self, placer: Arc<dyn Placer>) -> Self {
+        self.placer = Some(placer);
+        self
+    }
+
+    /// Enables or disables deduplication (default: enabled).
+    pub fn deduplication(mut self, enabled: bool) -> Self {
+        self.deduplication = enabled;
+        self
+    }
+
+    /// Sets the overflow strategy (default: `Throw`).
+    pub fn overflow_strategy(mut self, strategy: OverflowStrategy) -> Self {
+        self.overflow_strategy = strategy;
+        self
+    }
+
+    /// Builds the policy, validating that all required components are set.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if scorer, slicer, or placer is not set.
+    pub fn build(self) -> Result<Policy, CupelError> {
+        let scorer = self
+            .scorer
+            .ok_or_else(|| CupelError::PipelineConfig("scorer is required".to_owned()))?;
+        let slicer = self
+            .slicer
+            .ok_or_else(|| CupelError::PipelineConfig("slicer is required".to_owned()))?;
+        let placer = self
+            .placer
+            .ok_or_else(|| CupelError::PipelineConfig("placer is required".to_owned()))?;
+
+        Ok(Policy {
+            scorer,
+            slicer,
+            placer,
+            deduplication: self.deduplication,
+            overflow_strategy: self.overflow_strategy,
+        })
+    }
+}
+
+impl Default for PolicyBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

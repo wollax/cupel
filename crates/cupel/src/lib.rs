@@ -24,7 +24,7 @@ pub use model::{
     ContextBudget, ContextItem, ContextItemBuilder, ContextKind, ContextSource, OverflowStrategy,
     ParseContextKindError, ScoredItem,
 };
-pub use pipeline::{Pipeline, PipelineBuilder};
+pub use pipeline::{Pipeline, PipelineBuilder, Policy, PolicyBuilder};
 pub use placer::{ChronologicalPlacer, Placer, UShapedPlacer};
 pub use scorer::{
     CompositeScorer, DecayCurve, DecayScorer, FrequencyScorer, KindScorer, MetadataTrustScorer,

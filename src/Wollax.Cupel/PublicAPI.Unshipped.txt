@@ -116,3 +116,5 @@ Wollax.Cupel.Diagnostics.KindQuotaUtilization.Actual.init -> void
 Wollax.Cupel.Diagnostics.KindQuotaUtilization.Utilization.get -> double
 Wollax.Cupel.Diagnostics.KindQuotaUtilization.Utilization.init -> void
 static Wollax.Cupel.Diagnostics.SelectionReportExtensions.QuotaUtilization(this Wollax.Cupel.Diagnostics.SelectionReport! report, Wollax.Cupel.Slicing.IQuotaPolicy! policy, Wollax.Cupel.ContextBudget! budget) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.KindQuotaUtilization!>!
+Wollax.Cupel.CupelPipeline.DryRunWithPolicy(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.CupelPolicy! policy) -> Wollax.Cupel.ContextResult!
+static Wollax.Cupel.Diagnostics.PolicySensitivityExtensions.PolicySensitivity(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.ContextBudget! budget, params (string! Label, Wollax.Cupel.CupelPolicy! Policy)[]! variants) -> Wollax.Cupel.Diagnostics.PolicySensitivityReport!
