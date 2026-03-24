@@ -2,9 +2,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use cupel::{
-    ChronologicalPlacer, ContextBudget, ContextItemBuilder, ExclusionReason,
-    GreedySlice, KnapsackSlice, OverflowStrategy, Pipeline, PolicyBuilder, PriorityScorer,
-    ReflexiveScorer,
+    ChronologicalPlacer, ContextBudget, ContextItemBuilder, ExclusionReason, GreedySlice,
+    KnapsackSlice, OverflowStrategy, Pipeline, PolicyBuilder, PriorityScorer, ReflexiveScorer,
 };
 
 fn budget(target: i64, max: i64) -> ContextBudget {
@@ -69,7 +68,11 @@ fn scorer_is_respected() {
         report.included.len(),
         2,
         "expected 2 included items, got {:?}",
-        report.included.iter().map(|i| i.item.content()).collect::<Vec<_>>()
+        report
+            .included
+            .iter()
+            .map(|i| i.item.content())
+            .collect::<Vec<_>>()
     );
 
     let included_contents: Vec<&str> = report.included.iter().map(|i| i.item.content()).collect();
@@ -214,14 +217,23 @@ fn deduplication_false_allows_duplicates() {
         report.included.len(),
         2,
         "deduplication=false should include both duplicate items, got included: {:?}, excluded: {:?}",
-        report.included.iter().map(|i| i.item.content()).collect::<Vec<_>>(),
-        report.excluded.iter().map(|i| i.item.content()).collect::<Vec<_>>(),
+        report
+            .included
+            .iter()
+            .map(|i| i.item.content())
+            .collect::<Vec<_>>(),
+        report
+            .excluded
+            .iter()
+            .map(|i| i.item.content())
+            .collect::<Vec<_>>(),
     );
 
     // No item should be excluded as Deduplicated.
-    let has_dedup_exclusion = report.excluded.iter().any(|e| {
-        matches!(e.reason, ExclusionReason::Deduplicated { .. })
-    });
+    let has_dedup_exclusion = report
+        .excluded
+        .iter()
+        .any(|e| matches!(e.reason, ExclusionReason::Deduplicated { .. }));
     assert!(
         !has_dedup_exclusion,
         "no item should be excluded as Deduplicated when deduplication=false"
@@ -272,7 +284,11 @@ fn deduplication_true_excludes_duplicates() {
         report.included.len(),
         1,
         "deduplication=true should include only one of the two duplicate items, got: {:?}",
-        report.included.iter().map(|i| i.item.content()).collect::<Vec<_>>()
+        report
+            .included
+            .iter()
+            .map(|i| i.item.content())
+            .collect::<Vec<_>>()
     );
 
     // Exactly one item is excluded as Deduplicated.

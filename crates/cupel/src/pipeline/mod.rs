@@ -413,14 +413,8 @@ impl Pipeline {
 
         // Stage 6: Place
         let t = Instant::now();
-        let (result, truncated) = place::place_items(
-            &pinned,
-            &sliced,
-            &sorted,
-            budget,
-            overflow_strategy,
-            placer,
-        )?;
+        let (result, truncated) =
+            place::place_items(&pinned, &sliced, &sorted, budget, overflow_strategy, placer)?;
         if collector.is_enabled() {
             for (item, score) in &truncated {
                 let available_tokens =
