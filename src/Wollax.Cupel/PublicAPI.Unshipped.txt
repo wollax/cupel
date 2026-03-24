@@ -69,3 +69,18 @@ Wollax.Cupel.Diagnostics.StageTraceSnapshot.ItemCountOut.init -> void
 Wollax.Cupel.Diagnostics.StageTraceSnapshot.Duration.get -> System.TimeSpan
 Wollax.Cupel.Diagnostics.StageTraceSnapshot.Duration.init -> void
 Wollax.Cupel.Diagnostics.ITraceCollector.OnPipelineCompleted(Wollax.Cupel.Diagnostics.SelectionReport! report, Wollax.Cupel.ContextBudget! budget, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.StageTraceSnapshot>! stageSnapshots) -> void
+Wollax.Cupel.Diagnostics.ItemStatus
+Wollax.Cupel.Diagnostics.ItemStatus.Included = 0 -> Wollax.Cupel.Diagnostics.ItemStatus
+Wollax.Cupel.Diagnostics.ItemStatus.Excluded = 1 -> Wollax.Cupel.Diagnostics.ItemStatus
+Wollax.Cupel.Diagnostics.PolicySensitivityDiffEntry
+Wollax.Cupel.Diagnostics.PolicySensitivityDiffEntry.Content.get -> string!
+Wollax.Cupel.Diagnostics.PolicySensitivityDiffEntry.Content.init -> void
+Wollax.Cupel.Diagnostics.PolicySensitivityDiffEntry.Statuses.get -> System.Collections.Generic.IReadOnlyList<(string! Label, Wollax.Cupel.Diagnostics.ItemStatus Status)>!
+Wollax.Cupel.Diagnostics.PolicySensitivityDiffEntry.Statuses.init -> void
+Wollax.Cupel.Diagnostics.PolicySensitivityReport
+Wollax.Cupel.Diagnostics.PolicySensitivityReport.Diffs.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.PolicySensitivityDiffEntry!>!
+Wollax.Cupel.Diagnostics.PolicySensitivityReport.Diffs.init -> void
+Wollax.Cupel.Diagnostics.PolicySensitivityReport.Variants.get -> System.Collections.Generic.IReadOnlyList<(string! Label, Wollax.Cupel.Diagnostics.SelectionReport! Report)>!
+Wollax.Cupel.Diagnostics.PolicySensitivityReport.Variants.init -> void
+Wollax.Cupel.Diagnostics.PolicySensitivityExtensions
+static Wollax.Cupel.Diagnostics.PolicySensitivityExtensions.PolicySensitivity(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! items, Wollax.Cupel.ContextBudget! budget, params (string! Label, Wollax.Cupel.CupelPipeline! Pipeline)[]! variants) -> Wollax.Cupel.Diagnostics.PolicySensitivityReport!

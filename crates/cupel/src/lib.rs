@@ -10,7 +10,10 @@ pub mod placer;
 pub mod scorer;
 pub mod slicer;
 
-pub use analytics::{budget_utilization, kind_diversity, timestamp_coverage};
+pub use analytics::{
+    budget_utilization, kind_diversity, policy_sensitivity, timestamp_coverage, ItemStatus,
+    PolicySensitivityDiffEntry, PolicySensitivityReport,
+};
 pub use diagnostics::{
     CountRequirementShortfall, DiagnosticTraceCollector, ExcludedItem, ExclusionReason,
     IncludedItem, InclusionReason, NullTraceCollector, OverflowEvent, PipelineStage,

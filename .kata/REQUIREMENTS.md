@@ -17,14 +17,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R051 — PolicySensitivityReport — fork diagnostic
 - Class: differentiator
-- Status: active
+- Status: validated
 - Description: `RunPolicySensitivity(items, [(label, pipeline)])` executes multiple pipeline configurations over the same item set and returns both labeled `SelectionReport`s and a structured diff showing items that moved between included/excluded across variants. Both languages.
 - Why it matters: Developer-time tool for answering "which items swing when I change my pipeline configuration?" — the most common question when tuning context selection policies. Thin orchestration over existing `dry_run`; ~80 lines per language.
 - Source: brainstorm (March 15 — radical survivor; March 21 — promoted to M003-ready)
 - Primary owning slice: M004/S02
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Depends on R050 (equality) for diff computation. `dry_run` is live in both languages. Returns `[(label, SelectionReport)]` plus a structured diff (items that changed status between variants).
+- Validation: validated — Rust: `policy_sensitivity` free function in `analytics.rs` returning `PolicySensitivityReport` with `ItemStatus`, `PolicySensitivityDiffEntry`; content-keyed diff via HashMap; 2 integration tests in `policy_sensitivity.rs`; `cargo test --all-targets` 145 passed. .NET: `PolicySensitivity` static extension method in `PolicySensitivityExtensions.cs` using internal `DryRunWithBudget`; `PolicySensitivityReport`, `PolicySensitivityDiffEntry`, `ItemStatus` types; minimum-variants guard; 3 tests; `dotnet test` 767 passed; PublicAPI.Unshipped.txt updated; `dotnet build` 0 warnings
+- Notes: Depends on R050 (equality) for diff computation. `dry_run` is live in both languages. Returns `[(label, SelectionReport)]` plus a structured diff (items that changed status between variants). Content-keyed matching (D113). .NET uses DryRunWithBudget (D114).
 
 ### R052 — IQuotaPolicy abstraction + QuotaUtilization
 - Class: core-capability
@@ -374,7 +374,7 @@ This file is the explicit capability and coverage contract for the project.
 | R021 | quality-attribute | validated | M003/S04 | none | validated |
 | R022 | operability | validated | M003/S05 | none | validated |
 | R050 | core-capability | validated | M004/S01 | none | validated |
-| R051 | differentiator | active | M004/S02 | none | unmapped |
+| R051 | differentiator | validated | M004/S02 | none | validated |
 | R052 | core-capability | active | M004/S03 | none | unmapped |
 | R053 | quality-attribute | active | M004/S04 | none | unmapped |
 | R054 | core-capability | active | M004/S05 | none | unmapped |
@@ -390,7 +390,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 4 (R051–R054)
-- Mapped to slices: 4 (R051→M004/S02, R052→M004/S03, R053→M004/S04, R054→M004/S05)
-- Validated: 24 (R001–R006, R010–R014, R020–R022, R040–R045, R050)
+- Active requirements: 3 (R052–R054)
+- Mapped to slices: 3 (R052→M004/S03, R053→M004/S04, R054→M004/S05)
+- Validated: 25 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R051)
 - Unmapped active requirements: 0

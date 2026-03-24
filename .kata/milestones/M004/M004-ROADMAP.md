@@ -55,7 +55,7 @@ This milestone is complete only when all are true:
 - [x] **S01: SelectionReport structural equality** `risk:medium` `depends:[]`
   > After this: `SelectionReport`, `IncludedItem`, and `ExcludedItem` support `==` in both languages with exact f64 equality; all existing tests pass; downstream slices can compare reports programmatically.
 
-- [ ] **S02: PolicySensitivityReport — fork diagnostic** `risk:high` `depends:[S01]`
+- [x] **S02: PolicySensitivityReport — fork diagnostic** `risk:high` `depends:[S01]`
   > After this: `RunPolicySensitivity(items, [(label, pipeline)])` returns labeled `SelectionReport`s plus a structured diff showing items that changed status; proved by a test exercising ≥2 pipeline configurations in both languages.
 
 - [ ] **S03: IQuotaPolicy abstraction + QuotaUtilization** `risk:high` `depends:[S01]`

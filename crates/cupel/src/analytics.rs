@@ -4,8 +4,12 @@
 //! the temporary `HashSet` used by [`kind_diversity`]. All three return primitive
 //! types and are safe to call on empty reports.
 
+use std::collections::HashMap;
+
 use crate::diagnostics::SelectionReport;
-use crate::model::ContextBudget;
+use crate::error::CupelError;
+use crate::model::{ContextBudget, ContextItem};
+use crate::pipeline::Pipeline;
 
 /// Fraction of the token budget consumed by the selected items.
 ///
@@ -53,6 +57,88 @@ pub fn timestamp_coverage(report: &SelectionReport) -> f64 {
         .filter(|i| i.item.timestamp().is_some())
         .count() as f64
         / report.included.len() as f64
+}
+
+// ── Policy sensitivity ────────────────────────────────────────────────────────
+
+/// Whether an item was included or excluded by a particular pipeline variant.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ItemStatus {
+    Included,
+    Excluded,
+}
+
+/// A single item that changed inclusion status across pipeline variants.
+///
+/// `content` is the item's content string (used as the join key).
+/// `statuses` holds one `(variant_label, status)` pair per variant, in the same
+/// order as the variants were supplied.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PolicySensitivityDiffEntry {
+    pub content: String,
+    pub statuses: Vec<(String, ItemStatus)>,
+}
+
+/// Result of running multiple pipeline configurations over the same item set.
+///
+/// `variants` holds the labeled `SelectionReport` for each configuration.
+/// `diffs` contains only items whose inclusion status differs across at least
+/// two variants — the interesting items that "swing".
+#[derive(Debug, Clone, PartialEq)]
+pub struct PolicySensitivityReport {
+    pub variants: Vec<(String, SelectionReport)>,
+    pub diffs: Vec<PolicySensitivityDiffEntry>,
+}
+
+/// Run multiple pipeline configurations over the same item set and compute a
+/// structured diff showing which items changed inclusion status.
+///
+/// Each entry in `variants` is a `(label, pipeline)` pair. The function calls
+/// [`Pipeline::dry_run`] on each, then builds a content-keyed diff retaining
+/// only items where at least two variants disagree on inclusion.
+pub fn policy_sensitivity(
+    items: &[ContextItem],
+    budget: &ContextBudget,
+    variants: &[(impl AsRef<str>, &Pipeline)],
+) -> Result<PolicySensitivityReport, CupelError> {
+    let mut results: Vec<(String, SelectionReport)> = Vec::with_capacity(variants.len());
+    for (label, pipeline) in variants {
+        let report = pipeline.dry_run(items, budget)?;
+        results.push((label.as_ref().to_string(), report));
+    }
+
+    // Build content → Vec<(label, status)> map.
+    let mut status_map: HashMap<String, Vec<(String, ItemStatus)>> = HashMap::new();
+
+    for (label, report) in &results {
+        for inc in &report.included {
+            status_map
+                .entry(inc.item.content().to_string())
+                .or_default()
+                .push((label.clone(), ItemStatus::Included));
+        }
+        for exc in &report.excluded {
+            status_map
+                .entry(exc.item.content().to_string())
+                .or_default()
+                .push((label.clone(), ItemStatus::Excluded));
+        }
+    }
+
+    // Keep only entries where not all statuses are the same.
+    let diffs: Vec<PolicySensitivityDiffEntry> = status_map
+        .into_iter()
+        .filter(|(_, statuses)| {
+            let first = statuses.first().map(|(_, s)| *s);
+            statuses.iter().any(|(_, s)| Some(*s) != first)
+        })
+        .map(|(content, statuses)| PolicySensitivityDiffEntry { content, statuses })
+        .collect();
+
+    Ok(PolicySensitivityReport {
+        variants: results,
+        diffs,
+    })
 }
 
 // ── Unit tests ────────────────────────────────────────────────────────────────
