@@ -72,8 +72,8 @@ This milestone is complete only when all are true:
 ### S01 — SelectionReport structural equality
 
 Produces:
-- Rust: `PartialEq` + `Eq` derives on `SelectionReport`, `IncludedItem`, `ExcludedItem` (and any nested types that currently lack them)
-- .NET: `IEquatable<SelectionReport>`, `IEquatable<IncludedItem>`, `IEquatable<ExcludedItem>` with collection-aware equality (ordered comparison of `Included`/`Excluded` lists)
+- Rust: `PartialEq` (not `Eq` — f64 fields prevent it, D109) on `SelectionReport`, `IncludedItem`, `ExcludedItem`, `TraceEvent`, `CountRequirementShortfall`, `OverflowEvent`, plus `ContextBudget` (transitive dependency, D110)
+- .NET: `IEquatable<ContextItem>` (collection-aware), `IEquatable<IncludedItem>`, `IEquatable<ExcludedItem>`, `IEquatable<SelectionReport>` with SequenceEqual for all list properties
 - Both: PublicAPI surface updates
 
 Consumes:
