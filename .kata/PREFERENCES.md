@@ -4,7 +4,8 @@ always_use_skills: []
 prefer_skills: []
 avoid_skills: []
 skill_rules: []
-custom_instructions: []
+custom_instructions:
+  - "Roadmap reassessment runs inline at the end of slice completion — do not schedule it as a separate auto-mode unit or step."
 models: {}
 skill_discovery: suggest
 auto_supervisor: {}
