@@ -32,9 +32,12 @@ fn count_quota_composition_quota_slice_inner() {
 
     // Outer slicer: count-based quota wrapping the percentage-based quota.
     let count_entry = CountQuotaEntry::new(kind("ToolOutput"), 1, 2).unwrap();
-    let slicer =
-        CountQuotaSlice::new(vec![count_entry], Box::new(quota_slicer), ScarcityBehavior::Degrade)
-            .unwrap();
+    let slicer = CountQuotaSlice::new(
+        vec![count_entry],
+        Box::new(quota_slicer),
+        ScarcityBehavior::Degrade,
+    )
+    .unwrap();
 
     let pipeline = Pipeline::builder()
         .scorer(Box::new(ReflexiveScorer))
@@ -92,10 +95,10 @@ fn count_quota_composition_quota_slice_inner() {
 
     // At least one item must be excluded due to the count cap.
     assert!(
-        report.excluded.iter().any(|e| matches!(
-            e.reason,
-            ExclusionReason::CountCapExceeded { .. }
-        )),
+        report
+            .excluded
+            .iter()
+            .any(|e| matches!(e.reason, ExclusionReason::CountCapExceeded { .. })),
         "at least one item must be cap-excluded with CountCapExceeded; excluded reasons: {:?}",
         report
             .excluded
