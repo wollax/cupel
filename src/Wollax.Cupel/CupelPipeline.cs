@@ -304,6 +304,15 @@ public sealed class CupelPipeline
 
         var slicedItems = _slicer.Slice(sorted, adjustedBudget, trace);
 
+        // Wire CountQuotaSlice shortfalls into the report when present.
+        // Read LastShortfalls after Slice() returns — it is only populated post-call (D087).
+        if (_slicer is CountQuotaSlice countQuotaSlicer
+            && reportBuilder is not null
+            && countQuotaSlicer.LastShortfalls.Count > 0)
+        {
+            reportBuilder.SetCountRequirementShortfalls(countQuotaSlicer.LastShortfalls);
+        }
+
         if (sw is not null)
         {
             var sliceDuration = sw.Elapsed;
@@ -323,6 +332,20 @@ public sealed class CupelPipeline
             sw.Restart();
         }
 
+        // Build per-kind count from sliced output for cap-classification in the re-association loop.
+        // Only constructed when CountQuotaSlice is active — null otherwise to avoid overhead on hot paths.
+        Dictionary<ContextKind, int>? selectedKindCounts = null;
+        if (reportBuilder is not null && _slicer is CountQuotaSlice)
+        {
+            selectedKindCounts = new Dictionary<ContextKind, int>();
+            for (var i = 0; i < slicedItems.Count; i++)
+            {
+                var k = slicedItems[i].Kind;
+                selectedKindCounts.TryGetValue(k, out var c);
+                selectedKindCounts[k] = c + 1;
+            }
+        }
+
         // RE-ASSOCIATE SCORES: match slicer output back to scored items
         var slicedSet = new HashSet<ContextItem>(ReferenceEqualityComparer.Instance);
         for (var i = 0; i < slicedItems.Count; i++)
@@ -339,8 +362,23 @@ public sealed class CupelPipeline
             }
             else if (reportBuilder is not null)
             {
-                // Item was in sorted but excluded by slicer — budget exceeded
-                reportBuilder.AddExcluded(sorted[i].Item, sorted[i].Score, ExclusionReason.BudgetExceeded);
+                // Classify exclusion reason: budget-exceeded wins when item exceeds target tokens;
+                // cap-exceeded is used when the item fits the budget but its kind has reached the cap.
+                var exclusionReason = ExclusionReason.BudgetExceeded;
+                if (selectedKindCounts is not null && _slicer is CountQuotaSlice cqs)
+                {
+                    var kind = sorted[i].Item.Kind;
+                    var entry = cqs.Entries.FirstOrDefault(e => e.Kind == kind);
+                    if (entry is not null
+                        && sorted[i].Item.Tokens <= adjustedBudget.TargetTokens
+                        && selectedKindCounts.TryGetValue(kind, out var kindCount)
+                        && kindCount >= entry.CapCount)
+                    {
+                        exclusionReason = ExclusionReason.CountCapExceeded;
+                    }
+                }
+
+                reportBuilder.AddExcluded(sorted[i].Item, sorted[i].Score, exclusionReason);
             }
         }
 

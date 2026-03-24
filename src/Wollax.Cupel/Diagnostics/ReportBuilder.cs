@@ -10,6 +10,7 @@ internal sealed class ReportBuilder
     private readonly List<(ExcludedItem Item, int Index)> _excluded = [];
     private int _totalCandidates;
     private int _totalTokensConsidered;
+    private IReadOnlyList<CountRequirementShortfall> _countRequirementShortfalls = [];
 
     /// <summary>Records an item as included in the final selection.</summary>
     public void AddIncluded(ContextItem item, double score, InclusionReason reason)
@@ -46,6 +47,14 @@ internal sealed class ReportBuilder
     public void SetTotalTokensConsidered(int tokens) => _totalTokensConsidered = tokens;
 
     /// <summary>
+    /// Sets the count requirement shortfalls recorded by <c>CountQuotaSlice</c> during slicing.
+    /// Call after <c>CountQuotaSlice.Slice()</c> returns when shortfalls are non-empty.
+    /// </summary>
+    /// <param name="shortfalls">The shortfalls to include in the built <see cref="SelectionReport"/>.</param>
+    public void SetCountRequirementShortfalls(IReadOnlyList<CountRequirementShortfall> shortfalls) =>
+        _countRequirementShortfalls = shortfalls;
+
+    /// <summary>
     /// Builds the final <see cref="SelectionReport"/>.
     /// Excluded items are sorted by score descending with stable index tiebreaking.
     /// </summary>
@@ -71,7 +80,8 @@ internal sealed class ReportBuilder
             Included = _included.ToArray(),
             Excluded = excludedItems,
             TotalCandidates = _totalCandidates,
-            TotalTokensConsidered = _totalTokensConsidered
+            TotalTokensConsidered = _totalTokensConsidered,
+            CountRequirementShortfalls = _countRequirementShortfalls
         };
     }
 }

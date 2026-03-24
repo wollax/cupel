@@ -47,6 +47,12 @@ public sealed class CountQuotaSlice : ISlicer, IQuotaPolicy
     public IReadOnlyList<CountRequirementShortfall> LastShortfalls { get; private set; } = [];
 
     /// <summary>
+    /// Gets the per-kind count constraints configured for this slicer.
+    /// Exposed internally for pipeline cap-classification logic.
+    /// </summary>
+    internal IReadOnlyList<CountQuotaEntry> Entries => _entries;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="CountQuotaSlice"/> class.
     /// </summary>
     /// <param name="innerSlicer">
