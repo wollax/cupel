@@ -1,24 +1,21 @@
 # Kata State
 
-**Active Milestone:** M005 — cupel-testing crate — COMPLETE
-**Active Slice:** none
-**Active Task:** none
-**Phase:** Complete
+**Active Milestone:** M006 — Count-Based Quotas
+**Active Slice:** S01 — Rust CountQuotaSlice — audit, complete, and test
+**Active Task:** none yet (planning phase)
+**Phase:** Planning
 
 ## Recent Decisions
-- D131: Pattern 13 index-based approach — `Vec<(f64, usize)>` + `HashSet<usize>` edge positions (f64/Hash constraint resolved)
-- D132: ExclusionReason variant matching via `std::mem::discriminant` (not `==`)
-- D133: S03 verification strategy — final-assembly level (`cargo package` + chained integration test + full test + clippy)
-- D134: `include` field for `cupel-testing` — matches `cupel` pattern without conformance/ or examples/ directories
-- D135: cupel dep version = "1.1" added to cupel-testing Cargo.toml — required by cargo package; --no-verify used until cupel published
+- D135: cupel dep version = "1.1" — required by cargo package (M005/S03)
+- D136: M006 scope — implementation-only (design fully settled in `.planning/design/count-quota-design.md`); no new spec work; both language skeletons exist and must be audited before new code written
 
 ## Blockers
 - None
 
 ## Next Action
-M005 complete — all success criteria met. cupel-testing crate is ready for `cargo publish`. No active work.
+Begin S01: audit `crates/cupel/src/slicer/count_quota.rs` and the integration tests to determine what's complete vs stubbed, then implement and test the full two-phase algorithm.
 
-## Milestone Progress (M005)
-- [x] S01: Crate scaffold + chain plumbing — DONE
-- [x] S02: 13 assertion patterns — 26 tests pass, both crates clippy-clean — DONE
-- [x] S03: Integration tests + publish readiness — README, LICENSE, include, chained test, cargo package exits 0 — DONE
+## Milestone Progress (M006)
+- [ ] S01: Rust CountQuotaSlice — audit, complete, and test
+- [ ] S02: .NET CountQuotaSlice — audit, complete, and test
+- [ ] S03: Integration proof + summaries
