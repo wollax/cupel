@@ -1,17 +1,17 @@
 # Kata State
 
 **Active Milestone:** M008 — Rust OpenTelemetry Bridge
-**Active Slice:** S02 — Implement CupelOtelTraceCollector (all 3 verbosity tiers)
-**Active Task:** T01 (not yet planned)
-**Phase:** Planning (S02)
+**Active Slice:** S03 — Crate packaging, spec addendum, and R058 validation
+**Active Task:** none (S03 not yet planned)
+**Phase:** S02 done; S03 is next
 
 ## Recent Decisions
 
-- D167: Synthetic SelectionReport for `on_pipeline_completed` uses union of snapshot excluded items — avoids re-scanning; `events = vec![]`, `count_requirement_shortfalls = vec![]`
-- D166: S01 verification strategy — integration-level with failing-first `SpyCollector` test; T01 writes failing test, T02 makes it pass
-- D165: `StageTraceSnapshot` carries `excluded: Vec<ExcludedItem>` scoped to that stage
-- D164: `on_pipeline_completed` defaulted no-op on TraceCollector trait
-- D163: Canonical OTel source name is `"cupel"`
+- D171: `ExclusionReason` variant name extracted via `match` returning `&'static str`, not `Debug` formatting
+- D170: `cupel-otel` root span carries only `cupel.budget.max_tokens` and `cupel.verbosity` (spec-only — not .NET extras)
+- D169: Root span requires explicit `.end()` call via `root_cx.span().end()` — not drop-based
+- D168: S02 verification strategy — integration-level with 5 failing integration tests using `InMemorySpanExporter`
+- D165: `StageTraceSnapshot.excluded` carries stage-scoped excluded items (same as .NET GetExclusionsForStage)
 
 ## Blockers
 
@@ -20,9 +20,9 @@
 ## Milestone Progress (M008)
 
 - [x] S01: Add on_pipeline_completed hook to core cupel TraceCollector ✓
-- [ ] S02: Implement CupelOtelTraceCollector (all 3 verbosity tiers)
+- [x] S02: Implement CupelOtelTraceCollector (all 3 verbosity tiers) ✓
 - [ ] S03: Crate packaging, spec addendum, and R058 validation
 
 ## Next Action
 
-Begin S02: Research the `opentelemetry` Rust crate API (version, span creation, attributes, in-memory exporter), then plan and implement `CupelOtelTraceCollector` in `crates/cupel-otel/`. Key entry point: `on_pipeline_completed` override builds `cupel.pipeline` root span + 5 `cupel.stage.*` child spans with correct attributes for all 3 verbosity tiers (StageOnly, StageAndExclusions, Full).
+Begin S03: run `cargo package --dry-run` for `cupel-otel`; add Rust-specific section to `spec/src/integrations/opentelemetry.md`; update `CHANGELOG.md`; validate R058 in `.kata/REQUIREMENTS.md`. Plan S03 tasks from `.kata/milestones/M008/M008-ROADMAP.md`.

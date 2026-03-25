@@ -56,7 +56,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Add on_pipeline_completed hook to core cupel TraceCollector** `risk:medium` `depends:[]`
   > After this: `TraceCollector` trait has a defaulted `on_pipeline_completed(&self, report: &SelectionReport, budget: &ContextBudget, stage_snapshots: &[StageTraceSnapshot])` method; `pipeline.run_traced` calls it; all 167 existing tests pass — proven by `cargo test --all-targets`.
 
-- [ ] **S02: Implement CupelOtelTraceCollector (all 3 verbosity tiers)** `risk:medium` `depends:[S01]`
+- [x] **S02: Implement CupelOtelTraceCollector (all 3 verbosity tiers)** `risk:medium` `depends:[S01]`
   > After this: `cupel-otel` crate compiles, `CupelOtelTraceCollector` implements `TraceCollector`, and integration tests using the `opentelemetry-sdk` in-memory exporter prove all three verbosity tiers emit the correct spans, attributes, and events.
 
 - [ ] **S03: Crate packaging, spec addendum, and R058 validation** `risk:low` `depends:[S02]`

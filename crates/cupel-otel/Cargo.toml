@@ -1,0 +1,20 @@
+[package]
+name = "cupel-otel"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/wollax/cupel"
+description = "OpenTelemetry trace collector for cupel selection pipelines"
+readme = "README.md"
+categories = ["observability", "development-tools"]
+keywords = ["cupel", "opentelemetry", "tracing", "otel"]
+include = ["src/**/*.rs", "tests/**/*.rs", "Cargo.toml", "LICENSE", "README.md"]
+
+[dependencies]
+cupel = { version = "1.1", path = "../cupel" }
+opentelemetry = "0.27"
+
+[dev-dependencies]
+opentelemetry_sdk = { version = "0.27", features = ["testing", "trace"] }
+serial_test = "0.9"
