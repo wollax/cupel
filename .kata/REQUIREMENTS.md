@@ -320,6 +320,30 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: validated — all 13 spec assertion patterns implemented on `SelectionReportAssertionChain` with 26+1 integration tests (26 per-pattern + 1 chained end-to-end); `cargo package` exits 0 for `cupel-testing`; both crates `cargo test --all-targets` + clippy clean; M005/S03 complete
 - Notes: Separate crate (not feature flag). Fluent chain (`report.should()`). Panic on failure. No snapshots (D107 — Rust callers use `insta`). D126 (separate crate), D127 (fluent chain), D128 (panic on failure).
 
+## Active
+
+### R062 — CountConstrainedKnapsackSlice: count-constrained knapsack selection
+- Class: core-capability
+- Status: active
+- Description: `CountConstrainedKnapsackSlice` slicer implementing count requirements and caps using a two-phase pre-processing approach: Phase 1 commits the top-N items per constrained kind by score descending (satisfying `require_count`), Phase 2 runs standard `KnapsackSlice` on the remaining candidates with the residual budget, and Phase 3 enforces `cap_count` by dropping over-cap items from the knapsack output. Construction-time validation of `require_count <= cap_count`. Scarcity degradation (default) or throw. Both Rust and .NET. Spec chapter required.
+- Why it matters: D052 deferred this as the `CountQuotaSlice` + `KnapsackSlice` upgrade path. Callers who need globally-optimal token packing AND count guarantees cannot get them today — `CountQuotaSlice` rejects `KnapsackSlice` as inner slicer. This delivers count constraints over the knapsack optimizer without the state-explosion risk of a full constrained-DP approach.
+- Source: user (M009 discussion)
+- Primary owning slice: M009/S01 (Rust), M009/S02 (.NET)
+- Supporting slices: M009/S03 (spec)
+- Validation: unmapped
+- Notes: Pre-processing path chosen (D052 upgrade path 5A, not 5D full constrained-DP). Re-uses `CountCapExceeded` and `CountRequirementShortfall` diagnostics from R061. `KnapsackSlice` guard in `CountQuotaSlice` remains — `CountConstrainedKnapsackSlice` is a separate slicer, not a fix to that guard.
+
+### R063 — MetadataKeyScorer: multiplicative metadata-keyed score boost
+- Class: differentiator
+- Status: active
+- Description: `MetadataKeyScorer(key, value, boost)` scorer that applies a multiplicative boost to items where `metadata[key] == value`. Items that do not match receive a neutral multiplier of `1.0`. Boost must be positive. A `defaultMultiplier` parameter controls the value returned for non-matching items (default `1.0`). Composable with `CompositeScorer`. Both Rust and .NET. Spec chapter with `cupel:priority` convention required.
+- Why it matters: Enables callers to inject a prioritization signal via metadata without writing a custom scorer. `MetadataTrustScorer` provides absolute trust passthrough; `MetadataKeyScorer` provides conditional relative boosting — different semantic model. The `cupel:priority` convention provides a canonical metadata key for common priority signaling.
+- Source: brainstorm (March 21 — B7, accepted; user confirmed M009)
+- Primary owning slice: M009/S04 (Rust + .NET)
+- Supporting slices: M009/S03 (spec)
+- Validation: unmapped
+- Notes: Multiplicative semantics chosen (scale-invariant, composable, consistent with ScaledScorer pattern per March 21 report B7). ~40 lines per language. Needs `cupel:priority` spec entry alongside `MetadataKeyScorer` spec chapter.
+
 ## Deferred
 
 ### R055 — ProfiledPlacer companion package
@@ -414,6 +438,8 @@ This file is the explicit capability and coverage contract for the project.
 | R053 | quality-attribute | validated | M004/S04 | none | validated |
 | R054 | core-capability | validated | M004/S05 | none | validated |
 | R061 | core-capability | validated | M006/S01, M006/S02 | M006/S03 | validated |
+| R062 | core-capability | active | M009/S01, M009/S02 | M009/S03 | unmapped |
+| R063 | differentiator | active | M009/S04 | M009/S03 | unmapped |
 | R060 | core-capability | validated | M005/S02 | S01, S03 | validated — all 13 patterns, 26+1 tests, cargo package exits 0 |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
@@ -429,7 +455,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 0
-- Mapped to slices: 0
+- Active requirements: 2 (R062, R063)
+- Mapped to slices: 2
 - Validated: 33 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R056, R058, R060–R061)
 - Unmapped active requirements: 0

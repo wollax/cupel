@@ -1,28 +1,29 @@
 # Kata State
 
-**Active Milestone:** M008 — Rust OpenTelemetry Bridge (COMPLETE — M008-SUMMARY.md written)
-**Active Slice:** None
-**Active Task:** None
-**Phase:** Done — M008 closed; all 33 requirements validated; no active requirements remain
+**Active Milestone:** M009 — CountConstrainedKnapsackSlice + MetadataKeyScorer
+**Active Slice:** S01 — CountConstrainedKnapsackSlice Rust implementation
+**Active Task:** None (planning complete; S01 task decomposition next)
+**Phase:** Planning
 
 ## Recent Decisions
 
-- D173: `cargo package --no-verify` required (path dep prevents verifier from building from tarball)
-- D172: S03 verification strategy — final-assembly: `cargo package --no-verify` exits 0; spec Rust section present; R058 validated; tests + clippy clean in both crates
-- D171: `ExclusionReason` variant name extracted via `match` returning `&'static str`, not `Debug` formatting
-- D170: `cupel-otel` root span carries only `cupel.budget.max_tokens` and `cupel.verbosity` (spec-only)
-- D169: Root span requires explicit `.end()` call via `root_cx.span().end()` — not drop-based
+- D178: `MetadataKeyScorer` boost validated `> 0.0` at construction; non-positive/non-finite → construction error
+- D177: `MetadataKeyScorer` multiplicative semantics: `score_in × boost` for match, `score_in × 1.0` for non-match
+- D176: `CountConstrainedKnapsackSlice::is_count_quota() → true`, `is_knapsack() → false`
+- D175: Re-uses `CountQuotaEntry`, `ScarcityBehavior`, `CountRequirementShortfall` from M006 — no new parallel types
+- D174: Pre-processing path (5A): Phase 1 commits required items by score, Phase 2 runs standard KnapsackSlice on residual
 
 ## Blockers
 
 - None
 
-## Milestone Progress (M008)
+## Milestone Progress (M009)
 
-- [x] S01: Add on_pipeline_completed hook to core cupel TraceCollector ✓
-- [x] S02: Implement CupelOtelTraceCollector (all 3 verbosity tiers) ✓
-- [x] S03: Crate packaging, spec addendum, and R058 validation ✓
+- [ ] S01: CountConstrainedKnapsackSlice — Rust implementation
+- [ ] S02: CountConstrainedKnapsackSlice — .NET implementation
+- [ ] S03: Spec chapters — count-constrained-knapsack + metadata-key
+- [ ] S04: MetadataKeyScorer — Rust + .NET implementation
 
 ## Next Action
 
-M008 complete. M008-SUMMARY.md written. All 33 requirements validated. No active requirements remain. Queue `/kata queue` for next milestone when ready.
+Start S01: read M009-CONTEXT.md and M009-ROADMAP.md, then decompose S01 into tasks and begin Rust implementation of `CountConstrainedKnapsackSlice`.
