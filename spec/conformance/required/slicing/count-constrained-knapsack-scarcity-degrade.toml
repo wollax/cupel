@@ -1,0 +1,43 @@
+[test]
+name = "CountConstrainedKnapsackSlice: scarcity degrade — require_count=3, only 1 candidate; shortfall recorded"
+stage = "slicing"
+slicer = "count_constrained_knapsack"
+
+# Budget: 500 tokens. 1 item = 100 tokens.
+# Policy: require_count=3, cap_count=5 for kind "tool". ScarcityBehavior: degrade.
+#
+# Phase 1 (Require-Satisfy): candidate pool for "tool" = 1 item.
+#   Commits tool-a (0.9). satisfied_count = 1 < require_count = 3.
+#   → shortfall recorded: { kind: "tool", required_count: 3, satisfied_count: 1 }.
+#   pre_alloc_tokens = 100. residual budget = 400.
+#
+# Phase 2 (KnapsackSlice): candidates = [] (no items left).
+#   KnapsackSlice selects nothing.
+#
+# Phase 3 (Cap-Enforce): selected_count["tool"] = 1. cap = 5. All pass.
+#
+# Expected: 1 item selected (tool-a). shortfall_count=1. No cap exclusions.
+
+[config]
+inner_slicer = "knapsack"
+bucket_size = 100
+scarcity_behavior = "degrade"
+
+[[config.entries]]
+kind = "tool"
+require_count = 3
+cap_count = 5
+
+[budget]
+target_tokens = 500
+
+[[scored_items]]
+content = "tool-a"
+tokens = 100
+score = 0.9
+kind = "tool"
+
+[expected]
+selected_contents = ["tool-a"]
+shortfall_count = 1
+cap_excluded_count = 0

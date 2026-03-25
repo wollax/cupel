@@ -1,0 +1,77 @@
+[test]
+name = "CountConstrainedKnapsackSlice: combined require+cap — require 2 tool items, cap at 2, knapsack picks best msg items from residual"
+stage = "slicing"
+slicer = "count_constrained_knapsack"
+
+# Budget: 1000 tokens. bucket_size: 1 (exact knapsack).
+# Policy: require_count=2, cap_count=2 for kind "tool". No constraint on "msg".
+#
+# Items:
+#   tool-a (kind="tool", score=0.9, 100t)
+#   tool-b (kind="tool", score=0.7, 100t)
+#   msg-s  (kind="msg",  score=0.8,  50t) — small, good score
+#   msg-m  (kind="msg",  score=0.6, 150t) — medium
+#   msg-l  (kind="msg",  score=0.4, 200t) — large, poor score
+#
+# Phase 1 (Require-Satisfy): commits top-2 by score for "tool" →
+#   tool-a (0.9) + tool-b (0.7). satisfied_count = 2 = require_count → no shortfall.
+#   pre_alloc_tokens = 200. residual budget = 800.
+#
+# Phase 2 (KnapsackSlice, bucket_size=1): candidates = [msg-s, msg-m, msg-l].
+#   Capacity = 800. All three fit (50+150+200 = 400 < 800).
+#   KnapsackSlice selects all 3 msg items.
+#
+# Phase 3 (Cap-Enforce): selected_count["tool"] = 2. cap = 2.
+#   tool-a: committed in Phase 1, count=1 → pass (count→1).
+#   tool-b: committed in Phase 1, count=2 → pass (count→2).
+#   Phase 2 items have kind "msg" — no cap constraint → all pass.
+#
+# Expected: all 5 items selected. No shortfalls. No cap exclusions.
+
+[config]
+inner_slicer = "knapsack"
+bucket_size = 1
+scarcity_behavior = "degrade"
+
+[[config.entries]]
+kind = "tool"
+require_count = 2
+cap_count = 2
+
+[budget]
+target_tokens = 1000
+
+[[scored_items]]
+content = "tool-a"
+tokens = 100
+score = 0.9
+kind = "tool"
+
+[[scored_items]]
+content = "tool-b"
+tokens = 100
+score = 0.7
+kind = "tool"
+
+[[scored_items]]
+content = "msg-s"
+tokens = 50
+score = 0.8
+kind = "msg"
+
+[[scored_items]]
+content = "msg-m"
+tokens = 150
+score = 0.6
+kind = "msg"
+
+[[scored_items]]
+content = "msg-l"
+tokens = 200
+score = 0.4
+kind = "msg"
+
+[expected]
+selected_contents = ["tool-a", "tool-b", "msg-s", "msg-m", "msg-l"]
+shortfall_count = 0
+cap_excluded_count = 0

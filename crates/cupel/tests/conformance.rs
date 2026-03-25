@@ -12,10 +12,10 @@ mod conformance {
 
     use cupel::{
         ChronologicalPlacer, CompositeScorer, ContextItem, ContextItemBuilder, ContextKind,
-        CountQuotaEntry, CountQuotaSlice, DecayCurve, DecayScorer, FrequencyScorer, GreedySlice,
-        KindScorer, KnapsackSlice, MetadataTrustScorer, Placer, PriorityScorer, QuotaEntry,
-        QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer, ScarcityBehavior, ScoredItem,
-        Scorer, Slicer, TagScorer, TimeProvider, UShapedPlacer,
+        CountConstrainedKnapsackSlice, CountQuotaEntry, CountQuotaSlice, DecayCurve, DecayScorer,
+        FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice, MetadataTrustScorer, Placer,
+        PriorityScorer, QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer,
+        ScarcityBehavior, ScoredItem, Scorer, Slicer, TagScorer, TimeProvider, UShapedPlacer,
     };
 
     struct FixedTimeProvider(DateTime<Utc>);
@@ -396,6 +396,53 @@ mod conformance {
                     .collect();
 
                 Box::new(CountQuotaSlice::new(entries, inner, scarcity).unwrap())
+            }
+            "count_constrained_knapsack" => {
+                let cfg = config.expect("count_constrained_knapsack slicer needs config");
+
+                let bucket_size = cfg
+                    .get("bucket_size")
+                    .and_then(|v| v.as_integer())
+                    .unwrap_or(100);
+                let knapsack = KnapsackSlice::new(bucket_size).unwrap();
+
+                let scarcity_str = cfg
+                    .get("scarcity_behavior")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("degrade");
+                let scarcity = match scarcity_str {
+                    "degrade" => ScarcityBehavior::Degrade,
+                    "throw" => ScarcityBehavior::Throw,
+                    other => panic!("unknown scarcity_behavior: {other}"),
+                };
+
+                let entries_arr = cfg
+                    .get("entries")
+                    .and_then(|v| v.as_array())
+                    .expect("count_constrained_knapsack needs config.entries");
+
+                let entries: Vec<CountQuotaEntry> = entries_arr
+                    .iter()
+                    .map(|e| {
+                        let kind = e["kind"].as_str().expect("entry missing kind");
+                        let require_count = e["require_count"]
+                            .as_integer()
+                            .expect("entry missing require_count")
+                            as usize;
+                        let cap_count = e["cap_count"]
+                            .as_integer()
+                            .expect("entry missing cap_count")
+                            as usize;
+                        CountQuotaEntry::new(
+                            ContextKind::new(kind).unwrap(),
+                            require_count,
+                            cap_count,
+                        )
+                        .unwrap()
+                    })
+                    .collect();
+
+                Box::new(CountConstrainedKnapsackSlice::new(entries, knapsack, scarcity).unwrap())
             }
             other => panic!("unknown slicer type: {other}"),
         }

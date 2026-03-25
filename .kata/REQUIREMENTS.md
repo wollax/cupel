@@ -330,8 +330,8 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user (M009 discussion)
 - Primary owning slice: M009/S01 (Rust), M009/S02 (.NET)
 - Supporting slices: M009/S03 (spec)
-- Validation: unmapped
-- Notes: Pre-processing path chosen (D052 upgrade path 5A, not 5D full constrained-DP). Re-uses `CountCapExceeded` and `CountRequirementShortfall` diagnostics from R061. `KnapsackSlice` guard in `CountQuotaSlice` remains — `CountConstrainedKnapsackSlice` is a separate slicer, not a fix to that guard.
+- Validation: partial — Rust: `CountConstrainedKnapsackSlice` implemented with 3-phase algorithm; 5 conformance integration tests passing; re-exported from crate root; `cargo test --all-targets` 175 passed; clippy clean. .NET: pending S02.
+- Notes: Pre-processing path chosen (D052 upgrade path 5A, not 5D full constrained-DP). Re-uses `CountCapExceeded` and `CountRequirementShortfall` diagnostics from R061. `KnapsackSlice` guard in `CountQuotaSlice` remains — `CountConstrainedKnapsackSlice` is a separate slicer, not a fix to that guard. D180: Phase 2 output must be re-sorted by score descending before Phase 3 cap enforcement.
 
 ### R063 — MetadataKeyScorer: multiplicative metadata-keyed score boost
 - Class: differentiator

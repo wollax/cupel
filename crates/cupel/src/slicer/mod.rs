@@ -36,11 +36,13 @@
 //! # Ok::<(), cupel::CupelError>(())
 //! ```
 
+mod count_constrained_knapsack;
 mod count_quota;
 mod greedy;
 mod knapsack;
 mod quota;
 
+pub use count_constrained_knapsack::CountConstrainedKnapsackSlice;
 pub use count_quota::{CountQuotaEntry, CountQuotaSlice, ScarcityBehavior};
 pub use greedy::GreedySlice;
 pub use knapsack::KnapsackSlice;

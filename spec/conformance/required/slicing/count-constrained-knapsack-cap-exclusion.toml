@@ -1,0 +1,62 @@
+[test]
+name = "CountConstrainedKnapsackSlice: cap exclusion — cap_count=2, 4 tool candidates; 2 excluded by cap"
+stage = "slicing"
+slicer = "count_constrained_knapsack"
+
+# Budget: 600 tokens. Each item = 100 tokens.
+# Policy: require_count=1, cap_count=2 for kind "tool". bucket_size=100.
+#
+# Phase 1 (Require-Satisfy): commits top-1 by score for "tool" →
+#   tool-a (0.9). pre_alloc_tokens = 100. residual budget = 500.
+#
+# Phase 2 (KnapsackSlice): candidates = [tool-b (0.8, 100t), tool-c (0.7, 100t), tool-d (0.6, 100t)].
+#   All fit in 500t residual. KnapsackSlice selects all 3 (no token constraint is binding).
+#
+# Phase 3 (Cap-Enforce): selected_count["tool"] = 1 (from Phase 1). cap = 2.
+#   tool-b: count=1 < cap=2 → pass. count becomes 2.
+#   tool-c: count=2 >= cap=2 → excluded.
+#   tool-d: count=2 >= cap=2 → excluded.
+#
+# Expected: 2 items selected (tool-a, tool-b). cap_excluded_count=2. No shortfalls.
+
+[config]
+inner_slicer = "knapsack"
+bucket_size = 100
+scarcity_behavior = "degrade"
+
+[[config.entries]]
+kind = "tool"
+require_count = 1
+cap_count = 2
+
+[budget]
+target_tokens = 600
+
+[[scored_items]]
+content = "tool-a"
+tokens = 100
+score = 0.9
+kind = "tool"
+
+[[scored_items]]
+content = "tool-b"
+tokens = 100
+score = 0.8
+kind = "tool"
+
+[[scored_items]]
+content = "tool-c"
+tokens = 100
+score = 0.7
+kind = "tool"
+
+[[scored_items]]
+content = "tool-d"
+tokens = 100
+score = 0.6
+kind = "tool"
+
+[expected]
+selected_contents = ["tool-a", "tool-b"]
+shortfall_count = 0
+cap_excluded_count = 2

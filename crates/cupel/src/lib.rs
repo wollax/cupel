@@ -33,6 +33,7 @@ pub use scorer::{
     TagScorer, TimeProvider,
 };
 pub use slicer::{
-    CountQuotaEntry, CountQuotaSlice, GreedySlice, KnapsackSlice, QuotaConstraint,
-    QuotaConstraintMode, QuotaEntry, QuotaPolicy, QuotaSlice, ScarcityBehavior, Slicer,
+    CountConstrainedKnapsackSlice, CountQuotaEntry, CountQuotaSlice, GreedySlice, KnapsackSlice,
+    QuotaConstraint, QuotaConstraintMode, QuotaEntry, QuotaPolicy, QuotaSlice, ScarcityBehavior,
+    Slicer,
 };
