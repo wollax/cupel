@@ -419,7 +419,7 @@ This file is the explicit capability and coverage contract for the project.
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
 | R056 | core-capability | validated | M007/S01, M007/S02, M007/S03 | none | validated |
-| R058 | operability | active | M008/S01, M008/S02, M008/S03 | none | unmapped |
+| R058 | operability | validated | M008/S01, M008/S02, M008/S03 | none | validated |
 | R040 | differentiator | validated | M002/S03 | M002/S01 | validated |
 | R041 | quality-attribute | validated | M002/S02 | none | validated |
 | R042 | differentiator | validated | M002/S04 | none | validated |
@@ -429,7 +429,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 1 (R058)
-- Mapped to slices: 1 (R058 → M008/S01, S02, S03)
-- Validated: 32 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R056, R060–R061)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 33 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R056, R058, R060–R061)
 - Unmapped active requirements: 0

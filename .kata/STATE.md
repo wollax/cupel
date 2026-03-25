@@ -1,9 +1,9 @@
 # Kata State
 
-**Active Milestone:** M008 — Rust OpenTelemetry Bridge (COMPLETE)
-**Active Slice:** S03 — Crate packaging, spec addendum, and R058 validation (COMPLETE)
+**Active Milestone:** M008 — Rust OpenTelemetry Bridge (COMPLETE — M008-SUMMARY.md written)
+**Active Slice:** None
 **Active Task:** None
-**Phase:** Done — all milestones through M008 complete
+**Phase:** Done — M008 closed; all 33 requirements validated; no active requirements remain
 
 ## Recent Decisions
 
@@ -25,4 +25,4 @@
 
 ## Next Action
 
-M008 complete. All milestones through M008 complete. R058 validated. Queue `/kata queue` for next milestone when ready.
+M008 complete. M008-SUMMARY.md written. All 33 requirements validated. No active requirements remain. Queue `/kata queue` for next milestone when ready.
