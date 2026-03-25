@@ -18,7 +18,7 @@ pub use analytics::{
 pub use diagnostics::{
     CountRequirementShortfall, DiagnosticTraceCollector, ExcludedItem, ExclusionReason,
     IncludedItem, InclusionReason, NullTraceCollector, OverflowEvent, PipelineStage,
-    SelectionReport, TraceCollector, TraceDetailLevel, TraceEvent,
+    SelectionReport, StageTraceSnapshot, TraceCollector, TraceDetailLevel, TraceEvent,
 };
 pub use error::CupelError;
 pub use model::{

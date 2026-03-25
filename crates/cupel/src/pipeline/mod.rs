@@ -65,7 +65,8 @@ use crate::diagnostics::trace_collector::{
     DiagnosticTraceCollector, TraceCollector, TraceDetailLevel,
 };
 use crate::diagnostics::{
-    ExclusionReason, InclusionReason, PipelineStage, SelectionReport, TraceEvent,
+    ExcludedItem, ExclusionReason, IncludedItem, InclusionReason, PipelineStage, SelectionReport,
+    StageTraceSnapshot, TraceEvent,
 };
 use crate::model::{ContextBudget, ContextItem, OverflowStrategy};
 use crate::placer::Placer;
@@ -245,7 +246,17 @@ impl Pipeline {
         overflow_strategy: OverflowStrategy,
         collector: &mut C,
     ) -> Result<Vec<ContextItem>, CupelError> {
+        let total_tokens_considered: i64 = if collector.is_enabled() {
+            items.iter().map(|i| i.tokens()).sum()
+        } else {
+            0
+        };
         collector.set_candidates(items.len(), items.iter().map(|i| i.tokens()).sum());
+        let mut stage_snapshots: Vec<StageTraceSnapshot> = if collector.is_enabled() {
+            Vec::with_capacity(5)
+        } else {
+            Vec::new()
+        };
 
         // Stage 1: Classify
         let t = Instant::now();
@@ -260,11 +271,28 @@ impl Pipeline {
                     },
                 );
             }
+            let classify_ms = t.elapsed().as_secs_f64() * 1000.0;
             collector.record_stage_event(TraceEvent {
                 stage: PipelineStage::Classify,
-                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                duration_ms: classify_ms,
                 item_count: pinned.len() + scoreable.len(),
                 message: None,
+            });
+            stage_snapshots.push(StageTraceSnapshot {
+                stage: PipelineStage::Classify,
+                item_count_in: items.len(),
+                item_count_out: pinned.len() + scoreable.len(),
+                duration_ms: classify_ms,
+                excluded: neg_items
+                    .iter()
+                    .map(|item| ExcludedItem {
+                        item: item.clone(),
+                        score: 0.0,
+                        reason: ExclusionReason::NegativeTokens {
+                            tokens: item.tokens(),
+                        },
+                    })
+                    .collect(),
             });
         }
 
@@ -272,32 +300,53 @@ impl Pipeline {
         let t = Instant::now();
         let scored = score::score_items(&scoreable, scorer);
         if collector.is_enabled() {
+            let score_ms = t.elapsed().as_secs_f64() * 1000.0;
             collector.record_stage_event(TraceEvent {
                 stage: PipelineStage::Score,
-                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                duration_ms: score_ms,
                 item_count: scored.len(),
                 message: None,
+            });
+            stage_snapshots.push(StageTraceSnapshot {
+                stage: PipelineStage::Score,
+                item_count_in: scoreable.len(),
+                item_count_out: scored.len(),
+                duration_ms: score_ms,
+                excluded: vec![],
             });
         }
 
         // Stage 3: Deduplicate
         let t = Instant::now();
+        let scored_len = scored.len();
         let (deduped, ded_excluded) = deduplicate::deduplicate(scored, deduplication);
         if collector.is_enabled() {
-            for si in &ded_excluded {
-                collector.record_excluded(
-                    si.item.clone(),
-                    si.score,
-                    ExclusionReason::Deduplicated {
+            let ded_snapshot_excluded: Vec<ExcludedItem> = ded_excluded
+                .iter()
+                .map(|si| ExcludedItem {
+                    item: si.item.clone(),
+                    score: si.score,
+                    reason: ExclusionReason::Deduplicated {
                         deduplicated_against: si.item.content().to_owned(),
                     },
-                );
+                })
+                .collect();
+            for exc in &ded_snapshot_excluded {
+                collector.record_excluded(exc.item.clone(), exc.score, exc.reason.clone());
             }
+            let ded_ms = t.elapsed().as_secs_f64() * 1000.0;
             collector.record_stage_event(TraceEvent {
                 stage: PipelineStage::Deduplicate,
-                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                duration_ms: ded_ms,
                 item_count: deduped.len(),
                 message: None,
+            });
+            stage_snapshots.push(StageTraceSnapshot {
+                stage: PipelineStage::Deduplicate,
+                item_count_in: scored_len,
+                item_count_out: deduped.len(),
+                duration_ms: ded_ms,
+                excluded: ded_snapshot_excluded,
             });
         }
 
@@ -348,6 +397,7 @@ impl Pipeline {
                 }
             }
 
+            let mut slice_snapshot_excluded: Vec<ExcludedItem> = Vec::new();
             for si in &sorted {
                 let content = si.item.content();
                 if let Some(count) = sliced_count.get_mut(content) {
@@ -400,14 +450,28 @@ impl Pipeline {
                         available_tokens,
                     }
                 };
-                collector.record_excluded(si.item.clone(), si.score, reason);
+                let exc = ExcludedItem {
+                    item: si.item.clone(),
+                    score: si.score,
+                    reason,
+                };
+                collector.record_excluded(exc.item.clone(), exc.score, exc.reason.clone());
+                slice_snapshot_excluded.push(exc);
             }
 
+            let slice_ms = t.elapsed().as_secs_f64() * 1000.0;
             collector.record_stage_event(TraceEvent {
                 stage: PipelineStage::Slice,
-                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                duration_ms: slice_ms,
                 item_count: sliced.len(),
                 message: None,
+            });
+            stage_snapshots.push(StageTraceSnapshot {
+                stage: PipelineStage::Slice,
+                item_count_in: sorted.len(),
+                item_count_out: sliced.len(),
+                duration_ms: slice_ms,
+                excluded: slice_snapshot_excluded,
             });
         }
 
@@ -416,23 +480,34 @@ impl Pipeline {
         let (result, truncated) =
             place::place_items(&pinned, &sliced, &sorted, budget, overflow_strategy, placer)?;
         if collector.is_enabled() {
+            let mut place_snapshot_excluded: Vec<ExcludedItem> = Vec::new();
             for (item, score) in &truncated {
                 let available_tokens =
                     budget.target_tokens() - result.iter().map(|i| i.tokens()).sum::<i64>();
-                collector.record_excluded(
-                    item.clone(),
-                    *score,
-                    ExclusionReason::BudgetExceeded {
+                let exc = ExcludedItem {
+                    item: item.clone(),
+                    score: *score,
+                    reason: ExclusionReason::BudgetExceeded {
                         item_tokens: item.tokens(),
                         available_tokens,
                     },
-                );
+                };
+                collector.record_excluded(exc.item.clone(), exc.score, exc.reason.clone());
+                place_snapshot_excluded.push(exc);
             }
+            let place_ms = t.elapsed().as_secs_f64() * 1000.0;
             collector.record_stage_event(TraceEvent {
                 stage: PipelineStage::Place,
-                duration_ms: t.elapsed().as_secs_f64() * 1000.0,
+                duration_ms: place_ms,
                 item_count: result.len(),
                 message: None,
+            });
+            stage_snapshots.push(StageTraceSnapshot {
+                stage: PipelineStage::Place,
+                item_count_in: pinned.len() + sliced.len(),
+                item_count_out: result.len(),
+                duration_ms: place_ms,
+                excluded: place_snapshot_excluded,
             });
             for item in &result {
                 let (score, reason) = if item.pinned() {
@@ -449,6 +524,47 @@ impl Pipeline {
                     )
                 };
                 collector.record_included(item.clone(), score, reason);
+            }
+
+            // Call on_pipeline_completed with synthetic report and snapshots.
+            if !stage_snapshots.is_empty() {
+                let synthetic_included: Vec<IncludedItem> = result
+                    .iter()
+                    .map(|item| {
+                        let (score, reason) = if item.pinned() {
+                            (1.0, InclusionReason::Pinned)
+                        } else if item.tokens() == 0 {
+                            (
+                                score_lookup.get(item.content()).copied().unwrap_or(0.0),
+                                InclusionReason::ZeroToken,
+                            )
+                        } else {
+                            (
+                                score_lookup.get(item.content()).copied().unwrap_or(0.0),
+                                InclusionReason::Scored,
+                            )
+                        };
+                        IncludedItem {
+                            item: item.clone(),
+                            score,
+                            reason,
+                        }
+                    })
+                    .collect();
+                let synthetic_excluded: Vec<ExcludedItem> = stage_snapshots
+                    .iter()
+                    .flat_map(|s| s.excluded.iter().cloned())
+                    .collect();
+                let total_candidates = synthetic_included.len() + synthetic_excluded.len();
+                let synthetic_report = SelectionReport {
+                    events: vec![],
+                    included: synthetic_included,
+                    excluded: synthetic_excluded,
+                    total_candidates,
+                    total_tokens_considered,
+                    count_requirement_shortfalls: vec![],
+                };
+                collector.on_pipeline_completed(&synthetic_report, budget, &stage_snapshots);
             }
         }
 

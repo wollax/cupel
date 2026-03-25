@@ -289,6 +289,25 @@ pub struct ExcludedItem {
     pub reason: ExclusionReason,
 }
 
+// ── StageTraceSnapshot ────────────────────────────────────────────────────────
+
+/// A snapshot of one pipeline stage's execution, passed to
+/// `TraceCollector::on_pipeline_completed` after the run completes.
+#[non_exhaustive]
+#[derive(Debug, Clone)]
+pub struct StageTraceSnapshot {
+    /// The pipeline stage this snapshot describes.
+    pub stage: PipelineStage,
+    /// Number of items entering this stage.
+    pub item_count_in: usize,
+    /// Number of items exiting this stage.
+    pub item_count_out: usize,
+    /// Wall-clock duration of the stage in milliseconds.
+    pub duration_ms: f64,
+    /// Excluded items attributable to this stage only.
+    pub excluded: Vec<ExcludedItem>,
+}
+
 // ── SelectionReport ───────────────────────────────────────────────────────────
 
 /// The complete diagnostic output from a single pipeline run.

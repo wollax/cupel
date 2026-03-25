@@ -13,9 +13,10 @@
 //!   [`DiagnosticTraceCollector::into_report`].
 
 use super::{
-    ExcludedItem, ExclusionReason, IncludedItem, InclusionReason, SelectionReport, TraceEvent,
+    ExcludedItem, ExclusionReason, IncludedItem, InclusionReason, SelectionReport,
+    StageTraceSnapshot, TraceEvent,
 };
-use crate::model::ContextItem;
+use crate::model::{ContextBudget, ContextItem};
 
 // ── TraceDetailLevel ──────────────────────────────────────────────────────────
 
@@ -105,6 +106,19 @@ pub trait TraceCollector {
     /// [`NullTraceCollector`] relies on this no-op via monomorphization — no
     /// allocation occurs.
     fn set_candidates(&mut self, _total: usize, _total_tokens: i64) {}
+
+    /// Called once at the end of a pipeline run with structured completion data.
+    ///
+    /// **No-op default.** OTel-bridge implementations override this to emit
+    /// `cupel.pipeline` and `cupel.stage.*` spans from the structured snapshot data.
+    /// [`NullTraceCollector`] and [`DiagnosticTraceCollector`] rely on this no-op.
+    fn on_pipeline_completed(
+        &mut self,
+        _report: &SelectionReport,
+        _budget: &ContextBudget,
+        _stage_snapshots: &[StageTraceSnapshot],
+    ) {
+    }
 }
 
 // ── NullTraceCollector ────────────────────────────────────────────────────────
@@ -542,5 +556,34 @@ mod tests {
         let report = c.into_report();
         assert_eq!(report.events[0].stage, PipelineStage::Classify);
         assert_eq!(report.events[1].stage, PipelineStage::Score);
+    }
+
+    // ── on_pipeline_completed default is no-op ────────────────────────────────
+
+    #[test]
+    fn on_pipeline_completed_default_is_noop() {
+        use crate::diagnostics::StageTraceSnapshot;
+        use crate::model::ContextBudget;
+        use std::collections::HashMap;
+
+        let budget = ContextBudget::new(1000, 800, 0, HashMap::new(), 0.0).unwrap();
+        let report = DiagnosticTraceCollector::new(TraceDetailLevel::Stage).into_report();
+
+        // NullTraceCollector: defaulted no-op must not panic.
+        NullTraceCollector.on_pipeline_completed(&report, &budget, &[]);
+
+        // DiagnosticTraceCollector: defaulted no-op must not panic.
+        let mut diag = DiagnosticTraceCollector::new(TraceDetailLevel::Stage);
+        diag.on_pipeline_completed(&report, &budget, &[]);
+
+        // With a snapshot present — still must not panic.
+        let snap = StageTraceSnapshot {
+            stage: PipelineStage::Classify,
+            item_count_in: 3,
+            item_count_out: 3,
+            duration_ms: 0.1,
+            excluded: vec![],
+        };
+        NullTraceCollector.on_pipeline_completed(&report, &budget, &[snap]);
     }
 }
