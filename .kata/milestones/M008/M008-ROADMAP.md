@@ -59,7 +59,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Implement CupelOtelTraceCollector (all 3 verbosity tiers)** `risk:medium` `depends:[S01]`
   > After this: `cupel-otel` crate compiles, `CupelOtelTraceCollector` implements `TraceCollector`, and integration tests using the `opentelemetry-sdk` in-memory exporter prove all three verbosity tiers emit the correct spans, attributes, and events.
 
-- [ ] **S03: Crate packaging, spec addendum, and R058 validation** `risk:low` `depends:[S02]`
+- [x] **S03: Crate packaging, spec addendum, and R058 validation** `risk:low` `depends:[S02]`
   > After this: `cargo package --dry-run` exits 0; `spec/src/integrations/opentelemetry.md` has a Rust-specific section; CHANGELOG.md updated; R058 validated — milestone complete.
 
 ## Boundary Map

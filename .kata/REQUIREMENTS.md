@@ -6,13 +6,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R058 — Rust OpenTelemetry bridge (cupel-otel crate)
 - Class: operability
-- Status: active
+- Status: validated
 - Description: `cupel-otel` companion crate implementing `TraceCollector` that bridges pipeline execution data to the `opentelemetry` API. Emits `cupel.pipeline` root span + 5 `cupel.stage.*` child spans at three verbosity tiers (StageOnly, StageAndExclusions, Full) matching the spec in `spec/src/integrations/opentelemetry.md`. Requires additive `on_pipeline_completed` hook added to `TraceCollector` trait in core `cupel` crate.
 - Why it matters: Rust callers have no OTel equivalent to `Wollax.Cupel.Diagnostics.OpenTelemetry`. Production Rust services using Cupel cannot observe pipeline execution in Jaeger, Honeycomb, or any OTel-compatible backend. Closes the parity gap.
 - Source: user
 - Primary owning slice: M008/S01 (core hook), M008/S02 (crate), M008/S03 (packaging + spec)
 - Supporting slices: none
-- Validation: unmapped
+- Validation: `crates/cupel-otel/tests/integration.rs` — 5 integration tests (source_name_is_cupel, hierarchy_root_and_five_stage_spans, stage_only_no_events, stage_and_exclusions_emits_exclusion_events, full_emits_included_item_events_on_place); `cd crates/cupel-otel && cargo test --all-targets` passes; `cd crates/cupel && cargo test --all-targets` passes; `cd crates/cupel-otel && cargo package --no-verify` exits 0.
 - Notes: Separate crate (not feature flag). Direct `opentelemetry` API (not `tracing` bridge). Full 3-tier parity with .NET. Core cupel stays zero-dep. Canonical source name: `"cupel"`.
 
 ### R061 — CountQuotaSlice: count-based quota enforcement

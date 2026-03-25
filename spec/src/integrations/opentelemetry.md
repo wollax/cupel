@@ -137,3 +137,43 @@ Complete flat table of all `cupel.*` attributes and events for quick lookup.
 - **ActivitySource name:** Implementations MUST register the ActivitySource with the name `"Wollax.Cupel"` exactly. Callers configure their OpenTelemetry pipeline using this string; any deviation breaks trace collection silently.
 - **Zero-dependency core:** The `Wollax.Cupel` assembly MUST have no compile-time or runtime dependency on any OpenTelemetry SDK assembly. The companion package provides the bridge; the core pipeline operates through `ITraceCollector` only.
 - **Stage Activity names:** Stage Activity names MUST follow the pattern `cupel.stage.{name}` where `{name}` is the lowercase stage name. The five canonical values are `classify`, `score`, `deduplicate`, `slice`, `place`.
+
+## Rust (cupel-otel)
+
+The `cupel-otel` crate is the Rust equivalent of `Wollax.Cupel.Diagnostics.OpenTelemetry`. It implements the `TraceCollector` trait from the core `cupel` crate and bridges pipeline execution data to the `opentelemetry` API.
+
+**Source name:** The Rust implementation registers with the source name `"cupel"` (distinct from the .NET source name `"Wollax.Cupel"` — D163). Callers must configure `"cupel"` in their OpenTelemetry SDK tracer provider:
+
+```rust
+// Register the tracer provider with the cupel source name
+let tracer_provider = SdkTracerProvider::builder()
+    .with_batch_exporter(exporter)
+    .build();
+opentelemetry::global::set_tracer_provider(tracer_provider);
+```
+
+### Adding to a project
+
+Add `cupel-otel` as a dependency in `Cargo.toml`:
+
+```toml
+[dependencies]
+cupel-otel = "0.1"
+```
+
+### Usage example
+
+```rust
+use cupel_otel::{CupelOtelTraceCollector, CupelVerbosity};
+
+let collector = CupelOtelTraceCollector::new(CupelVerbosity::StageOnly);
+let result = pipeline.run_traced(&items, &collector).await;
+collector.on_pipeline_completed(&result.stage_traces);
+// Flush the tracer provider before process exit
+```
+
+### Implementation notes
+
+- **Explicit `.end()` is mandatory.** The `opentelemetry` 0.27 `Span` type does not auto-end on drop (D169). The `CupelOtelTraceCollector` calls `.end()` explicitly on each span after recording its attributes and events. Callers who implement a custom `TraceCollector` using the `opentelemetry` API must also call `.end()` explicitly.
+- **`SpanData` import path.** The correct import is `opentelemetry_sdk::export::trace::SpanData`, not `opentelemetry_sdk::trace::SpanData`. The latter does not exist in `opentelemetry_sdk` 0.27.
+- **Unknown `ExclusionReason` variants.** The `cupel.exclusion.reason` attribute uses a `_ => "Unknown"` match arm for any unrecognised `ExclusionReason` variant. This provides forward compatibility with future spec variants — unknown reasons are emitted as `"Unknown"` rather than causing a compilation failure or panic.
