@@ -4,6 +4,17 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Active
 
+### R058 — Rust OpenTelemetry bridge (cupel-otel crate)
+- Class: operability
+- Status: active
+- Description: `cupel-otel` companion crate implementing `TraceCollector` that bridges pipeline execution data to the `opentelemetry` API. Emits `cupel.pipeline` root span + 5 `cupel.stage.*` child spans at three verbosity tiers (StageOnly, StageAndExclusions, Full) matching the spec in `spec/src/integrations/opentelemetry.md`. Requires additive `on_pipeline_completed` hook added to `TraceCollector` trait in core `cupel` crate.
+- Why it matters: Rust callers have no OTel equivalent to `Wollax.Cupel.Diagnostics.OpenTelemetry`. Production Rust services using Cupel cannot observe pipeline execution in Jaeger, Honeycomb, or any OTel-compatible backend. Closes the parity gap.
+- Source: user
+- Primary owning slice: M008/S01 (core hook), M008/S02 (crate), M008/S03 (packaging + spec)
+- Supporting slices: none
+- Validation: unmapped
+- Notes: Separate crate (not feature flag). Direct `opentelemetry` API (not `tracing` bridge). Full 3-tier parity with .NET. Core cupel stays zero-dep. Canonical source name: `"cupel"`.
+
 ### R061 — CountQuotaSlice: count-based quota enforcement
 - Class: core-capability
 - Status: validated
@@ -408,6 +419,7 @@ This file is the explicit capability and coverage contract for the project.
 | R031 | anti-feature | out-of-scope | none | none | n/a |
 | R032 | anti-feature | out-of-scope | none | none | n/a |
 | R056 | core-capability | validated | M007/S01, M007/S02, M007/S03 | none | validated |
+| R058 | operability | active | M008/S01, M008/S02, M008/S03 | none | unmapped |
 | R040 | differentiator | validated | M002/S03 | M002/S01 | validated |
 | R041 | quality-attribute | validated | M002/S02 | none | validated |
 | R042 | differentiator | validated | M002/S04 | none | validated |
@@ -417,7 +429,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 0
-- Mapped to slices: 0
+- Active requirements: 1 (R058)
+- Mapped to slices: 1 (R058 → M008/S01, S02, S03)
 - Validated: 32 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R056, R060–R061)
 - Unmapped active requirements: 0
