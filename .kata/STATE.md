@@ -1,9 +1,9 @@
 # Kata State
 
 **Active Milestone:** M009 — CountConstrainedKnapsackSlice + MetadataKeyScorer
-**Active Slice:** S04 — MetadataKeyScorer — Rust + .NET implementation
-**Active Task:** (planning)
-**Phase:** Planning — S04
+**Active Slice:** (none — milestone complete)
+**Active Task:** (none)
+**Phase:** Complete
 
 ## Recent Decisions
 
@@ -22,8 +22,18 @@
 - [x] S01: CountConstrainedKnapsackSlice — Rust implementation ✅
 - [x] S02: CountConstrainedKnapsackSlice — .NET implementation ✅ (797/797 tests, 0 build warnings)
 - [x] S03: Spec chapters — count-constrained-knapsack + metadata-key ✅ (both chapters zero TBD, all wiring complete)
-- [ ] S04: MetadataKeyScorer — Rust + .NET implementation `depends:[S03]`
+- [x] S04: MetadataKeyScorer — Rust + .NET implementation ✅ (192 Rust tests, 804 .NET tests, clippy clean)
+
+## M009 Definition of Done — All Criteria Met
+
+- ✅ `CountConstrainedKnapsackSlice` and `MetadataKeyScorer` exported from public API in both languages
+- ✅ 5 conformance vectors per new type, all passing
+- ✅ Spec chapters exist for both, zero TBD fields
+- ✅ `PublicAPI.Unshipped.txt` (.NET) updated for both new types
+- ✅ `cargo test --all-targets` green (192 passed); `dotnet test` green (804 passed); `cargo clippy` clean
+- ✅ `CHANGELOG.md` unreleased section updated for both types
+- ✅ R062 and R063 validated
 
 ## Next Action
 
-Begin S04: plan and execute MetadataKeyScorer in Rust (src/scorer/metadata_key.rs) and .NET (src/Wollax.Cupel/Scoring/MetadataKeyScorer.cs) using spec/src/scorers/metadata-key.md as the implementation contract.
+M009 is complete. No active requirements remain. Begin next milestone when ready.

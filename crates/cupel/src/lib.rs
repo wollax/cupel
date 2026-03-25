@@ -28,9 +28,9 @@ pub use model::{
 pub use pipeline::{Pipeline, PipelineBuilder, Policy, PolicyBuilder};
 pub use placer::{ChronologicalPlacer, Placer, UShapedPlacer};
 pub use scorer::{
-    CompositeScorer, DecayCurve, DecayScorer, FrequencyScorer, KindScorer, MetadataTrustScorer,
-    PriorityScorer, RecencyScorer, ReflexiveScorer, ScaledScorer, Scorer, SystemTimeProvider,
-    TagScorer, TimeProvider,
+    CompositeScorer, DecayCurve, DecayScorer, FrequencyScorer, KindScorer, MetadataKeyScorer,
+    MetadataTrustScorer, PriorityScorer, RecencyScorer, ReflexiveScorer, ScaledScorer, Scorer,
+    SystemTimeProvider, TagScorer, TimeProvider,
 };
 pub use slicer::{
     CountConstrainedKnapsackSlice, CountQuotaEntry, CountQuotaSlice, GreedySlice, KnapsackSlice,

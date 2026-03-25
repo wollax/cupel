@@ -1,0 +1,21 @@
+[test]
+name = "MetadataKeyScorer: key present but value does not match → score equals 1.0 (neutral)"
+stage = "scoring"
+scorer = "metadata_key"
+
+[[items]]
+content = "normal-priority-item"
+tokens = 10
+metadata = { "cupel:priority" = "normal" }
+
+[[expected]]
+content = "normal-priority-item"
+score_approx = 1.0
+
+[tolerance]
+score_epsilon = 1e-9
+
+[config]
+key = "cupel:priority"
+value = "high"
+boost = 1.5

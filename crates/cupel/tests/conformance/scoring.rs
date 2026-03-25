@@ -1,4 +1,6 @@
 use super::{assert_scores_match, build_items, build_scorer, load_vector};
+use cupel::MetadataKeyScorer;
+use toml::Value;
 
 fn run_scoring_test(vector_path: &str) {
     let vector = load_vector(vector_path);
@@ -14,6 +16,17 @@ fn run_scoring_test(vector_path: &str) {
         .collect();
 
     assert_scores_match(&vector, &actual_scores);
+}
+
+fn try_build_metadata_key_scorer_from_vector(
+    vector_path: &str,
+) -> Result<MetadataKeyScorer, cupel::CupelError> {
+    let vector = load_vector(vector_path);
+    let config: &Value = &vector["config"];
+    let key = config["key"].as_str().expect("config.key");
+    let value = config["value"].as_str().expect("config.value");
+    let boost = config["boost"].as_float().expect("config.boost");
+    MetadataKeyScorer::new(key, value, boost)
 }
 
 #[test]
@@ -129,4 +142,39 @@ fn metadata_trust_out_of_range_high() {
 #[test]
 fn metadata_trust_non_finite() {
     run_scoring_test("scoring/metadata-trust-non-finite.toml");
+}
+
+#[test]
+fn metadata_key_match_boost() {
+    run_scoring_test("scoring/metadata-key-match-boost.toml");
+}
+
+#[test]
+fn metadata_key_no_match_neutral() {
+    run_scoring_test("scoring/metadata-key-no-match-neutral.toml");
+}
+
+#[test]
+fn metadata_key_absent_neutral() {
+    run_scoring_test("scoring/metadata-key-absent-neutral.toml");
+}
+
+#[test]
+fn metadata_key_zero_boost_construction_error() {
+    assert!(
+        try_build_metadata_key_scorer_from_vector(
+            "scoring/metadata-key-zero-boost-construction-error.toml"
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn metadata_key_negative_boost_construction_error() {
+    assert!(
+        try_build_metadata_key_scorer_from_vector(
+            "scoring/metadata-key-negative-boost-construction-error.toml"
+        )
+        .is_err()
+    );
 }

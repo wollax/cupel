@@ -1,0 +1,20 @@
+[test]
+name = "MetadataKeyScorer: configured key absent from metadata → score equals 1.0 (neutral)"
+stage = "scoring"
+scorer = "metadata_key"
+
+[[items]]
+content = "no-metadata-item"
+tokens = 10
+
+[[expected]]
+content = "no-metadata-item"
+score_approx = 1.0
+
+[tolerance]
+score_epsilon = 1e-9
+
+[config]
+key = "cupel:priority"
+value = "high"
+boost = 1.5

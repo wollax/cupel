@@ -123,3 +123,6 @@ Wollax.Cupel.Slicing.CountConstrainedKnapsackSlice.CountConstrainedKnapsackSlice
 Wollax.Cupel.Slicing.CountConstrainedKnapsackSlice.LastShortfalls.get -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Diagnostics.CountRequirementShortfall!>!
 Wollax.Cupel.Slicing.CountConstrainedKnapsackSlice.GetConstraints() -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.Slicing.QuotaConstraint!>!
 Wollax.Cupel.Slicing.CountConstrainedKnapsackSlice.Slice(System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ScoredItem>! scoredItems, Wollax.Cupel.ContextBudget! budget, Wollax.Cupel.Diagnostics.ITraceCollector! traceCollector) -> System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>!
+Wollax.Cupel.Scoring.MetadataKeyScorer
+Wollax.Cupel.Scoring.MetadataKeyScorer.MetadataKeyScorer(string! key, string! value, double boost) -> void
+Wollax.Cupel.Scoring.MetadataKeyScorer.Score(Wollax.Cupel.ContextItem! item, System.Collections.Generic.IReadOnlyList<Wollax.Cupel.ContextItem!>! allItems) -> double

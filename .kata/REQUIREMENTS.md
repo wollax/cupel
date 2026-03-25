@@ -335,14 +335,14 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R063 — MetadataKeyScorer: multiplicative metadata-keyed score boost
 - Class: differentiator
-- Status: active
-- Description: `MetadataKeyScorer(key, value, boost)` scorer that applies a multiplicative boost to items where `metadata[key] == value`. Items that do not match receive a neutral multiplier of `1.0`. Boost must be positive. A `defaultMultiplier` parameter controls the value returned for non-matching items (default `1.0`). Composable with `CompositeScorer`. Both Rust and .NET. Spec chapter with `cupel:priority` convention required.
+- Status: validated
+- Description: `MetadataKeyScorer(key, value, boost)` scorer that applies a multiplicative boost to items where `metadata[key] == value`. Items that do not match receive a neutral multiplier of `1.0`. Boost must be positive. Neutral multiplier is a hardcoded constant `1.0` (D186 — not a constructor parameter). Composable with `CompositeScorer`. Both Rust and .NET. Spec chapter with `cupel:priority` convention required.
 - Why it matters: Enables callers to inject a prioritization signal via metadata without writing a custom scorer. `MetadataTrustScorer` provides absolute trust passthrough; `MetadataKeyScorer` provides conditional relative boosting — different semantic model. The `cupel:priority` convention provides a canonical metadata key for common priority signaling.
 - Source: brainstorm (March 21 — B7, accepted; user confirmed M009)
 - Primary owning slice: M009/S04 (Rust + .NET)
 - Supporting slices: M009/S03 (spec)
-- Validation: unmapped
-- Notes: Multiplicative semantics chosen (scale-invariant, composable, consistent with ScaledScorer pattern per March 21 report B7). ~40 lines per language. Needs `cupel:priority` spec entry alongside `MetadataKeyScorer` spec chapter.
+- Validation: validated — Rust: `MetadataKeyScorer::new(key, value, boost)` in `crates/cupel/src/scorer/metadata_key.rs`; `boost > 0.0` + finite guard → `CupelError::ScorerConfig`; 5 conformance vectors + 7 unit tests; `cargo test --all-targets` 192 passed; clippy clean. .NET: `MetadataKeyScorer(key, value, boost)` in `src/Wollax.Cupel/Scoring/MetadataKeyScorer.cs`; `ArgumentException` on non-positive or non-finite boost (D178); 7 tests in `MetadataKeyScorerTests.cs`; `dotnet test` 804 passed; `dotnet build` 0 warnings; `PublicAPI.Unshipped.txt` updated. Spec chapter: `spec/src/scorers/metadata-key.md` exists with `cupel:priority` convention and zero TBD fields (S03).
+- Notes: Multiplicative semantics chosen (scale-invariant, composable, consistent with ScaledScorer pattern per March 21 report B7). D186: neutral multiplier is a fixed constant 1.0 — no `defaultMultiplier` constructor parameter.
 
 ## Deferred
 
@@ -439,7 +439,7 @@ This file is the explicit capability and coverage contract for the project.
 | R054 | core-capability | validated | M004/S05 | none | validated |
 | R061 | core-capability | validated | M006/S01, M006/S02 | M006/S03 | validated |
 | R062 | core-capability | validated | M009/S01, M009/S02 | M009/S03 | validated — Rust + .NET implementations; spec chapter complete; zero TBD fields |
-| R063 | differentiator | active | M009/S04 | M009/S03 | unmapped |
+| R063 | differentiator | validated | M009/S04 | M009/S03 | validated — Rust + .NET; 5 conformance vectors; spec chapter complete (S03) |
 | R060 | core-capability | validated | M005/S02 | S01, S03 | validated — all 13 patterns, 26+1 tests, cargo package exits 0 |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
 | R031 | anti-feature | out-of-scope | none | none | n/a |
@@ -455,7 +455,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 1 (R063)
+- Active requirements: 0
 - Mapped to slices: 2
 - Validated: 33 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R056, R058, R060–R061)
 - Unmapped active requirements: 0

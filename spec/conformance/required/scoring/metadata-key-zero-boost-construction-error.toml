@@ -1,0 +1,10 @@
+[test]
+name = "MetadataKeyScorer: boost = 0.0 → construction error"
+stage = "scoring"
+scorer = "metadata_key"
+expect_construction_error = true
+
+[config]
+key = "cupel:priority"
+value = "high"
+boost = 0.0

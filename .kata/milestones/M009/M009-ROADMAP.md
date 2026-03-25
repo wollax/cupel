@@ -58,7 +58,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Spec chapters — count-constrained-knapsack + metadata-key** `risk:low` `depends:[S01,S02]`
   > After this: `spec/src/slicers/count-constrained-knapsack.md` and `spec/src/scorers/metadata-key.md` exist with zero TBD fields; `cupel:priority` convention documented.
 
-- [ ] **S04: MetadataKeyScorer — Rust + .NET implementation** `risk:low` `depends:[S03]`
+- [x] **S04: MetadataKeyScorer — Rust + .NET implementation** `risk:low` `depends:[S03]`
   > After this: `MetadataKeyScorer` in both languages, 5 conformance tests passing, public API updated, R063 validated.
 
 ## Boundary Map

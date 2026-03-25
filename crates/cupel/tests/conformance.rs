@@ -13,9 +13,10 @@ mod conformance {
     use cupel::{
         ChronologicalPlacer, CompositeScorer, ContextItem, ContextItemBuilder, ContextKind,
         CountConstrainedKnapsackSlice, CountQuotaEntry, CountQuotaSlice, DecayCurve, DecayScorer,
-        FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice, MetadataTrustScorer, Placer,
-        PriorityScorer, QuotaEntry, QuotaSlice, RecencyScorer, ReflexiveScorer, ScaledScorer,
-        ScarcityBehavior, ScoredItem, Scorer, Slicer, TagScorer, TimeProvider, UShapedPlacer,
+        FrequencyScorer, GreedySlice, KindScorer, KnapsackSlice, MetadataKeyScorer,
+        MetadataTrustScorer, Placer, PriorityScorer, QuotaEntry, QuotaSlice, RecencyScorer,
+        ReflexiveScorer, ScaledScorer, ScarcityBehavior, ScoredItem, Scorer, Slicer, TagScorer,
+        TimeProvider, UShapedPlacer,
     };
 
     struct FixedTimeProvider(DateTime<Utc>);
@@ -298,6 +299,21 @@ mod conformance {
                     .and_then(|v| v.as_float())
                     .unwrap_or(0.5);
                 Box::new(MetadataTrustScorer::new(default_score).unwrap())
+            }
+            "metadata_key" => {
+                let key = config
+                    .and_then(|c| c.get("key"))
+                    .and_then(|v| v.as_str())
+                    .expect("metadata_key scorer requires config.key");
+                let value = config
+                    .and_then(|c| c.get("value"))
+                    .and_then(|v| v.as_str())
+                    .expect("metadata_key scorer requires config.value");
+                let boost = config
+                    .and_then(|c| c.get("boost"))
+                    .and_then(|v| v.as_float())
+                    .expect("metadata_key scorer requires config.boost");
+                Box::new(MetadataKeyScorer::new(key, value, boost).unwrap())
             }
             other => panic!("unknown scorer type: {other}"),
         }
