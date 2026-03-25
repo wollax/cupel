@@ -18,6 +18,7 @@ BenchmarkDotNet.Artifacts/
 .kata/auto.lock
 .kata/metrics.json
 .kata/STATE.md
+.kata-cli/auto.lock
 .DS_Store
 Thumbs.db
 *.swp
