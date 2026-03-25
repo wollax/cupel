@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Rust: \`TraceCollector::on_pipeline_completed\` hook — defaulted no-op method on the trait; called by \`Pipeline::run_traced\` at completion; provides \`StageTraceSnapshot\` slice for structured end-of-run handoff`
 - `Spec: Rust-specific section in \`spec/src/integrations/opentelemetry.md\` documenting \`cupel-otel\` source name, Cargo.toml snippet, and implementation notes`
 - `Rust: \`CountConstrainedKnapsackSlice\` — 3-phase slicer accepting \`Vec<CountQuotaEntry>\`, \`KnapsackSlice\`, and \`ScarcityBehavior\`; Phase 1 commits top-N items per kind by score (count-satisfy), Phase 2 runs \`KnapsackSlice\` on residual candidates and remaining budget (knapsack-distribute), Phase 3 drops over-cap items by score descending (cap-enforce); re-uses M006's \`CountQuotaEntry\` and \`ScarcityBehavior\` types; exported from the \`cupel\` crate root`
+- `.NET: \`CountConstrainedKnapsackSlice\` — .NET port of the Rust implementation; Phase 1 count-satisfy, Phase 2 KnapsackSlice delegate with score-descending re-sort, Phase 3 cap-enforcement seeded from Phase 1 counts; \`IQuotaPolicy\` implementation; \`ScarcityBehavior.Degrade\` default; pipeline-level shortfall injection and cap-classification via \`CupelPipeline\``
 
 ## [1.1.0] - 2026-03-15
 

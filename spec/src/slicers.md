@@ -29,6 +29,7 @@ Slice(scoredItems: list of ScoredItem, budget: ContextBudget) -> list of Context
 | [KnapsackSlice](slicers/knapsack.md) | 0/1 knapsack dynamic programming | O(*N* * *C*) | Optimal selection when budget is tight |
 | [QuotaSlice](slicers/quota.md) | Partitioned delegation by kind | O(*N* + per-kind cost) | Budget fairness across context kinds |
 | [CountQuotaSlice](slicers/count-quota.md) | Count-based require/cap per kind | O(*N* log *N* + inner cost) | Absolute item-count guarantees per kind |
+| [CountConstrainedKnapsackSlice](slicers/count-constrained-knapsack.md) | Count-require/cap + knapsack-optimal selection | O(*N* log *N* + *N* × *C*) | Count guarantees with globally optimal token packing |
 
 Where *N* is the number of scored items and *C* is the discretized budget capacity.
 

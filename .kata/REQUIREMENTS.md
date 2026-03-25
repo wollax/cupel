@@ -324,13 +324,13 @@ This file is the explicit capability and coverage contract for the project.
 
 ### R062 — CountConstrainedKnapsackSlice: count-constrained knapsack selection
 - Class: core-capability
-- Status: active
+- Status: validated
 - Description: `CountConstrainedKnapsackSlice` slicer implementing count requirements and caps using a two-phase pre-processing approach: Phase 1 commits the top-N items per constrained kind by score descending (satisfying `require_count`), Phase 2 runs standard `KnapsackSlice` on the remaining candidates with the residual budget, and Phase 3 enforces `cap_count` by dropping over-cap items from the knapsack output. Construction-time validation of `require_count <= cap_count`. Scarcity degradation (default) or throw. Both Rust and .NET. Spec chapter required.
 - Why it matters: D052 deferred this as the `CountQuotaSlice` + `KnapsackSlice` upgrade path. Callers who need globally-optimal token packing AND count guarantees cannot get them today — `CountQuotaSlice` rejects `KnapsackSlice` as inner slicer. This delivers count constraints over the knapsack optimizer without the state-explosion risk of a full constrained-DP approach.
 - Source: user (M009 discussion)
 - Primary owning slice: M009/S01 (Rust), M009/S02 (.NET)
 - Supporting slices: M009/S03 (spec)
-- Validation: partial — Rust: `CountConstrainedKnapsackSlice` implemented with 3-phase algorithm; 5 conformance integration tests passing; re-exported from crate root; `cargo test --all-targets` 175 passed; clippy clean. .NET: `CountConstrainedKnapsackSlice` implemented with Phase 1/2/3 algorithm; 5 integration tests passing via `CupelPipeline.DryRun()`; `PublicAPI.Unshipped.txt` complete; `dotnet test --solution Cupel.slnx` 797 passed; `dotnet build` 0 warnings. Pending: S03 spec chapter.
+- Validation: validated — Rust: `CountConstrainedKnapsackSlice` implemented with 3-phase algorithm; 5 conformance integration tests passing; re-exported from crate root; `cargo test --all-targets` 175 passed; clippy clean. .NET: `CountConstrainedKnapsackSlice` implemented with Phase 1/2/3 algorithm; 5 integration tests passing via `CupelPipeline.DryRun()`; `PublicAPI.Unshipped.txt` complete; `dotnet test --solution Cupel.slnx` 797 passed; `dotnet build` 0 warnings. Spec chapter: `spec/src/slicers/count-constrained-knapsack.md` exists with zero TBD fields, 5 conformance vector outlines, D180/D181/D174 documented; linked from SUMMARY.md and slicers.md.
 - Notes: Pre-processing path chosen (D052 upgrade path 5A, not 5D full constrained-DP). Re-uses `CountCapExceeded` and `CountRequirementShortfall` diagnostics from R061. `KnapsackSlice` guard in `CountQuotaSlice` remains — `CountConstrainedKnapsackSlice` is a separate slicer, not a fix to that guard. D180: Phase 2 output must be re-sorted by score descending before Phase 3 cap enforcement.
 
 ### R063 — MetadataKeyScorer: multiplicative metadata-keyed score boost
@@ -438,7 +438,7 @@ This file is the explicit capability and coverage contract for the project.
 | R053 | quality-attribute | validated | M004/S04 | none | validated |
 | R054 | core-capability | validated | M004/S05 | none | validated |
 | R061 | core-capability | validated | M006/S01, M006/S02 | M006/S03 | validated |
-| R062 | core-capability | active | M009/S01, M009/S02 | M009/S03 | partial — both languages implemented, spec pending S03 |
+| R062 | core-capability | validated | M009/S01, M009/S02 | M009/S03 | validated — Rust + .NET implementations; spec chapter complete; zero TBD fields |
 | R063 | differentiator | active | M009/S04 | M009/S03 | unmapped |
 | R060 | core-capability | validated | M005/S02 | S01, S03 | validated — all 13 patterns, 26+1 tests, cargo package exits 0 |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
@@ -455,7 +455,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 2 (R062, R063)
+- Active requirements: 1 (R063)
 - Mapped to slices: 2
 - Validated: 33 (R001–R006, R010–R014, R020–R022, R040–R045, R050–R054, R056, R058, R060–R061)
 - Unmapped active requirements: 0

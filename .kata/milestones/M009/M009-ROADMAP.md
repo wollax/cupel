@@ -55,7 +55,7 @@ This milestone is complete only when all are true:
 - [x] **S02: CountConstrainedKnapsackSlice — .NET implementation** `risk:medium` `depends:[S01]`
   > After this: `CountConstrainedKnapsackSlice` exists in .NET, passes 5 integration tests, `PublicAPI.Approved.txt` updated, `dotnet test` green.
 
-- [ ] **S03: Spec chapters — count-constrained-knapsack + metadata-key** `risk:low` `depends:[S01,S02]`
+- [x] **S03: Spec chapters — count-constrained-knapsack + metadata-key** `risk:low` `depends:[S01,S02]`
   > After this: `spec/src/slicers/count-constrained-knapsack.md` and `spec/src/scorers/metadata-key.md` exist with zero TBD fields; `cupel:priority` convention documented.
 
 - [ ] **S04: MetadataKeyScorer — Rust + .NET implementation** `risk:low` `depends:[S03]`
