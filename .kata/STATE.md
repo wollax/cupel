@@ -1,17 +1,17 @@
 # Kata State
 
 **Active Milestone:** M009 — CountConstrainedKnapsackSlice + MetadataKeyScorer
-**Active Slice:** S02 — CountConstrainedKnapsackSlice .NET implementation
-**Active Task:** —
-**Phase:** Planning
+**Active Slice:** S03 — Spec chapters — count-constrained-knapsack + metadata-key
+**Active Task:** None — S03 planning pending
+**Phase:** S02 Complete — Advance to S03
 
 ## Recent Decisions
 
-- D179: S01 verification strategy — integration-level via direct slicer.slice() calls + 5 TOML conformance vectors
-- D178: `MetadataKeyScorer` boost validated `> 0.0` at construction; non-positive/non-finite → construction error
-- D176: `CountConstrainedKnapsackSlice::is_count_quota() → true`, `is_knapsack() → false`
-- D175: Re-uses `CountQuotaEntry`, `ScarcityBehavior`, `CountRequirementShortfall` from M006 — no new parallel types
-- D174: Pre-processing path (5A): Phase 1 commits required items by score, Phase 2 runs standard KnapsackSlice on residual
+- D184: Phase 2 re-sort uses `scoreByContent` dict built from `residual` before knapsack call; sort `IReadOnlyList<ContextItem>` output via `.OrderByDescending(item => scoreByContent.GetValueOrDefault(item.Content, 0.0))`
+- D183: S02 verification strategy — integration-level via `CupelPipeline.DryRun()` (matches D137 rationale from M006/S02)
+- D180: Phase 2 output must be re-sorted by score descending before Phase 3 cap enforcement
+- D181: Phase 3 `selected_count` seeded from Phase 1 committed counts, not zero
+- D179: S01 verification strategy — direct `slicer.slice()` calls in 5 integration tests (Rust)
 
 ## Blockers
 
@@ -20,13 +20,10 @@
 ## Milestone Progress (M009)
 
 - [x] S01: CountConstrainedKnapsackSlice — Rust implementation ✅
-  - [x] T01: Write 5 failing integration tests and TOML vectors
-  - [x] T02: Implement CountConstrainedKnapsackSlice and wire into slicer module
-  - [x] T03: Update CHANGELOG and finalize
-- [ ] S02: CountConstrainedKnapsackSlice — .NET implementation
-- [ ] S03: Spec chapters — count-constrained-knapsack + metadata-key
-- [ ] S04: MetadataKeyScorer — Rust + .NET implementation
+- [x] S02: CountConstrainedKnapsackSlice — .NET implementation ✅ (797/797 tests, 0 build warnings)
+- [ ] S03: Spec chapters — count-constrained-knapsack + metadata-key `depends:[S01,S02]`
+- [ ] S04: MetadataKeyScorer — Rust + .NET implementation `depends:[S03]`
 
 ## Next Action
 
-S01 complete. Begin S02: CountConstrainedKnapsackSlice .NET implementation. Read S01-SUMMARY.md for Rust implementation details to guide the .NET port.
+S02 complete (797/797 tests green, 0 build warnings). Start S03: write `spec/src/slicers/count-constrained-knapsack.md` and `spec/src/scorers/metadata-key.md` with zero TBD fields. Read M009-ROADMAP.md S03 entry and TOML conformance vectors in `crates/cupel/conformance/required/slicing/` before planning.

@@ -52,7 +52,7 @@ This milestone is complete only when all are true:
 - [x] **S01: CountConstrainedKnapsackSlice — Rust implementation** `risk:high` `depends:[]`
   > After this: `CountConstrainedKnapsackSlice` exists in Rust, passes 5 conformance integration tests, and is re-exported from `crates/cupel/src/lib.rs`.
 
-- [ ] **S02: CountConstrainedKnapsackSlice — .NET implementation** `risk:medium` `depends:[S01]`
+- [x] **S02: CountConstrainedKnapsackSlice — .NET implementation** `risk:medium` `depends:[S01]`
   > After this: `CountConstrainedKnapsackSlice` exists in .NET, passes 5 integration tests, `PublicAPI.Approved.txt` updated, `dotnet test` green.
 
 - [ ] **S03: Spec chapters — count-constrained-knapsack + metadata-key** `risk:low` `depends:[S01,S02]`

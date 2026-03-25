@@ -352,6 +352,12 @@ public sealed class CupelPipeline
         {
             reportBuilder.SetCountRequirementShortfalls(countQuotaSlicer.LastShortfalls);
         }
+        else if (_slicer is CountConstrainedKnapsackSlice ccksShortfall
+            && reportBuilder is not null
+            && ccksShortfall.LastShortfalls.Count > 0)
+        {
+            reportBuilder.SetCountRequirementShortfalls(ccksShortfall.LastShortfalls);
+        }
 
         if (sw is not null)
         {
@@ -373,9 +379,9 @@ public sealed class CupelPipeline
         }
 
         // Build per-kind count from sliced output for cap-classification in the re-association loop.
-        // Only constructed when CountQuotaSlice is active — null otherwise to avoid overhead on hot paths.
+        // Only constructed when CountQuotaSlice or CountConstrainedKnapsackSlice is active — null otherwise to avoid overhead on hot paths.
         Dictionary<ContextKind, int>? selectedKindCounts = null;
-        if (reportBuilder is not null && _slicer is CountQuotaSlice)
+        if (reportBuilder is not null && (_slicer is CountQuotaSlice || _slicer is CountConstrainedKnapsackSlice))
         {
             selectedKindCounts = new Dictionary<ContextKind, int>();
             for (var i = 0; i < slicedItems.Count; i++)
@@ -409,6 +415,18 @@ public sealed class CupelPipeline
                 {
                     var kind = sorted[i].Item.Kind;
                     var entry = cqs.Entries.FirstOrDefault(e => e.Kind == kind);
+                    if (entry is not null
+                        && sorted[i].Item.Tokens <= adjustedBudget.TargetTokens
+                        && selectedKindCounts.TryGetValue(kind, out var kindCount)
+                        && kindCount >= entry.CapCount)
+                    {
+                        exclusionReason = ExclusionReason.CountCapExceeded;
+                    }
+                }
+                else if (selectedKindCounts is not null && _slicer is CountConstrainedKnapsackSlice ccks)
+                {
+                    var kind = sorted[i].Item.Kind;
+                    var entry = ccks.Entries.FirstOrDefault(e => e.Kind == kind);
                     if (entry is not null
                         && sorted[i].Item.Tokens <= adjustedBudget.TargetTokens
                         && selectedKindCounts.TryGetValue(kind, out var kindCount)

@@ -330,7 +330,7 @@ This file is the explicit capability and coverage contract for the project.
 - Source: user (M009 discussion)
 - Primary owning slice: M009/S01 (Rust), M009/S02 (.NET)
 - Supporting slices: M009/S03 (spec)
-- Validation: partial — Rust: `CountConstrainedKnapsackSlice` implemented with 3-phase algorithm; 5 conformance integration tests passing; re-exported from crate root; `cargo test --all-targets` 175 passed; clippy clean. .NET: pending S02.
+- Validation: partial — Rust: `CountConstrainedKnapsackSlice` implemented with 3-phase algorithm; 5 conformance integration tests passing; re-exported from crate root; `cargo test --all-targets` 175 passed; clippy clean. .NET: `CountConstrainedKnapsackSlice` implemented with Phase 1/2/3 algorithm; 5 integration tests passing via `CupelPipeline.DryRun()`; `PublicAPI.Unshipped.txt` complete; `dotnet test --solution Cupel.slnx` 797 passed; `dotnet build` 0 warnings. Pending: S03 spec chapter.
 - Notes: Pre-processing path chosen (D052 upgrade path 5A, not 5D full constrained-DP). Re-uses `CountCapExceeded` and `CountRequirementShortfall` diagnostics from R061. `KnapsackSlice` guard in `CountQuotaSlice` remains — `CountConstrainedKnapsackSlice` is a separate slicer, not a fix to that guard. D180: Phase 2 output must be re-sorted by score descending before Phase 3 cap enforcement.
 
 ### R063 — MetadataKeyScorer: multiplicative metadata-keyed score boost
@@ -438,7 +438,7 @@ This file is the explicit capability and coverage contract for the project.
 | R053 | quality-attribute | validated | M004/S04 | none | validated |
 | R054 | core-capability | validated | M004/S05 | none | validated |
 | R061 | core-capability | validated | M006/S01, M006/S02 | M006/S03 | validated |
-| R062 | core-capability | active | M009/S01, M009/S02 | M009/S03 | unmapped |
+| R062 | core-capability | active | M009/S01, M009/S02 | M009/S03 | partial — both languages implemented, spec pending S03 |
 | R063 | differentiator | active | M009/S04 | M009/S03 | unmapped |
 | R060 | core-capability | validated | M005/S02 | S01, S03 | validated — all 13 patterns, 26+1 tests, cargo package exits 0 |
 | R030 | anti-feature | out-of-scope | none | none | n/a |
