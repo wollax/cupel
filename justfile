@@ -13,6 +13,7 @@ test:
 # Run clippy lints
 lint:
     cargo clippy --workspace --all-targets -- -D warnings
+    cargo clippy --manifest-path crates/cupel/Cargo.toml --features serde --all-targets -- -D warnings
 
 # Format code
 fmt:
@@ -22,8 +23,12 @@ fmt:
 fmt-check:
     cargo fmt --all -- --check
 
+# Run all tests including serde
+test-all: test
+    cargo test --manifest-path crates/cupel/Cargo.toml --features serde
+
 # Run all checks (CI-equivalent)
-ready: fmt-check lint test
+ready: fmt-check lint test-all
     @echo "All checks passed."
 
 # Remove build artifacts older than 14 days (requires cargo-sweep)

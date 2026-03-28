@@ -27,23 +27,21 @@ jobs:
 
       - name: Cache
         uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "crates/cupel -> target"
 
       - name: Format
-        run: cargo fmt --check --manifest-path crates/cupel/Cargo.toml
+        run: cargo fmt --all --check
 
       - name: Clippy (default features)
-        run: cargo clippy --all-targets --manifest-path crates/cupel/Cargo.toml -- -D warnings
+        run: cargo clippy --workspace --all-targets -- -D warnings
 
-      - name: Clippy (serde)
-        run: cargo clippy --features serde --all-targets --manifest-path crates/cupel/Cargo.toml -- -D warnings
+      - name: Clippy (serde — cupel only)
+        run: cargo clippy --manifest-path crates/cupel/Cargo.toml --features serde --all-targets -- -D warnings
 
       - name: Test (default features)
-        run: cargo test --manifest-path crates/cupel/Cargo.toml
+        run: cargo test --workspace
 
-      - name: Test (serde)
-        run: cargo test --features serde --manifest-path crates/cupel/Cargo.toml
+      - name: Test (serde — cupel only)
+        run: cargo test --manifest-path crates/cupel/Cargo.toml --features serde
 
       - name: Deny
         uses: EmbarkStudios/cargo-deny-action@v2
