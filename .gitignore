@@ -1,50 +1,51 @@
 # Rust
 target/
 Cargo.lock
+crates/*/Cargo.lock
 
 # .NET
 **/bin/
 **/obj/
 TestResults/
 BenchmarkDotNet.Artifacts/
+nupkg/
 
 # IDE
 .vs/
 *.user
+.idea/
+.vscode/
+*.code-workspace
 
-# ── Kata baseline (auto-generated) ──
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Kata
 .kata/activity/
 .kata/runtime/
 .kata/auto.lock
 .kata/metrics.json
 .kata/STATE.md
-.kata-cli/auto.lock
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-*~
-.idea/
-.vscode/
-*.code-workspace
+.kata/debug.log
+.kata-cli/
+
+# Environment
 .env
 .env.*
 !.env.example
+.envrc
+
+# Node (husky)
 node_modules/
 package-lock.json
-.next/
-dist/
-build/
-__pycache__/
-*.pyc
-.venv/
-venv/
-vendor/
-*.log
-coverage/
-.cache/
-tmp/
 
-# ── Kata baseline (auto-generated) ──
-.kata/debug.log
-nupkg/
+# Misc
+*.log
+tmp/
+.bg-shell/

@@ -1,5 +1,10 @@
 ---
 version: 1
+workflow:
+  mode: linear
+linear:
+  teamKey: WOL
+  projectId: e3618beb-1669-4cda-9e85-5664f1c6a30b
 always_use_skills: []
 prefer_skills: []
 avoid_skills: []
