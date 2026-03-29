@@ -53,7 +53,7 @@ All score comparisons use epsilon tolerance (default `1e-9`). Never compare floa
 
 ## TOML Version
 
-These vectors use [TOML 1.1](https://toml.io/) features, specifically optional seconds in offset date-times (e.g. `2024-01-01T00:00Z` instead of `2024-01-01T00:00:00Z`). Implementations consuming these vectors **must** use a TOML 1.1-capable parser.
+These vectors use [TOML 1.1](https://toml.io/en/v1.1.0) features, specifically optional seconds in offset date-times (e.g. `2024-01-01T00:00Z` instead of `2024-01-01T00:00:00Z`). Implementations consuming these vectors **must** use a TOML 1.1-capable parser.
 
 ## Version
 
