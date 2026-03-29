@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/wollax/cupel"
 description = "OpenTelemetry trace collector for cupel selection pipelines"
 readme = "README.md"
-categories = ["observability", "development-tools"]
+categories = ["development-tools::profiling", "development-tools"]
 keywords = ["cupel", "opentelemetry", "tracing", "otel"]
 include = ["src/**/*.rs", "tests/**/*.rs", "Cargo.toml", "LICENSE", "README.md"]
 
