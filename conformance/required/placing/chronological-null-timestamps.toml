@@ -15,7 +15,7 @@ score = 0.5
 content = "recent"
 tokens = 100
 score = 0.9
-timestamp = 2024-12-01T00:00:00Z
+timestamp = 2024-12-01T00:00Z
 
 [[items]]
 content = "no-time-b"
@@ -26,7 +26,7 @@ score = 0.3
 content = "old"
 tokens = 100
 score = 0.7
-timestamp = 2024-01-01T00:00:00Z
+timestamp = 2024-01-01T00:00Z
 
 [expected]
 ordered_contents = ["old", "recent", "no-time-a", "no-time-b"]
