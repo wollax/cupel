@@ -13,8 +13,8 @@ include = ["src/**/*.rs", "tests/**/*.rs", "Cargo.toml", "LICENSE", "README.md"]
 
 [dependencies]
 cupel = { version = "1.2", path = "../cupel" }
-opentelemetry = "0.27"
+opentelemetry = "0.31"
 
 [dev-dependencies]
-opentelemetry_sdk = { version = "0.27", features = ["testing", "trace"] }
-serial_test = "0.9"
+opentelemetry_sdk = { version = "0.31", features = ["testing", "trace"] }
+serial_test = "3"

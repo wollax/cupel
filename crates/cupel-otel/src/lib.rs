@@ -171,7 +171,7 @@ impl TraceCollector for CupelOtelTraceCollector {
             span.end();
         }
 
-        // End the root span explicitly (opentelemetry 0.27 requires explicit .end()).
+        // End the root span explicitly.
         root_cx.span().end();
     }
 }

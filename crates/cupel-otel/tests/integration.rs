@@ -12,9 +12,9 @@ use cupel::{
 };
 use cupel_otel::{CupelOtelTraceCollector, CupelVerbosity};
 use opentelemetry::global;
-use opentelemetry_sdk::export::trace::SpanData;
-use opentelemetry_sdk::testing::trace::InMemorySpanExporterBuilder;
-use opentelemetry_sdk::trace::TracerProvider as SdkTracerProvider;
+use opentelemetry_sdk::trace::InMemorySpanExporterBuilder;
+use opentelemetry_sdk::trace::SdkTracerProvider;
+use opentelemetry_sdk::trace::SpanData;
 use serial_test::serial;
 use std::collections::HashMap;
 
