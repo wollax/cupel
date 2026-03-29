@@ -26,9 +26,11 @@ fn load_vector(relative_path: &str) -> Value {
     let path = base.join(relative_path);
     let content = std::fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()));
-    content
-        .parse::<Value>()
-        .unwrap_or_else(|e| panic!("failed to parse TOML {}: {e}", path.display()))
+    // toml 0.9+ changed Value::from_str to parse values, not documents.
+    // Use from_str::<Table> for document parsing, then wrap for downstream compatibility.
+    let table: toml::Table = toml::from_str(&content)
+        .unwrap_or_else(|e| panic!("failed to parse TOML {}: {e}", path.display()));
+    Value::Table(table)
 }
 
 fn build_scored_items(vector: &Value) -> Vec<ScoredItem> {
