@@ -21,10 +21,10 @@ dotnet add package Wollax.Cupel.Json
 **Rust:**
 ```toml
 [dependencies]
-cupel = "1.1"
+cupel = "1.2"
 
 # Optional: serialization support
-cupel = { version = "1.1", features = ["serde"] }
+cupel = { version = "1.2", features = ["serde"] }
 ```
 
 ## Quick Start

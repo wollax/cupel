@@ -162,7 +162,7 @@ Enable the `serde` feature for `Serialize`/`Deserialize` on all model types:
 
 ```toml
 [dependencies]
-cupel = { version = "1.1", features = ["serde"] }
+cupel = { version = "1.2", features = ["serde"] }
 ```
 
 `ContextBudget` and `ContextItem` validate constraints on deserialization —

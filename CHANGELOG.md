@@ -7,21 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-03-29
+
 ### Added
-- `.NET: \`CupelPipeline.DryRunWithPolicy(items, budget, policy)\` — run a policy configuration over an item set without constructing a new pipeline`
-- `.NET: Policy-accepting \`PolicySensitivity\` overload in \`PolicySensitivityExtensions\` — pass \`(label, CupelPolicy)\` tuples instead of pre-built pipelines`
 - `Rust: \`Policy\` struct and \`PolicyBuilder\` — construct a policy from \`Arc<dyn Scorer/Slicer/Placer>\` with deduplication and overflow flags`
 - `Rust: \`Pipeline::dry_run_with_policy\` — run a pipeline using a caller-supplied Policy instead of the pipeline's own components`
 - `Rust: \`policy_sensitivity\` — fork-diagnostic free function accepting \`&[(label, &Policy)]\` variants, returning \`PolicySensitivityReport\``
 - `Rust: \`policy_sensitivity_from_pipelines\` — pipeline-based variant (renamed from \`policy_sensitivity\` for disambiguation)`
-- `Spec: \`spec/src/analytics/policy-sensitivity.md\` — normative API contract for both languages`
 - `Rust: \`cupel-otel\` crate — \`CupelOtelTraceCollector\` implementing \`TraceCollector\` with three verbosity tiers (StageOnly, StageAndExclusions, Full); emits \`cupel.pipeline\` root span and five \`cupel.stage.*\` child spans with exact \`cupel.*\` attributes`
 - `Rust: \`TraceCollector::on_pipeline_completed\` hook — defaulted no-op method on the trait; called by \`Pipeline::run_traced\` at completion; provides \`StageTraceSnapshot\` slice for structured end-of-run handoff`
-- `Spec: Rust-specific section in \`spec/src/integrations/opentelemetry.md\` documenting \`cupel-otel\` source name, Cargo.toml snippet, and implementation notes`
-- `Rust: \`MetadataKeyScorer\` — absolute scorer returning a configurable multiplier (\`boost\`) when \`metadata[key] == value\`, and \`1.0\` (neutral) otherwise; multiplicative semantics for use in \`CompositeScorer\`; \`boost > 0.0\` validated at construction; exported from the \`cupel\` crate root`
-- `.NET: \`MetadataKeyScorer\` — .NET port of the Rust implementation; \`ArgumentException\` on non-positive or non-finite \`boost\`; string-to-string value comparison with \`ToString()\` fallback for non-string metadata values`
-- `Rust: \`CountConstrainedKnapsackSlice\` — 3-phase slicer accepting \`Vec<CountQuotaEntry>\`, \`KnapsackSlice\`, and \`ScarcityBehavior\`; Phase 1 commits top-N items per kind by score (count-satisfy), Phase 2 runs \`KnapsackSlice\` on residual candidates and remaining budget (knapsack-distribute), Phase 3 drops over-cap items by score descending (cap-enforce); re-uses M006's \`CountQuotaEntry\` and \`ScarcityBehavior\` types; exported from the \`cupel\` crate root`
-- `.NET: \`CountConstrainedKnapsackSlice\` — .NET port of the Rust implementation; Phase 1 count-satisfy, Phase 2 KnapsackSlice delegate with score-descending re-sort, Phase 3 cap-enforcement seeded from Phase 1 counts; \`IQuotaPolicy\` implementation; \`ScarcityBehavior.Degrade\` default; pipeline-level shortfall injection and cap-classification via \`CupelPipeline\``
+- `Rust: \`MetadataKeyScorer\` — absolute scorer returning a configurable multiplier (\`boost\`) when \`metadata[key] == value\`, and \`1.0\` (neutral) otherwise; multiplicative semantics for use in \`CompositeScorer\``
+- `Rust: \`CountConstrainedKnapsackSlice\` — 3-phase slicer accepting \`Vec<CountQuotaEntry>\`, \`KnapsackSlice\`, and \`ScarcityBehavior\`; Phase 1 count-satisfy, Phase 2 knapsack-distribute, Phase 3 cap-enforce`
+- `.NET: \`CupelPipeline.DryRunWithPolicy\`, \`PolicySensitivity\` overload, \`MetadataKeyScorer\`, \`CountConstrainedKnapsackSlice\``
+- `Spec: \`policy-sensitivity.md\`, \`opentelemetry.md\` Rust section, \`count-constrained-knapsack.md\`, \`metadata-key.md\``
 
 ## [1.1.0] - 2026-03-15
 
