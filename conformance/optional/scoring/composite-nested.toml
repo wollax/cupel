@@ -51,14 +51,14 @@ weight = 1.0
 [[items]]
 content = "a"
 tokens = 100
-timestamp = 2024-01-01T00:00:00Z
+timestamp = 2024-01-01T00:00Z
 priority = 1
 futureRelevanceHint = 0.8
 
 [[items]]
 content = "b"
 tokens = 100
-timestamp = 2024-12-01T00:00:00Z
+timestamp = 2024-12-01T00:00Z
 priority = 5
 futureRelevanceHint = 0.2
 

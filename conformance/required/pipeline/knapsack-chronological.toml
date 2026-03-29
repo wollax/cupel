@@ -59,21 +59,21 @@ content = "alpha"
 tokens = 200
 kind = "Message"
 priority = 2
-timestamp = 2024-01-01T00:00:00Z
+timestamp = 2024-01-01T00:00Z
 
 [[items]]
 content = "beta"
 tokens = 150
 kind = "Message"
 priority = 5
-timestamp = 2024-06-01T00:00:00Z
+timestamp = 2024-06-01T00:00Z
 
 [[items]]
 content = "gamma"
 tokens = 250
 kind = "Message"
 priority = 8
-timestamp = 2024-12-01T00:00:00Z
+timestamp = 2024-12-01T00:00Z
 
 [[expected_output]]
 content = "gamma"

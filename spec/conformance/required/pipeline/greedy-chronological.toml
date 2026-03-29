@@ -46,25 +46,25 @@ weight = 1.0
 content = "jan"
 tokens = 200
 kind = "Message"
-timestamp = 2024-01-15T00:00:00Z
+timestamp = 2024-01-15T00:00Z
 
 [[items]]
 content = "mar"
 tokens = 200
 kind = "Message"
-timestamp = 2024-03-15T00:00:00Z
+timestamp = 2024-03-15T00:00Z
 
 [[items]]
 content = "aug"
 tokens = 150
 kind = "Message"
-timestamp = 2024-08-15T00:00:00Z
+timestamp = 2024-08-15T00:00Z
 
 [[items]]
 content = "dec"
 tokens = 150
 kind = "Message"
-timestamp = 2024-12-15T00:00:00Z
+timestamp = 2024-12-15T00:00Z
 
 [[expected_output]]
 content = "aug"

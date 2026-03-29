@@ -36,14 +36,14 @@ pinned = true
 content = "old"
 tokens = 150
 kind = "Message"
-timestamp = 2024-01-01T00:00:00Z
+timestamp = 2024-01-01T00:00Z
 pinned = true
 
 [[items]]
 content = "new"
 tokens = 150
 kind = "Message"
-timestamp = 2024-12-01T00:00:00Z
+timestamp = 2024-12-01T00:00Z
 pinned = true
 
 [[expected_output]]

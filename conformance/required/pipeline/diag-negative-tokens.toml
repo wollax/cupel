@@ -47,13 +47,13 @@ weight = 1.0
 content = "neg-item"
 tokens = -5
 kind = "Message"
-timestamp = 2024-01-01T00:00:00Z
+timestamp = 2024-01-01T00:00Z
 
 [[items]]
 content = "normal-item"
 tokens = 100
 kind = "Message"
-timestamp = 2024-06-01T00:00:00Z
+timestamp = 2024-06-01T00:00Z
 
 [[expected_output]]
 content = "normal-item"

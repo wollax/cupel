@@ -37,19 +37,19 @@ weight = 1.0
 [[items]]
 content = "old-low"
 tokens = 100
-timestamp = 2024-01-01T00:00:00Z
+timestamp = 2024-01-01T00:00Z
 priority = 1
 
 [[items]]
 content = "new-high"
 tokens = 100
-timestamp = 2024-12-01T00:00:00Z
+timestamp = 2024-12-01T00:00Z
 priority = 10
 
 [[items]]
 content = "old-high"
 tokens = 100
-timestamp = 2024-01-01T00:00:00Z
+timestamp = 2024-01-01T00:00Z
 priority = 10
 
 [[expected]]

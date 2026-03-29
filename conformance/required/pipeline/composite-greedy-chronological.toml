@@ -70,25 +70,25 @@ weight = 1.0
 content = "sys-old"
 tokens = 100
 kind = "SystemPrompt"
-timestamp = 2024-01-01T00:00:00Z
+timestamp = 2024-01-01T00:00Z
 
 [[items]]
 content = "msg-mid"
 tokens = 150
 kind = "Message"
-timestamp = 2024-06-01T00:00:00Z
+timestamp = 2024-06-01T00:00Z
 
 [[items]]
 content = "msg-new"
 tokens = 150
 kind = "Message"
-timestamp = 2024-12-01T00:00:00Z
+timestamp = 2024-12-01T00:00Z
 
 [[items]]
 content = "doc-old"
 tokens = 200
 kind = "Document"
-timestamp = 2024-02-01T00:00:00Z
+timestamp = 2024-02-01T00:00Z
 
 [[expected_output]]
 content = "sys-old"

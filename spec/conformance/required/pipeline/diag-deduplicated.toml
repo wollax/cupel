@@ -57,13 +57,13 @@ weight = 1.0
 content = "dup-content"
 tokens = 50
 kind = "Message"
-timestamp = 2024-01-01T00:00:00Z
+timestamp = 2024-01-01T00:00Z
 
 [[items]]
 content = "dup-content"
 tokens = 50
 kind = "Message"
-timestamp = 2024-06-01T00:00:00Z
+timestamp = 2024-06-01T00:00Z
 
 [[expected_output]]
 content = "dup-content"

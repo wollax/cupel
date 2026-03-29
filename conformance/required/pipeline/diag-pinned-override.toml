@@ -77,7 +77,7 @@ pinned = true
 content = "regular-item"
 tokens = 80
 kind = "Message"
-timestamp = 2024-06-01T00:00:00Z
+timestamp = 2024-06-01T00:00Z
 
 [[expected_output]]
 content = "pinned-item"
