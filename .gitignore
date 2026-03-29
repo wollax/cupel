@@ -49,3 +49,15 @@ package-lock.json
 *.log
 tmp/
 .bg-shell/
+
+# ── Kata baseline (auto-generated) ──
+.next/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+vendor/
+coverage/
+.cache/
