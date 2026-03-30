@@ -25,12 +25,12 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@1.85.0
+        uses: actions-rs/toolchain@v1.0.6
         with:
           components: rustfmt, clippy
 
@@ -83,13 +83,13 @@ jobs:
           exit 1
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@1.85.0
+        uses: actions-rs/toolchain@v1.0.6
 
       - name: Get version
         id: version
