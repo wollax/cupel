@@ -21,6 +21,10 @@ use cupel::{
 
 fn load_vector(relative_path: &str) -> Value {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("crates dir")
+        .parent()
+        .expect("workspace root")
         .join("conformance")
         .join("required");
     let path = base.join(relative_path);

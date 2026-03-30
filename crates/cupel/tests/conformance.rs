@@ -29,6 +29,10 @@ mod conformance {
     /// Load a TOML test vector from a path relative to the conformance/required/ directory.
     pub fn load_vector(relative_path: &str) -> Value {
         let base = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("crates dir")
+            .parent()
+            .expect("workspace root")
             .join("conformance")
             .join("required");
         let path = base.join(relative_path);
@@ -46,11 +50,42 @@ mod conformance {
         match val {
             Value::Datetime(dt) => {
                 let s = dt.to_string();
-                s.parse::<DateTime<Utc>>()
+                // TOML 1.1 allows optional seconds (e.g. T00:00Z instead of T00:00:00Z).
+                // chrono doesn't parse RFC 3339 without seconds, so normalize first.
+                let normalized = normalize_rfc3339_seconds(&s);
+                normalized
+                    .parse::<DateTime<Utc>>()
                     .unwrap_or_else(|e| panic!("failed to parse datetime '{s}': {e}"))
             }
             other => panic!("expected TOML datetime, got: {other:?}"),
         }
+    }
+
+    /// Normalize an RFC 3339 datetime string to always include seconds.
+    /// "2024-01-01T00:00Z" → "2024-01-01T00:00:00Z"
+    /// "2024-01-01T00:00+02:00" → "2024-01-01T00:00:00+02:00"
+    /// Strings that already have seconds are returned unchanged.
+    fn normalize_rfc3339_seconds(s: &str) -> String {
+        // Find the 'T' separator, then check if we have HH:MM without :SS before the timezone.
+        // A datetime with seconds has at least 2 colons after the 'T'.
+        if let Some(time_start) = s.find('T') {
+            let time_part = &s[time_start + 1..];
+            let colon_count = time_part
+                .chars()
+                .take_while(|c| c.is_ascii_digit() || *c == ':')
+                .filter(|c| *c == ':')
+                .count();
+            if colon_count == 1 {
+                // Only HH:MM, need to insert :00 before timezone indicator.
+                // Find first Z, +, or - after HH:MM.
+                let after_t = time_start + 1;
+                if let Some(tz_offset) = s[after_t..].find(['Z', '+', '-']) {
+                    let insert_pos = after_t + tz_offset;
+                    return format!("{}:00{}", &s[..insert_pos], &s[insert_pos..]);
+                }
+            }
+        }
+        s.to_string()
     }
 
     /// Build ContextItems from the [[items]] array in a test vector.
