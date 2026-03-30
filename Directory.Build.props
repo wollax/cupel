@@ -28,7 +28,10 @@
     <PackageTags>context;agents;llm;scoring;token-management</PackageTags>
   </PropertyGroup>
 
-  <!-- SourceLink -->
+  <!-- SourceLink: only active on CI where the GitHub remote is authoritative -->
+  <PropertyGroup>
+    <EnableSourceLink Condition="'$(CI)' != 'true'">false</EnableSourceLink>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
