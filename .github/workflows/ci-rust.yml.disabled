@@ -33,27 +33,6 @@ jobs:
       - name: Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Conformance drift guard
-        shell: bash
-        run: |
-          checked=0
-          for category in required optional; do
-            spec="spec/conformance/${category}"
-            crate="crates/cupel/conformance/${category}"
-            if [ -d "$spec" ] && [ -d "$crate" ]; then
-              diff -rq "$spec" "$crate" \
-                || { echo "ERROR: Conformance drift detected in ${category}/ — spec and crates copies have diverged."; diff -r "$spec" "$crate" || true; exit 1; }
-              checked=$((checked + 1))
-            elif [ -d "$spec" ] || [ -d "$crate" ]; then
-              echo "ERROR: Asymmetric conformance directories — only one of ${spec} or ${crate} exists."; exit 1
-            fi
-          done
-          if [ "$checked" -eq 0 ]; then
-            echo "WARNING: No conformance directories found to compare."
-          else
-            echo "Conformance vectors in sync (${checked} categories checked)."
-          fi
-
       - name: Format
         run: cargo fmt --all --check
 

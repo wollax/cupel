@@ -1,0 +1,82 @@
+name: CI (Rust)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.forgejo/workflows/ci-rust.yml'
+      - 'conformance/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.forgejo/workflows/ci-rust.yml'
+      - 'conformance/**'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-Dwarnings"
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: https://github.com/dtolnay/rust-toolchain@1.85.0
+        with:
+          components: rustfmt, clippy
+      - uses: https://github.com/Swatinem/rust-cache@v2
+
+      - name: Install cargo-binstall
+        run: |
+          curl -L --proto '=https' --tlsv1.2 -sSf \
+            https://github.com/cargo-bins/cargo-binstall/releases/download/v1.17.9/cargo-binstall-x86_64-unknown-linux-musl.tgz \
+            | tar -xz -C ~/.cargo/bin
+
+      - name: Install cargo-deny
+        run: cargo binstall -y cargo-deny@0.19.0
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Clippy (default features)
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Clippy (serde — cupel only)
+        run: cargo clippy --manifest-path crates/cupel/Cargo.toml --features serde --all-targets -- -D warnings
+
+      - name: Test (default features)
+        run: cargo test --workspace
+
+      - name: Test (serde — cupel only)
+        run: cargo test --manifest-path crates/cupel/Cargo.toml --features serde
+
+      - name: Deny (cupel)
+        run: cargo deny --manifest-path crates/cupel/Cargo.toml check
+
+      - name: Deny (cupel-otel)
+        run: cargo deny --manifest-path crates/cupel-otel/Cargo.toml check
+
+      - name: Deny (cupel-testing)
+        run: cargo deny --manifest-path crates/cupel-testing/Cargo.toml check
+
+      - name: Alert — CI failed
+        if: failure()
+        run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -sf \
+            -H "Title: cupel CI failed" \
+            -H "Priority: high" \
+            -H "Tags: x" \
+            -d "Run: ${RUN_URL}" \
+            https://ntfy.alexwollan.com/homelab-alerts \
+            || echo "::warning::ntfy notification failed (non-fatal)"
